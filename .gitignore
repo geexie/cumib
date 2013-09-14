@@ -11,3 +11,7 @@
 *.lai
 *.la
 *.a
+
+# Profiler and execution logs
+*.log
+*.csv
