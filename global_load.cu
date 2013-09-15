@@ -45,7 +45,8 @@ size_t getGmemSize(int deviceId)
 }
 
 template<typename T, typename D>
-__global__ void latency_kernel(T** a, int array_size, int stride, int inner_iterations, D* latency, bool do_warnup)
+__global__ void latency_kernel(T** a, int array_size, int stride, int inner_iterations, D* latency,
+                               int declared_l2_size, bool do_warnup)
 {
     T *j = (T*) a;
 
@@ -55,10 +56,11 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
     volatile D sum_time = 0;
 
     latency[0] = 0;
+    int wurnup_repeats = min(repeats, declared_l2_size / stride);
 
     if (do_warnup)
     {
-        for (int curr = 0; curr < repeats; ++curr)
+        for (int curr = 0; curr < wurnup_repeats; ++curr)
             j = *(T **)j;
     }
 
@@ -83,8 +85,9 @@ struct CacheBenchmarker
 {
     typedef long long int clock_64_t;
 
-    CacheBenchmarker(int _stride, int _inner_iterations, int _outer_iterations, bool _do_warnup)
-    : stride(_stride), inner_iterations(_inner_iterations), outer_iterations(_outer_iterations), do_warnup(_do_warnup)
+    CacheBenchmarker(int _stride, int _inner_iterations, int _outer_iterations, int _declared_l2_size, bool _do_warnup)
+    : stride(_stride), inner_iterations(_inner_iterations), outer_iterations(_outer_iterations),
+    declared_l2_size(_declared_l2_size), do_warnup(_do_warnup)
     {}
 
     template<typename T>
@@ -117,7 +120,8 @@ struct CacheBenchmarker
 
         for (int outer = 0; outer < outer_iterations; ++outer)
         {
-            latency_kernel<<<grid, block>>>(d_a, array_size, stride, inner_iterations, d_latency, do_warnup);
+            latency_kernel<<<grid, block>>>(d_a, array_size, stride, inner_iterations, d_latency,
+                                            declared_l2_size, do_warnup);
 
             cuda_assert(cudaDeviceSynchronize ());
             cuda_assert(cudaGetLastError());
@@ -139,6 +143,7 @@ private:
     int stride;
     int inner_iterations;
     int outer_iterations;
+    int declared_l2_size;
     bool do_warnup;
 };
 
@@ -154,6 +159,15 @@ int main(int argc, char const *argv[])
     if (argc >= 2)
         deviceId = atoi(argv[1]);
 
+    // assume l2 transaction is 32 byte-wide with 4 sub-partitions.
+    // This assumptions is truth for kepler devices.
+    int transactionWidth = 128;
+
+    if (argc >= 3)
+        transactionWidth = atoi(argv[2]);
+
+    const int stride = transactionWidth / elem_size;
+
     printf("run benchmark on device #%d\n", deviceId);
 
     cuda_assert(cudaSetDevice(deviceId));
@@ -166,18 +180,20 @@ int main(int argc, char const *argv[])
     // for GTX650 with 256kb l2 it'll be 327680.
     const int maxCache = declaredL2Size + (declaredL2Size >> 2);
 
-    // assume l2 transaction is 32 byte-wide.
-    const int transactionWidth = 32;
-    const int stride = transactionWidth / elem_size;
-
     // # of iterations inside the kernel and # of kernel invocations.
     const int innerIterations = 1;
-    const int outerIterations = 10;
+    int outerIterations = 10;
+
+    if (argc >= 4)
+        outerIterations = atoi(argv[3]);
 
     // execute strided load function one time before main measurements
-    const bool doWarnup = false;
+    bool doWarnup = false;
 
-    CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, doWarnup);
+    if (argc >= 5)
+        doWarnup = (bool)atoi(argv[4]);
+
+    CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, declaredL2Size, doWarnup);
 
     for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
         benchmarker.run_global_test<test_type>(N);
