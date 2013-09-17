@@ -22,7 +22,6 @@
 */
 
 #include "cudassert.cuh"
-#include "cumib.cuh"
 
 #include <stdint.h>
 #include <cstdlib>
