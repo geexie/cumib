@@ -72,7 +72,10 @@ global_load.o: global_load.cu cudassert.cuh
 print_device_info.o: print_device_info.cu cudassert.cuh
 	$(DEVICE_CC) $(NVCC_FLAGS) -c --relocatable-device-code=true  print_device_info.cu -o print_device_info.o
 
-all: global
+laneid: laneid.cu cudassert.cuh
+	$(DEVICE_CC) $(NVCC_FLAGS) laneid.cu -o laneid
+
+all: global laneid
 
 .PHONY: clean
 
