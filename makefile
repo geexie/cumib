@@ -22,13 +22,13 @@
 #
 
 ##################################################################################
-#   This is a simple make file that is not support cross-compilation yet.
-# To cross-compile cumib override compiler and flag variables.
+#   This is a simple makefile that does not support cross-compilation yet.
+# Override compiler and flag variables to cross-compile cumib .
 #
-#   This makefile require CUDA compute capability greater of equal then 2.0 becau-
+#   This makefile requires CUDA compute capability greater of equal then 2.0 becau-
 # se of device linking required for incremental build.
 #
-# This makefile works with cuda 5.5 with the target folder
+# This makefile works with cuda 5.5 targets folder
 ##################################################################################
 
 HOST_NAME = $(shell uname -s 2>/dev/null | tr "[:upper:]" "[:lower:]")
