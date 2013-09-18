@@ -34,7 +34,7 @@
 HOST_NAME = $(shell uname -s 2>/dev/null | tr "[:upper:]" "[:lower:]")
 HOST_ARCH = $(shell uname -m | sed -e "s/i386/i686/")
 
-CC = g++
+CC ?= g++
 HOST_CC=$(CC)
 
 CFLAGS=
@@ -80,4 +80,4 @@ all: global laneid
 .PHONY: clean
 
 clean:
-	rm *.o global
+	rm *.o global laneid
