@@ -55,6 +55,7 @@ CUDA_LIB_DIR = $(CUDA_ROOT)/targets/$(TARGET_ARCH)-$(TARGET_NAME)/lib
 ifeq ($(TARGET_ARCH),armv7l)
 CUDA_LIB_DIR = $(CUDA_ROOT)/targets/armv7-$(TARGET_NAME)-gnueabihf/lib
 NVCC_FLAGS += --target-cpu-architecture=ARM -m32
+LDFLAGS += -rpath=/usr/arm-linux-gnueabihf -rpath-link=/usr/arm-linux-gnueabihf
 endif
 
 CUDA_RT = cudart
@@ -71,7 +72,7 @@ endif
 virtual_arch = compute_$(CUDA_GENERATION)
 binary_arch  = sm_$(CUDA_GENERATION)
 
-ifeq ($(CUDA_GENERATION), "21")
+ifeq ($(CUDA_GENERATION), 21)
 virtual_arch = compute_20
 endif
 
@@ -84,7 +85,7 @@ NVCC_FLAGS += -gencode arch=$(virtual_arch),code=$(binary_arch) -Xptxas -dlcm=$(
 ################################################################################
 
 global-$(TARGET_ARCH): global_load.d.o print_device_info.o global_load.o
-	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) -rpath=/usr/arm-linux-gnueabihf -rpath-link=/usr/arm-linux-gnueabihf   $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
+	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
 global_load.d.o: global_load.o print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
