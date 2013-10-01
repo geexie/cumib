@@ -1,0 +1,95 @@
+.thumbnail {
+    float:left;
+}
+
+.left {
+    text-align: left;
+}
+
+.reveal section img.thumbnail {
+    margin: 15px 30px 15px 0 !important;
+}
+
+ul.none {
+    list-style-type: none;
+    margin-left:0px;
+}
+
+div.centered {
+    text-align: center;
+}
+
+div.centered table {
+    margin: 0 auto;
+    text-align: left;
+}
+
+.reveal section img.simple {
+    margin: 15px 0px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    display: inline-block;
+}
+
+.reveal b {
+    color: #66FF33;
+}
+
+.reveal h1, .reveal h2 {
+    color: #66FF33;
+    text-shadow:none;
+    /*font-family: 'OpenSansLight',"Helvetica Neue",Helvetica,Arial,sans-serif;*/
+    /*font-weight: normal;*/
+    /*text-align: center;*/
+}
+
+.reveal section img {
+    border: 4px double #aaaaaa;
+}
+
+.reveal a:hover img {
+    border-color: #66FF33;
+}
+
+.reveal .tbl1 {
+    border-collapse: collapse;
+}
+
+.reveal .tbl1 td, .reveal .tbl1 thead th
+{
+    padding-right: 0.3em;
+    padding-left: 0.3em;
+}
+
+.reveal .centred td, .reveal .centred thead th {
+    text-align: center;
+}
+
+.reveal .tbl1 thead {
+    border-bottom: 1px solid gray;
+}
+
+.reveal .tbl1 col {
+    border-right: 4px double gray;
+}
+
+.reveal .tbl1 col:last-child {
+    border-right: 0 none;
+}
+
+.reveal .tbl1 tr:nth-child(even) {
+    background-color:rgba(100,100,100,0.5);
+}
+
+.reveal .slide-number {
+  color: #66FF33;
+}
+
+pre .cls {
+    color: #FF9C33;
+}
+
+pre b .number {
+    color: #66FF33;
+}

@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Code GPU with CUDA</title>
+
+    <meta name="description" content="CUDA cource: Code GPU with CUDA">
+    <meta name="author" content="cuda.geek">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
+    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
+    <link rel="stylesheet" href="stylesheets/cuda.css">
+    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <script>
+      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
+        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h1>Code GPU with CUDA</h1>
+          <h3>Applying techniques</h3>
+          <small>Created by Marina Kolpakova (<a href="http://github.com/cuda-geek">cuda.geek</a>) for <a href="http://itseez.com">Itseez</a></small>
+        </section>
+
+        <section>
+          <section>
+            <h2>Outline</h2>
+            <ul>
+              <li><a href="#/sec_0" style="color:#fff;">Streaming kernels</a>
+                <ul>
+                  <li>Threshold</li>
+                  <li>Transpose</li>
+                </ul>
+              </li>
+              <!-- <li>Stencil kernel</li> -->
+              <li><a href="#/sec_1" style="color:#fff;">Reduction</a></li>
+              <!-- <li>Scan</li> -->
+              <li><a href="#/sec_2" style="color:#fff;">Profiling</a>
+                <ul>
+                    <li>What and how to measure?</li>
+                    <li>Case study: transpose</li>
+                    <li>Code paths and patters analysis</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h2>Out of scope</h2>
+            <ul>
+              <li>Visual profiler opportunities</li>
+            </ul>
+          </section>
+        </section>
+
+        <section id="sec_0">
+          <h1>Streaming kernels</h1>
+        </section>
+
+        <section>
+          <h2>Streaming kernel</h2>
+          <section>
+            <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+              <math display="block">
+              <mstyle>
+                  <mi>y</mi>
+                  <mo>=</mo>
+                  <mi>f</mi>
+                  <mrow>
+                    <mo>(</mo>
+                    <mi>x</mi>
+                    <mo>)</mo>
+                  </mrow>
+                </mstyle>
+              </math>
+            </blockquote>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename Ptr2DIn, typename Ptr2DOut, typename Op&gt;
+__global__ void streaming(const Ptr2DIn src, Ptr2DOut dst)
+{
+const int x = <span class="keyword">blockDim.x</span> * <span class="keyword">blockIdx.x</span> + <span class="keyword">threadIdx.x</span>;
+const int y = <span class="keyword">blockDim.y</span> * <span class="keyword">blockIdx.y</span> + <span class="keyword">threadIdx.y</span>;
+
+if (x < dst.cols && y < dst.rows)
+dst(y, x) = saturate_cast&lt;Ptr2DOut::elem_type&gt;(Op::apply(src(x, y)));
+}</code></pre>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">dim3</span> block(block_x, block_y);
+<span class="keyword">dim3</span> grid(roundUp(dst.cols, block_x), roundUp(dst.rows, block_y));
+streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keyword">&gt;&gt;&gt;</span>(src, dst);</code></pre>
+            <p>Arithmetic and conversions, repack by map, resize, e.t.c.</p>
+          </section>
+        </section>
+
+        <section>
+          <h2>Threshold</h2>
+          <section>
+            <h3>Pixel per thread</h3>
+            <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+              <math display="block">
+                <mstyle>
+                  <mi>y</mi>
+                  <mo>=</mo>
+                  <mi>max</mi>
+                  <mrow>
+                    <mo>(</mo>
+                    <mi>x</mi>
+                    <mo>,</mo>
+                    <mi>&#964;</mi>
+                    <mo>)</mo>
+                  </mrow>
+                </mstyle>
+              </math>
+            </blockquote>
+            <p>Adjusting launch parameters for specific hardware</p>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>block size</th>
+                  <th>time*, μs</th>
+                  <th>X-factor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>32x16</th><td>456.49</td><td>1.0</td>
+                </tr>
+                <tr>
+                  <th>32x8</th><td>431.42</td><td>1.06</td>
+                </tr>
+                <tr>
+                  <th>32x6</th><td>435.87</td><td>1.05</td>
+                </tr>
+                <tr>
+                  <th>32x4</th><td>412.01</td><td>1.11</td>
+                </tr>
+                <tr>
+                  <th>32x2</th><td>785.36</td><td>0.58</td>
+                </tr>
+                <tr>
+                  <th>32x1</th><td>1516.19</td><td>0.30</td>
+                </tr>
+              </tbody>
+            </table>
+            <small>* Time has been measured on 1080p input for GK107 with 2 SMX (1 GHz), 128-bit GDDR5</small>
+          </section>
+
+          <section>
+            <h3>Kernel unrolling: warp per image row</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void threshold_ww(const <span <span class="cls">DPtr</span>&lt;unsigned char&gt; src, <span class="cls">DPtr</span>&lt;unsigned char&gt; dst,
+    int cols, int rows, unsigned char threshold)
+{
+    int block_id = (<span class="keyword">blockIdx.y</span> * <span class="keyword">gridDim.x</span> + <span class="keyword">blockIdx.x</span>) * (<span class="keyword">blockDim.x</span> / <span class="keyword">warpSize</span>);
+    int y = (<span class="keyword">threadIdx.y</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>) / <span class="keyword">warpSize</span> + block_id;
+
+    if (y < rows)
+        for (int x = lane(); x < cols; x += <span class="keyword">warpSize</span>)
+            dst.row(y)[x] = max(threshold, src.row(y)[x]);
+}</code></pre>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>approach</th>
+                  <th>time*, μs</th>
+                  <th>X-factor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td>
+                </tr>
+                <tr>
+                  <th>warpwise 8</th><td>223.01</td><td>1.85</td>
+                </tr>
+                <tr>
+                  <th>warpwise 4</th><td>222.53</td><td>1.85</td>
+                </tr>
+                <tr>
+                  <th>warpwise 2</th><td>374.47</td><td>1.10</td>
+                </tr>
+              </tbody>
+            </table>
+            <small>* Time has been measured on 1080p input for GK107 with 2 SMX (1 GHz), 128-bit GDDR5</small>
+          </section>
+
+          <section>
+            <h3>Kernel unrolling: more independent elements</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">// same as previous
+unsigned char tmp[2];
+if (y * 2 < rows - 2)
+    for (int x = lane(); x < cols; x += warpSize)
+    {
+        tmp[0] = max(threshold, src.row(y * 2)[x]);
+        tmp[1] = max(threshold, src.row(y * 2+ 1)[x]);
+
+        dst.row(y * 2)[x] = tmp[0];
+        dst.row(y * 2 + 1)[x] = tmp[1];
+    }
+else {/*compute tail*/ }</code></pre>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                  <col></col>
+                  <col></col>
+                  <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>approach</th>
+                  <th>time*, μs</th>
+                  <th>X-factor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td>
+                </tr>
+                <tr>
+                  <th>warpwise 4</th><td>222.53</td><td>1.85</td>
+                </tr>
+                <tr>
+                  <th>warpwise 4 unroll 2</th><td>185.28</td><td>2.22</td>
+                </tr>
+            </tbody>
+            </table>
+            <small>* Time has been measured on 1080p input for GK107 with 2 SMX (1 GHz), 128-bit GDDR5</small>
+          </section>
+
+          <section>
+            <h3>Kernel unrolling: use wider transactions</h3>
+            <p>unsigned char -&gt; unsigned integer</p>
+            <pre style="width:100%"><code class="cpp">unsigned int tmp = src.row&lt;unsigned int&gt;(y)[x];
+unsigned int res = vmin_u8(tmp, mask);
+dst.row&lt;unsigned int&gt;(y)[x] = res;</code></pre>
+                        <pre style="width:100%"><code class="cpp">template&lt;typename T&gt; <span class="keyword">__device__ __forceinline__</span> T vmin_u8(T,T);
+template&lt;&gt; <span class="keyword">__device__ __forceinline__</span> unsigned int vmin_u8(unsigned v, unsigned m)
+{
+    unsigned int res = 0;
+    asm("vmax4.u32.u32.u32 %0.b3210, %1.b3210, %2.b7654, %3;"
+    : "=r"(res) : "r"(v), "r"(m), "r"(0));
+    return res;
+}</code></pre>
+          </section>
+
+          <section>
+            <h3>Results</h3>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>approach</th>
+                  <th>time*, μs</th>
+                  <th>X-factor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td>
+                </tr>
+                <tr>
+                  <th>warpwise 4</th><td>222.53</td><td>1.85</td>
+                </tr>
+                <tr>
+                  <th>warpwise 4 unroll 2</th><td>185.28</td><td>2.22</td>
+                </tr>
+                <tr>
+                  <th>warpwise 2 wide </th><td>126.01</td><td>3.27</td>
+                </tr>
+                <tr>
+                  <th>warpwise 2 wide unroll 2</th><td>96.71</td><td>4.26</td>
+                </tr>
+                <tr>
+                  <th>warpwise 4 wide </th><td>85.22</td><td>4.83</td>
+                </tr>
+                <tr>
+                  <th>warpwise 4 wide unroll 2</th><td>83.42</td><td>4.93</td>
+                </tr>
+              </tbody>
+            </table>
+            <small>* Time has been measured on 1080p input for GK107 with 2 SMX (1 GHz), 128-bit GDDR5</small>
+          </section>
+        </section>
+
+        <section>
+          <h2>Transpose</h2>
+          <section>
+            <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+              <math display="block">
+                <mstyle>
+                  <msub>
+                    <mo>D</mo>
+                    <mrow>
+                      <mi>i,j</mi>
+                    </mrow>
+                  </msub>
+                  <mo>=</mo>
+                  <msub>
+                    <mo>S</mo>
+                    <mrow>
+                      <mi>j,i</mi>
+                    </mrow>
+                  </msub>
+                </mstyle>
+              </math>
+            </blockquote>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;<span class="keyword">__global__</span>
+void transposeNaive(const <span class="cls">DPtr</span>&lt;T&gt; idata, <span class="cls">DPtr</span>&lt;T&gt; odata, int cols, int rows)
+{
+    int xIndex = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>;
+    int yIndex = <span class="keyword">blockIdx.y</span> * <span class="keyword">blockDim.y</span> + <span class="keyword">threadIdx.y</span>;
+
+    odata.row(xIndex)[yIndex] = idata.row(yIndex)[xIndex];
+}</code></pre>
+            <img src="images/c3/tr_mat.svg" width="60%" class="simple">
+          </section>
+
+          <section>
+            <h3>Coalesce memory access: smem usage</h3>
+            <ul>
+              <li>Split the input matrix into tiles, assigning <b>one thread block for one tile</b>. Tile size (in elements) and block size (in threads) are not necessarily the same.</li>
+              <li>Load tile in coalesced fashion to smem -> read from smem by column -> write to destination in coalesced fashion.</li>
+            </ul>
+            <img src="images/c3/transpose.svg" class="simple">
+          </section>
+
+          <section>
+            <h3>Coalesce memory access: smem usage code</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;<span class="keyword">__global__</span>
+void transposeCoalesced(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
+{
+    <span class="keyword">__shared__</span> float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM];
+
+    int xIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
+    int yIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
+        tile[<span class="keyword">threadIdx.y</span> + i][<span class="keyword">threadIdx.x</span>] = idata.row(yIndex + i)[xIndex];
+
+    __syncthreads();
+
+    xIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
+    yIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
+        odata.row(yIndex + i)[xIndex] = tile[<span class="keyword">threadIdx.x</span>][<span class="keyword">threadIdx.y</span> + i];
+}</code></pre>
+          </section>
+
+          <section>
+            <h3>Smem accesses: avoid bank conflicts</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;<span class="keyword">__global__</span>
+void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
+{
+    <span class="keyword">__shared__</span> float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM <b>+ 1</b>];
+
+    int xIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
+    int yIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
+        tile[<span class="keyword">threadIdx.y</span> + i][<span class="keyword">threadIdx.x</span>] = idata.row(yIndex + i)[xIndex];
+
+    __syncthreads();
+
+    xIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
+    yIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
+        odata.row(yIndex + i)[xIndex] = tile[<span class="keyword">threadIdx.x</span>][<span class="keyword">threadIdx.y</span> + i];
+}</code></pre>
+          </section>
+
+          <section>
+            <h3>Warp shuffle</h3>
+            <img src="images/c2/shuffle.png" class="simple">
+          </section>
+
+          <section>
+            <h3>Transpose shuffle</h3>
+            <img src="images/c3/traspose_shuffle.svg" class="simple">
+          </section>
+
+          <section>
+            <h3>Transpose shuffle code</h3>
+            <pre style="width:100%;"><code class="cpp"><span class="keyword">__global__</span> void transposeShuffle(
+    const <span style="color:#FF9C33;">DPtr32</span> idata, <span style="color:#FF9C33;">DPtr32</span> odata, int cols, int rows)
+{
+    int xIndex = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>;
+    int yIndex = <span class="keyword">blockIdx.y</span> * <span class="keyword">blockDim.y</span> + <span class="keyword">threadIdx.y</span>;
+    int yIndex1 = yIndex * SHUFFLE_ELEMENTS_VECTORS;
+
+    yIndex *= SHUFFLE_ELEMENTS_PERF_WARP;
+
+    int4 reg0, reg1;
+
+    reg0.x = idata.row(yIndex + 0)[xIndex]; reg0.y = idata.row(yIndex + 1)[xIndex];
+    reg0.z = idata.row(yIndex + 2)[xIndex]; reg0.w = idata.row(yIndex + 3)[xIndex];
+
+    reg1.x = idata.row(yIndex + 4)[xIndex]; reg1.y = idata.row(yIndex + 5)[xIndex];
+    reg1.z = idata.row(yIndex + 6)[xIndex]; reg1.w = idata.row(yIndex + 7)[xIndex];
+</code></pre>
+          <p>continued on the next slide...</p>
+          </section>
+          <section>
+            <h3>Transpose shuffle code (cont.)</h3>
+            <pre style="width:100%;"><code class="cpp">
+    unsigned int isEven = laneIsEven<unsigned int>();
+    int4 target = isEven ? reg1 : reg0;
+
+    target.x = <span style="color:#66FF33;">__shfl_xor</span>(target.x, 1);
+    target.y = <span style="color:#66FF33;">__shfl_xor</span>(target.y, 1);
+    target.z = <span style="color:#66FF33;">__shfl_xor</span>(target.z, 1);
+    target.w = <span style="color:#66FF33;">__shfl_xor</span>(target.w, 1);
+
+    const int oIndexY = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + (<span class="keyword">threadIdx.x</span> >> 1) * 2;
+    const int oIndexX = yIndex1 + (isEven == 0);
+
+    if (isEven) reg1 = target; else reg0 = target;
+
+    odata(oIndexY + 0, oIndexX, reg0);
+    odata(oIndexY + 1, oIndexX, reg1);
+}</code></pre>
+          </section>
+
+          <section>
+            <h3>Results</h3>
+              <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>approach</th>
+                  <th>time*, ms</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th>Copy</th>                    <td>0.485622</td></tr>
+                <tr><th>CopySharedMem</th>           <td>0.494275</td></tr>
+                <tr><th>CopySharedMemPlus1</th>      <td>0.499900</td></tr>
+                <tr><th><b>TransposeCoalescedPlus1</b></th> <td>0.568909</td></tr>
+                <tr><th>TransposeCoalesced</th>      <td>0.807763</td></tr>
+                <tr><th>TransposeShuffle</th>        <td>0.653080</td></tr>
+                <tr><th>TransposeNaive</th>          <td>1.469810</td></tr>
+                <tr><th>TransposeNaiveBlock</th>     <td>1.734700</td></tr>
+              </tbody>
+            </table>
+            <small>* Time has been measured on 1080p input for GK107 with 2 SMX (1 GHz), 128-bit GDDR5</small>
+          </section>
+        </section>
+
+<!--      <section>
+            <h2>Resize area</h2>
+          </section> -->
+
+          <section>
+            <h2>when use kernel fusion?</h2>
+            <ul>
+              <li>Batch of small kernels
+                <ul>
+                  <li>competitive solution for kernel unrolling since it improves <b>instruction per byte</b> ratio</li>
+                </ul>
+              </li>
+              <li>Append one or more small kernels to register-heavy kernel
+                <ul>
+                  <li>might affect kernel unrolling factors or launch parameters</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+
+ <!--                <section>
+                    <h2>Stencil kernel</h2>
+                    <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML">
+                                <mrow>
+                                    <munderover>
+                                        <mo>&Sum;</mo>
+                                        <mrow>
+                                            <msub>
+                                                <mi>y</mi>
+                                                <mrow>
+                                                    <mi>1</mi>
+                                                </mrow>
+                                            </msub>
+                                        </mrow>
+                                        <mrow>
+                                            <msub>
+                                                <mi>y</mi>
+                                                <mrow>
+                                                    <mi>2</mi>
+                                                </mrow>
+                                            </msub>
+                                        </mrow>
+                                    </munderover>
+                                    <munderover>
+                                        <mo>&Sum;</mo>
+                                        <mrow>
+                                            <msub>
+                                                <mi>x</mi>
+                                                <mrow>
+                                                    <mi>1</mi>
+                                                </mrow>
+                                            </msub>
+                                        </mrow>
+                                        <mrow>
+                                            <msub>
+                                                <mi>x</mi>
+                                                <mrow>
+                                                    <mi>2</mi>
+                                                </mrow>
+                                            </msub>
+                                        </mrow>
+                                    </munderover>
+                                    <mrow>
+                                        <mi>f</mi>
+                                        <mrow>
+                                            <mo>(</mo>
+                                            <mi>I</mi>
+                                            <mo>)</mo>
+                                        </mrow>
+                                    </mrow>
+                                </mrow>
+                            </math>
+                    </blockquote>
+                        <pre style="width:100%;"><code style="padding: 10px;" class="cpp">
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>Filters</h2>
+                </section>
+ -->
+        <section id="sec_1">
+          <h1>Reduction</h1>
+        </section>
+
+        <section>
+          <h2>Reduction</h2>
+          <blockquote style="width:100%" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <mrow>
+                <mo>S</mo>
+                <mi>=</mi>
+                <munderover>
+                  <mo>&Sum;</mo>
+                  <mrow>
+                    <mi>i</mi>
+                    <mi>=</mi>
+                    <mi>1</mi>
+                  </mrow>
+                  <mrow>
+                    <mi>n</mi>
+                  </mrow>
+                </munderover>
+                <mrow>
+                  <mi>f</mi>
+                  <mrow>
+                    <mo>(</mo>
+                    <msub>
+                      <mi>I</mi>
+                      <mrow>
+                        <mi>i</mi>
+                      </mrow>
+                    </msub>
+                    <mo>)</mo>
+                  </mrow>
+                </mrow>
+              </mrow>
+            </math>
+          </blockquote>
+          <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void reduceNaive(const int *idata, int *odata, <span class="keyword">size_t</span> N )
+{
+    int partial = 0;
+    <span class="keyword">size_t</span> i = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>;
+    for ( ; i < N; i += <span class="keyword">blockDim.x</span> * <span class="keyword">gridDim.x</span> )
+        partial += idata[i];
+
+    <span style="color:#66FF33;">atomicAdd</span>( odata, partial );
+}
+</code></pre>
+          <p>Naive implementation with CUDA atomics is limited by write queue atomic throughput,<br/>therefore <b>hierarchical approaches</b> are used:</p>
+          <ul>
+            <li>Grid level - meta reduction approach</li>
+            <li>Block level - block reduction approach</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Meta reduction approaches</h2>
+          <ul>
+            <li><b>Tree</b>
+              <ul>
+                <li>divide array of <b>N</b> elements by factor <b>b</b> (block size). Problem size grows with <b>N</b>. Number of blocks used:
+                  <b>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                      <mrow>
+                        <mfrac>
+                          <mrow>
+                            <mi>(N - 1)</mi>
+                          </mrow>
+                          <mrow>
+                            <mn>(b - 1)</mn>
+                          </mrow>
+                        </mfrac>
+                      </mrow>
+                    </math>
+                  </b>
+                </li>
+              </ul>
+            </li>
+            <li><b>2-level</b>
+              <ul>
+                <li>Use constant number of blocks <b>C</b>. Each block processes <b>N</b>/<b>C</b> elements.
+                Problem size independent form <b>N</b>, <b>C</b> is hardware dependent heuristic == block size <b>b</b>.
+                Number of blocks used:
+                  <b>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                      <mrow>
+                        <mi>(C + 1)</mi>
+                      </mrow>
+                    </math>
+                  </b>
+                </li>
+              </ul>
+            </li>
+            <li><b>Constant &amp; atomic</b>
+              <ul>
+                <li>one level of reduction, fixed number of blocks <b>C</b>. Each block performs block-wide reduction and stores results to gmem using atomic write.</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h2>Block reduction approaches</h2>
+          <section>
+            <h3>Ranking</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void reduceRanking(const int *idata, int *odata, <span class="keyword">size_t</span> N )
+{
+    extern <span class="keyword">__shared__</span> int* partials;
+    int thread_partial = thread_reduce(idata, N);
+    partials[<span class="keyword">threadIdx.x</span>] = sum;
+    __syncthreads();
+    if (<span class="keyword">threadIdx.x</span> &lt; 512) partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 512];
+    __syncthreads();
+    if (<span class="keyword">threadIdx.x</span> &lt; 256) partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 256];
+    __syncthreads();
+    if (<span class="keyword">threadIdx.x</span> &lt; 128) partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 128];
+     __syncthreads();
+    if (<span class="keyword">threadIdx.x</span> &lt; 64)  partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 64];
+    __syncthreads();
+    if (<span class="keyword">threadIdx.x</span> &lt; 32) warp_reduce(partials);
+    if (!<span class="keyword">threadIdx.x</span>) odata[blockIdx.x] = partials[0];
+}
+</code></pre>
+          </section>
+          <section>
+            <h3>Warp reduce</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template&lt;int SIZE&gt;<span class="keyword">
+__device__ __forceinline__</span> void warp_reduce(int val, volatile int* smem)
+{
+    #pragma unroll
+    for (int offset = SIZE &gt;&gt; 1; offset &gt;= 1 ; offset &gt;&gt;= 1 )
+        val += __shfl_xor( val, offset );
+
+    int warpId = warp::id();
+    int laneId = warp::lane();
+    if (!laneId) smem[warpId] = val;
+}</code></pre>
+          </section>
+          <section>
+            <h3>warp-centric reduction</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void reduceWarpCentric(const int *idata, int *odata, <span class="keyword">size_t</span> N )
+{
+    <span class="keyword">__shared__</span> int partials[WARP_SIZE];
+    int thread_partial = thread_reduce(idata, N);
+    warp_reduce&lt;WARP_SIZE&gt;(thread_partial, partials);
+    __syncthreads();
+
+    if (!warp::id())
+      warp_reduce&lt;NUM_WARPS_IN_BLOCK&gt;(partials[<span class="keyword">threadIdx.x</span>], partials);
+    if (!<span class="keyword">threadIdx.x</span>) odata[blockIdx.x] = partials[0];
+}</code></pre>
+          </section>
+          <section>
+            <h3>Results</h3>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>approach</th>
+                  <th>Block</th>
+                  <th>transaction, bit</th>
+                  <th>bandwidth*, GB/s</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th>warp-centric</th><td>32</td><td>32</td><td>32.58</td></tr>
+                <tr><th>warp-centric</th><td>128</td><td>32</td><td>56.07</td></tr>
+                <tr><th>warp-centric</th><td>256</td><td>32</td><td>56.32</td></tr>
+                <tr><th>warp-centric</th><td>32</td><td>128</td><td>44.22</td></tr>
+                <tr><th>warp-centric</th><td>128</td><td>128</td><td>56.10</td></tr>
+                <tr><th>warp-centric</th><td>256</td><td>128</td><td>56.74</td></tr>
+
+                <tr><th>ranking</th><td>32</td><td>32</td><td>32.32</td></tr>
+                <tr><th>ranking</th><td>128</td><td>32</td><td>55.16</td></tr>
+                <tr><th>ranking</th><td>256</td><td>32</td><td>55.36</td></tr>
+                <tr><th>ranking</th><td>32</td><td>128</td><td>44.00</td></tr>
+                <tr><th>ranking</th><td>128</td><td>128</td><td>56.56</td></tr>
+                <tr><th>ranking</th><td>256</td><td>128</td><td>57.12</td></tr>
+<!--                 <tr><th>warp-centric</th><td>32</td><td>1</td><td>8</td><td>24.02</td></tr>
+                <tr><th>ranking</th><td>64</td><td>2</td><td>12</td><td>63.13</td></tr>
+                <tr><th>ranking</th><td>128</td><td>1</td><td>24</td><td>66.83</td></tr>
+                <tr><th>warp-centric</th><td>160</td><td>4</td><td>20</td><td>67.09</td></tr> -->
+              </tbody>
+            </table>
+            <small>* Bandwidth has been measured on 1080p input for GK208 with 2 SMX (1 GHz), 64-bit GDDR5</small>
+          </section>
+        </section>
+
+<!--                 <section>
+                    <h2>Scan</h2>
+                    <section>
+                        <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML">
+                                <mrow>
+                                    <mo>[</mo>
+                                    <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
+                                    <mo>,</mo>
+                                    <msub><mi>x</mi><mrow><mi>1</mi></mrow></msub>
+                                    <mo>,</mo>
+                                    <mo>...</mo>
+                                    <mo>,</mo>
+                                    <msub><mi>x</mi><mrow><mi>n</mi><mo>-</mo><mi>1</mi></mrow></msub>
+                                    <mo>]</mo>
+                                    <mi>&#8594;</mi>
+                                    <mo>[</mo>
+                                    <mi>0</mi>
+                                    <mo>,</mo>
+                                    <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
+                                    <mo>,</mo>
+                                    <mrow>
+                                        <mo>[</mo>
+                                        <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
+                                        <mo>&#x2297;</mo>
+                                        <msub><mi>x</mi><mrow><mi>1</mi></mrow></msub>
+                                        <mo>]</mo>
+                                    </mrow>
+                                    <mo>,</mo>
+                                    <mo>...</mo>
+                                    <mo>,</mo>
+                                    <mrow>
+                                        <mo>[</mo>
+                                        <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
+                                        <mo>&#x2297;</mo>
+                                        <msub><mi>x</mi><mrow><mi>1</mi></mrow></msub>
+                                        <mo>&#x2297;</mo>
+                                        <mo>...</mo>
+                                        <mo>&#x2297;</mo>
+                                        <msub><mi>x</mi><mrow><mi>n-1</mi></mrow></msub>
+                                        <mo>]</mo>
+                                    </mrow>
+                                    <mo>]</mo>
+                                </mrow>
+                            </math>
+                        </blockquote>
+                        <p>2-step Blelloch scan approach</p>
+                        <img src="img/blelloch.png" style="padding:10px;">
+                    </section>
+                    <section>
+                        <h3>Classic meta-scan</h3>
+                        <img src="img/merill_scan.png" class="simple">
+                    </section>
+                    <section>
+                        <h3>Reduce-then-scan</h3>
+                        <img src="img/merill_reduce_scan.png" class="simple">
+                    </section>
+                    <section>
+                        <h3>Merill's approach: 2-levels reduce-then-scan</h3>
+                        <img src="img/merill_reduce_scan_2.png" class="simple">
+                    </section> -->
+<!--                     <section>
+                        <h3>Block-wide scan</h3>
+                    </section> -->
+<!--                     <section>
+                        <h3>Integral image</h3>
+                    </section> -->
+                <!-- </section> -->
+        <section id="sec_2">
+          <h1>Profiling</h1>
+        </section>
+
+        <section>
+          <h2>What to measure?</h2>
+          <ul>
+            <li><b>Wall time</b>: user will see this time.</li>
+            <li><b>GPU time</b>: specific kernel time.</li>
+            <li><b>CPU <-> GPU memory transfers time</b>:
+              <ul>
+                <li>not considered for GPU time analysis</li>
+                <li>impact wall time</li>
+              </ul>
+            </li>
+            <li>Data dependent cases timing:
+              <ul>
+                <li>worst case time</li>
+                <li>time of single iteration</li>
+                <li>consider probability</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How to measure?</h2>
+          <section>
+            <h3>system timer (Unix example)</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">#include &lt;time.h&gt;
+double runKernel(const <span class="keyword">dim3</span> grid, const <span class="keyword">dim3</span> block)
+{
+    struct timespec startTime, endTime;
+    clock_gettime(CLOCK_MONOTONIC, &startTime);
+    kernel<span class="keyword">&lt;&lt;&lt;grid, block&gt;&gt;&gt;</span>();
+    <b>cudaDeviceSynchronize();</b>
+    clock_gettime(CLOCK_MONOTONIC, &endTime);
+    int64 startNs = (int64)startTime.tv_sec * 1000000000 + startTime.tv_nsec;
+    int64 endNs   = (int64)endTime.tv_sec   * 1000000000 + endTime.tv_nsec;
+
+    return (endNs - startNs) / 10000000.; // get ms
+}</code></pre>
+            <p>preferred for wall time measurement</p>
+          </section>
+
+          <section>
+            <h3>Timing with CUDA events</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">double runKernel(const <span class="keyword">dim3</span> grid, const <span class="keyword">dim3</span> block)
+{
+    <span class="keyword">cudaEvent_t</span> start, stop;
+    cudaEventCreate(&start); cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+    kernel<span class="keyword">&lt;&lt;&lt;grid, block&gt;&gt;&gt;</span>();
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float ms;
+    cudaEventElapsedTime(&ms, start, stop);
+    cudaEventDestroy(start); cudaEventDestroy(stop);
+    return ms;
+}</code></pre>
+            <ul>
+              <li>can be used with CUDA streams without synchronization</li>
+              <!-- <li>implemented over check points for CUDA driver managed operations</li> -->
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h2>Why to profile?</h2>
+          <p><b>Profiler will not do your work for you</b>, but profiler helps</p>
+          <ul>
+            <li>to identify bottlenecks (this way is more reliable than device-side timing)</li>
+            <li>to check your hypothesis</li>
+            <li>to verify memory access patterns</li>
+            <li>to understand how hardware behaves</li>
+            <li>to collect statistic in data dependent workloads.</li>
+          </ul>
+          <p><br/><b>Think profiling and benchmarking as scientific experiments.</b></p>
+        </section>
+
+        <section>
+          <h2>Notes about profiler</h2>
+          <ul>
+            <li><b>events</b> are hardware counters, usually reported per SM
+              <ul>
+                <li>SM id selected by profiler (assuming that SMs do approximately the same amount of work)</li>
+                <li>Exceptions: L2 and DRAM counters</li>
+              </ul>
+            </li>
+            <li><b>metrics</b> computed from number of events and hardware specific properties (e.c. number of SM)</li>
+            <li>Single run can collect only a few counters
+              <ul>
+                <li>Profiler repeats kernel launches to collect all counters</li>
+              </ul>
+            </li>
+            <li>Results may vary for repeated runs</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Notes on profiler (Cont.)</h2>
+          <ul>
+            <li>Memory metrics
+              <ul>
+                <li>load/store counts from software perspective (requests)
+                  <ul><li><code>local_store_transactions</code></li></ul>
+                </li>
+                <li>read/write counts from hardware perspective (bytes transfered)
+                  <ul><li><code>l2_subp0_read_sector_misses</code></li></ul>
+                </li>
+              </ul>
+            </li>
+            <li>Counters incremented
+              <ul>
+                <li>per warp</li>
+                <li>per cache line/transaction size</li>
+                <li>per request/instruction</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>instructions/bytes ratio</h2>
+          <ul>
+            <li>Profiler counters:
+              <ul>
+                <li><b><code>instructions_issued, instructions_executed</code></b></li>
+                <li>incremented by warp, but “issued” includes replays</li>
+              </ul>
+              <ul>
+                <li><b><code>global_store_transaction, uncached_global_load_transaction</code></b></li>
+                <li>transaction can be 32,64,128 byte. Requires additional analysis to determine average.</li>
+              </ul>
+            </li>
+            <li>Compute ratio:
+              <ul><b>(warpSize X instructions_issued)</b> v.s. <b>(global_store_transaction + l1_global_load_miss) * avgTransactionSize</b></ul>
+            </li>
+          </ul>
+        </section>
+
+          <section>
+            <h2>List of events</h2>
+            <section>
+              <table class="tbl1" style="width:100%;">
+                <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>domain</th>
+                  <th>event</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th rowspan="3">texture (a)</th><td>tex{0,1,2,3}_cache_sector_{queries,misses}</td>
+                </tr>
+                <tr><td>rocache_subp{0,1,2,3}_gld_warp_count_{32,64,128}b</td></tr>
+                <tr><td>rocache_subp{0,1,2,3}_gld_thread_count_{32,64,128}b</td></tr>
+                <tr>
+                  <th rowspan="6">L2 (b)</th><td>fb_subp{0,1}_{read,write}_sectors</td>
+                </tr>
+                <tr><td>l2_subp{0,1,2,3}_total_{read,write}_sector_queries</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_{read,write}_{l1,system}_sector_queries</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_{read,write}_sector_misses</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_read_tex_sector_queries</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_read_{l1,tex}_hit_sectors</td></tr>
+
+                <tr>
+                  <th rowspan="2">LD/ST (c)</th><td>g{ld,st}_inst_{8,16,32,64,128}bit</td>
+                </tr>
+                <tr><td>rocache_gld_inst_{8,16,32,64,128}bit</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>domain</th>
+                  <th>event</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th rowspan="10">sm (d)</th><td>prof_trigger_0{0-7}</td>
+                </tr>
+                <tr><td>{shared,local}_{load,store}</td></tr>
+                <tr><td>g{ld,st}_request</td></tr>
+                <tr><td>{local,l1_shared,__l1_global}_{load,store}_transactions</td></tr>
+                <tr><td>l1_local_{load,store}_{hit,miss}</td></tr>
+                <tr><td>l1_global_load_{hit,miss}</td></tr>
+                <tr><td>uncached_global_load_transaction</td></tr>
+                <tr><td>global_store_transaction</td></tr>
+                <tr><td>shared_{load,store}_replay</td></tr>
+                <tr><td>global_{ld,st}_mem_divergence_replays</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>domain</th>
+                <th>event</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th rowspan="5">sm (d)</th><td>{threads,warps,sm_cta}_launched</td></tr>
+              <tr><td>inst_issued{1,2}</td></tr>
+              <tr><td>[thread_,not_predicated_off_thread_]inst_executed</td></tr>
+              <tr><td>{atom,gred}_count</td></tr>
+              <tr><td>active_{cycles,warps}</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section>
+        <h2>List of metrics</h2>
+        <section>
+          <table class="tbl1" style="width:100%;">
+            <colgroup>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>metric</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>g{ld,st}_requested_throughput</td></tr>
+              <tr><td>tex_cache_{hit_rate,throughput}</td></tr>
+              <tr><td>dram_{read,write}_throughput</td></tr>
+              <tr><td>nc_gld_requested_throughput</td></tr>
+              <tr><td>{local,shared}_{load,store}_throughput</td></tr>
+              <tr><td>{l2,system}_{read,write}_throughput</td></tr>
+              <tr><td>g{st,ld}_{throughput,efficiency}</td></tr>
+              <tr><td>l2_{l1,texture}_read_{hit_rate,throughput}</td></tr>
+              <tr><td>l1_cache_{global,local}_hit_rate</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <table class="tbl1" style="width:100%;">
+            <colgroup>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>metric</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>{local,shared}_{load,store}_transactions[_per_request]</td></tr>
+              <tr><td>gl{d,st}_transactions[_per_request]</td></tr>
+              <tr><td>{sysmem,dram,l2}_{read,write}_transactions</td></tr>
+              <tr><td>tex_cache_transactions</td></tr>
+              <tr><td>{inst,shared,global,global_cache,local}_replay_overhead</td></tr>
+              <tr><td>local_memory_overhead</td></tr>
+              <tr><td>shared_efficiency</td></tr>
+
+              <tr><td>achieved_occupancy</td></tr>
+              <tr><td>sm_efficiency[_instance]</td></tr>
+              <tr><td>ipc[_instance]</td></tr>
+              <tr><td>issued_ipc</td></tr>
+              <tr><td>inst_per_warp</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <table class="tbl1" style="width:100%;">
+            <colgroup>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>metric</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>flops_{sp,dp}[_add,mul,fma]</td></tr>
+              <tr><td>warp_execution_efficiency</td></tr>
+
+              <tr><td>warp_nonpred_execution_efficiency</td></tr>
+              <tr><td>flops_sp_special</td></tr>
+              <tr><td>stall_{inst_fetch,exec_dependency,data_request,texture,sync,other}</td></tr>
+
+              <tr><td>{l1_shared,l2,tex,dram,system}_utilization</td></tr>
+              <tr><td>{cf,ldst}_{issued,executed}</td></tr>
+              <tr><td>{ldst,alu,cf,tex}_fu_utilization</td></tr>
+              <tr><td>issue_slot_utilization</td></tr>
+              <tr><td>inst_{issued,executed}</td></tr>
+              <tr><td>issue_slots</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+        <section>
+          <h2>ROI profiling</h2>
+          <pre style="width:100%;"><code style="padding: 10px;" class="cpp">#include &lt;cuda_profiler_api.h&gt;
+
+// algorithm setup code
+udaProfilerStart();
+perf_test_cuda_accelerated_code();
+cudaProfilerStop();
+</code></pre>
+          <ul>
+            <li>profile only part that you are optimizing now</li>
+            <li>shorter profiler log</li>
+            <li>do not significantly overhead your code runtime</li>
+            <li>used with <b><code>--profile-from-start off</code></b> nvprof option</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Profile for memory</h2>
+          <ul>
+            <li><b>Throughput</b>
+              <ol>
+                <li>count bytes requested by the threads / application code</li>
+                <li>count bytes moved by the hardware (L2/DRAM)</li>
+              </ol>
+            </li>
+            <li>Access pattern analysis
+              <ul>
+                <li><code><b>g{ld,st}_transactions_per_request</b></code></li>
+              </ul>
+            </li>
+            <li>Throughput analysis
+              <ul>
+                <li>compare application HW throughput to specified for your GPU</li>
+                <li><code><b>g{ld,st}_requested_throughput</b></code></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Case study: Matrix transpose</h2>
+          <section>
+            <pre><code class="bash">& nvprof --devices 2 ./bin/demo_bench</code></pre>
+            <img src="images/c3/cs1.png" class="simple" style="padding:10px; background-color:#000;">
+          </section>
+          <section>
+            <pre><code class="bash">& nvprof --devices 2 \
+--metrics gld_transactions_per_request,gst_transactions_per_request \
+./bin/demo_bench</code></pre>
+            <img src="images/c3/cs2.png" class="simple" style="padding:10px; background-color:#000;">
+          </section>
+          <section>
+            <pre><code class="bash">& nvprof --devices 2 --metrics shared_replay_overhead ./bin/demo_bench</code></pre>
+            <img src="images/c3/cs3.png" class="simple" style="padding:10px; background-color:#000;">
+            <img src="images/c3/cs4.png" class="simple" style="padding:10px; background-color:#000;">
+          </section>
+        </section>
+
+        <section>
+          <h2>Code paths analysis</h2>
+          <ul>
+            <li>The main idea: determine performance limiters through measuring different parts independently</li>
+            <li>Simple case: time memory-only and math-only versions of the kernel</li>
+            <li>Shows how well memory operations are overlapped with arithmetic: compare the sum of mem-only and math-only times to full-kernel time</li>
+        </ul>
+        <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template&lt;typename T&gt;
+<span class="keyword">__global__</span> void
+benchmark_contiguous_direct_load(T* s, typename T::value_type* r, bool doStore)
+{
+   int global_index = threadIdx.x + blockDim.x * blockIdx.x;
+   T data = s[global_index];
+   asm (""::: "memory");
+   if (s && doStore)
+       r[global_index] = sum(data);
+}</code></pre>
+        </section>
+        <section>
+          <h2>device side timing</h2>
+          <ul>
+            <li>Device timer located on ROP/SM depending on hardware revision.</li>
+            <li>It's relatively easy to compute per thread values but hard to analyze kernel performance
+            due to grid serialization</li>
+            <li>sometimes is suitable for benchmarking</li>
+          </ul>
+          <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template&lt;typename T, typename D, typename L&gt;<span class="keyword">__global__</span>
+void latency_kernel(T** a, int len, int stride, int inner_its, D* latency, L func)
+{
+    D start_time, end_time;
+    volatile D sum_time = 0;
+    for (int k = 0; k < inner_its; ++k)
+    {
+        T *j = ((T*) a) + threadIdx.y * len + threadIdx.x;
+        start_time = clock64();
+        for (int curr = 0; curr < len / stride; ++curr) j = func(j);
+        end_time = clock64(); sum_time += (end_time - start_time);
+    }
+    if (!threadIdx.x) atomicAdd(latency, sum_time);
+}</code></pre>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013</h3>
+        </section>
+      </div>
+    </div>
+    <script src="3dparty/reveal/lib/js/head.min.js"></script>
+    <script src="3dparty/reveal/js/reveal.min.js"></script>
+    <script>
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: false,
+                rollingLinks: false,
+
+                theme: Reveal.getQueryHash().theme,
+                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+                dependencies: [
+                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+    </script>
+  </body>
+</html>

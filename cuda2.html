@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Code GPU with CUDA</title>
+
+    <meta name="description" content="CUDA cource: Code GPU with CUDA">
+    <meta name="author" content="cuda.geek">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
+    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
+    <link rel="stylesheet" href="stylesheets/cuda.css">
+    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <script>
+      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
+        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+            <h1>Code GPU with CUDA</h1>
+            <h3>Common optimizations</h3>
+            <small>Created by Marina Kolpakova (<a href="http://github.com/cuda-geek">cuda.geek</a>) for <a href="http://itseez.com">Itseez</a></small>
+        </section>
+
+        <section>
+          <section>
+            <h2>Outline</h2>
+            <ul>
+              <li><a href="#/sec_0" style="color:#fff;">CUDA introduction</a></li>
+              <li><a href="#/sec_1" style="color:#fff;">Device code optimization</a>
+                <ul>
+                  <li><a href="#/sec_0_0" style="color:#fff;">Improve parallelism</a></li>
+                  <li><a href="#/sec_0_1" style="color:#fff;">Improve memory accesses</a></li>
+                  <li><a href="#/sec_0_2" style="color:#fff;">Improve control flow</a></li>
+                </ul>
+              </li>
+              <li><a href="#/sec_2" style="color:#fff;">Common principles</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2>Out of scope</h2>
+            <ul>
+              <li>CUDA API</li>
+              <li>Dynamic parallelism (sm_35)</li>
+              <li>Surfaces and layered textures</li>
+              <li>OpenGL interoperability</li>
+            </ul>
+          </section>
+        </section>
+
+        <section id="sec_0">
+          <h1>CUDA introduction</h1>
+        </section>
+
+        <section>
+          <h2>Used terminology</h2>
+          <ul class="none">
+            <li><b>Device</b> - CUDA capable NVIDIA GPU.</li>
+            <li><b>Device code</b> - code, executed on the device.</li>
+            <li><b>Host</b> - x86/x64/arm CPU.</li>
+            <li><b>Host code</b> - code, executed on the host.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>C.U.D.A.</h2>
+          <p> <b>C.U.D.A.</b> is a <b>C</b>ompute <b>U</b>nified <b>D</b>evice <b>A</b>rhitecture.</p>
+          <ol>
+            <li>Capable Hardware</li>
+            <li>Device ISA</li>
+            <li>Compiler, GPU assembler</li>
+            <li>NVIDIA driver</li>
+            <li>C++ based H.L. language, CUDA Runtime</li>
+          </ol>
+          <p>CUDA defines <b>programming</b>, <b>execution</b> and <b>memory</b> models</p>
+        </section>
+
+        <section>
+          <h2>Programming model</h2>
+          <section>
+            <p>Work for GPU threads represented as <b>kernel</b> (function that is marked with <span style="color:rgb(227, 206, 171);"> __global__</span> keyword)</p>
+              <pre><code class="cpp"><span class="keyword">  __global__</span> void kernel()
+  {
+    //
+  }</code></pre>
+            <ul>
+              <li>kernel is an entry point into device code</li>
+              <li>kernel represents a task for <b>single</b> thread (<b>scalar notation</b>)</li>
+              <li>Every thread in a particular grid executes the same kernel function</li>
+              <li>Threads use theirs <b>threadIdx</b> and <b>blockIdx</b> to dispatch work for it.</li>
+            </ul>
+          </section>
+          <section>
+            <p>Kernel is executed by many threads</p>
+            <img class="simple" src="images/c2/threads.svg" alt="0">
+          </section>
+          <section>
+            <p>Threads are grouped in blocks</p>
+            <div style="align:left;">
+              <img class="simple" src="images/c2/blocks.svg" alt="0">
+              <p>Each thread has a thread ID</p>
+            </div>
+          </section>
+          <section>
+            <p>Thread blocks form an execution grid</p>
+            <img class="simple" src="images/c2/grid.svg" alt="0" width="70%">
+            <p>Each block has a block ID</p>
+          </section>
+        </section>
+
+        <section>
+          <h2>Execution (HW mapping) model</h2>
+          <section>
+            <p>Single thread is executed on core</p>
+            <img class="simple" width="60%" src="images/c2/thread_core.svg" alt="0">
+          </section>
+          <section>
+            <p class="left"> Each block is executed by one SM and does not migrate.</br> Number of concurrent blocks that
+            can reside on SM depends on available resources. Warps from thread block can be in one of the following states:
+            <b>Executed</b>, <b>Ready</b>, <b>Wait</b>, <b>Resident</b></p>
+            <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
+          </section>
+          <section>
+            <ul class="left">
+              <li>Threads in a block can cooperate via <b>shared memory</b> and <b>synchronization</b>.</li>
+              <li>It's impossible to cooperate between threads from different blocks.</li>
+            </ul>
+            <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
+          </section>
+          <section>
+            <p>One or multiple (sm_20+) kernels are executed on device.</p>
+            <img class="simple" src="images/c2/grid_gpu.svg" alt="gid on GPU">
+            </section>
+        </section>
+
+        <section>
+          <h2>Memory model</h2>
+          <section>
+            <p>Thread has its own registers</p>
+            <img class="simple" width="30%" src="images/c2/reg.svg" alt="0">
+          </section>
+          <section>
+            <p>Thread has its own local memory (like stack)</p>
+            <img class="simple" width="30%" src="images/c2/local.svg" alt="0">
+          </section>
+          <section>
+            <p>Block has shared memory.<br/>Pointer to shared memory is valid while block is resident.</p>
+            <img class="simple" width="45%" src="images/c2/shared.svg" alt="0">
+            <pre><code class="cpp">
+              <span class="keyword">__shared__</span> float buffer[CTA_SIZE];
+            </code></pre>
+          </section>
+          <section>
+            <p>Grid able to access global and constant memory</p>
+            <img class="simple" width="50%" src="images/c2/global.svg" alt="0">
+          </section>
+        </section>
+
+        <section>
+          <h2>Basic CUDA kernel</h2>
+          <pre><code class="cpp"><span class="keyword">__global__</span> void kernel(float *in, float *out)
+{
+  int tid = <b>blockIdx.x</b> * <b>blockDim.x</b> + <b>threadIdx.x</b>;
+  out[tid] = in[tid];
+}</code></pre>
+          <ol>
+            <li>retrieve position in grid (widely named <b>tid</b>)</li>
+            <li>load data</li>
+            <li>compute</li>
+            <li>write back the result</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>CUDA usage flow</h2>
+          <pre><code class="cpp">void execute_kernel(const* float host_in, float* host_out, int size)
+{
+  float* device_in, * device_out;
+  // allocate memory
+  cudaMemcpy(device_in, host_in, cudaMemcpyHostToDevice);
+  dim3 block(256);
+  dim3 grid(size / 256);
+  <b>kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;</b>(device_in, device_out);
+  cudaThreadSynchronize();
+  cudaMemcpy(host_out, device_out, cudaMemcpyDeviceToHost);
+}</code></pre>
+          <ol>
+            <li>Upload data to GPU memory</li>
+            <li><b>Configure kernel launch</b></li>
+            <li><b>Execute kernel</b></li>
+            <li>Wait till completion</li>
+            <li>Download results to CPU memory</li>
+          </ol>
+        </section>
+
+        <section id="sec_1">
+          <h1>Device code<br/>optimization</h1>
+        </section>
+
+        <section>
+          <h2>How Identify performance limiters</h2>
+          <ul class="none">
+            <li>
+              <b>Time</b>
+              <ul>
+                <li>Subsample when measure performance.</li>
+                <li>Determine your code wall time. You'll optimize it.</li>
+              </ul>
+            </li>
+            <li>
+              <b>Profile</b>
+              <ul>
+                <li>Collect metrics and events.</li>
+                <li>Determine bounding factors (e.c. memory, divergence).</li>
+              </ul>
+            </li>
+            <li>
+              <b>Prototype</b>
+              <ul>
+                <li>Prototype kernel parts separately and time them.</li>
+                <li>Determine memory access or math patterns.</li>
+              </ul>
+            </li>
+            <li>
+              <b>(Micro)benchmark</b>
+              <ul>
+                <li>Determine hardware characteristics.</li>
+                <li>Tune for particular architecture, GPU class.</li>
+              </ul>
+            </li>
+            <li><b>Look into SASS</b>
+            </li>
+          </ul>
+        </section>
+
+        <section id="sec_0_0">
+          <h2>Factors that bound performance</h2>
+          <p>Optimize for GPU <b><mrow><mo>&#x2243;</mo></mrow></b> Optimize for <b>latency</b>.<br/>
+          SIMT architecture makes GPU to be latent at all:</p>
+          <ul>
+            <li>gmem (~350)</li>
+            <li>caches (L1: ~56 , L2: ~160)</li>
+            <li>registers (~10 cycles for FADD)</li>
+          </ul>
+          <blockquote style="width:100%" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+          Hiding latency is the only GPU specific optimization principle.
+          </blockquote>
+          <p>Factors that pervert latency hiding:</p>
+          <ul>
+            <li>Insufficient parallelism</li>
+            <li>Inefficient memory accesses</li>
+            <li>Inefficient control flow</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Little's law</h2>
+          <ul class="none">
+            <li><b>Throughput</b> is how many operations are performed in one cycle.</li>
+            <li><b>Latency</b> is how many cycles pipeline stalls before other depended operation. </li>
+          </ul>
+          <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+            <b>
+              <mrow>
+                <mo>L</mo>
+                <mo>=</mo>
+                <mi>&#x3bb;<!--GREEK SMALL LETTER LAMDA--></mi>
+                <mo>W</mo>
+              </mrow>
+            </b>
+            <br/>
+            <p>Warps on fly (L) = Throughput (<mrow><mi>&#x3bb;<!--GREEK SMALL LETTER LAMDA--></mi></mrow>) x Latency (W)</p>
+          </blockquote>
+          <img src="images/c2/little.svg" width="50%" class="simple">
+          <small>Example: GPU with 8 operations per clock and 18 clock latency </small>
+        </section>
+
+        <section>
+          <h2>Little's law - FFMA example</h2>
+          <ul class="none">
+            <li><b>Fermi</b> GF100
+              <ul>
+                <li>throughput: 32 operations per clock (1 warp)</li>
+                <li>latency: ~18 clocks</li>
+                <li>max resident warps per SM: 24</li>
+                <li>inventory: 1 * 18 = <b>18 warps</b> on fly i.e. ready to execute.</li>
+              </ul>
+            </li>
+            <li><b>Kepler</b> GK110
+              <ul>
+                  <li>throughput: 128 (if no ILP) operations per clock (4 warps)</li>
+                  <li>latency: ~10 clocks</li>
+                  <li>max resident warps per SM: 64</li>
+                  <li>inventory: 4 * 10 = <b>40 warps</b> on fly i.e. ready to execute.</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Concurrent warp execution</h2>
+          <img src="images/c2/scheduling.png" width="60%">
+        </section>
+
+        <section>
+          <h2>TLP &amp; ILP</h2>
+          <ul class="none">
+            <li><b>T</b>hread <b>L</b>evel <b>P</b>arallelism
+              <ul>
+                <li>run more warps per SM</li>
+                <li>bounding factors:
+                  <ul>
+                    <li>bad launch configuration</li>
+                    <li>resource consuming kernels</li>
+                    <li>not well parallelized code</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><b>I</b>nstruction <b>L</b>evel <b>P</b>arallelism
+              <ul>
+                <li>instruction dual issue</li>
+                <li>bounding factors - pipeline hazards
+                  <ul>
+                    <li>structural hazards</li>
+                    <li>data hazards</li>
+                  </ul>
+                </li>
+              </ul>
+
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Improve TLP</h2>
+          <ul>
+            <li><b>Occupancy</b> is actual number of warps running concurrently on a multiprocessor divided by maximum number
+            of warps that can be run concurrently by hardware.</li>
+            <li>Kepler can keep up to 64 resident warps belonging to 16 blocks BUT you need recourses for them: registers, smem.</li>
+            <li>Kepler has 64K x 32-bit registers or <br/>65536<small style="vertical-align:bottom;">registers</small>
+          / 64 <small style="vertical-align:bottom;">warps</small> /
+          32 <small style="vertical-align:bottom;">warp_size</small> = <b>32 32bit-registers/thread</b>.</li>
+          </ul>
+          <b><br/>Improve occupancy to achieve better TLP</b>
+          <!-- <p>Think about work repartitioning, if your kernel is to heavy</p> -->
+        </section>
+
+        <section>
+          <h2>Configuration selection</h2>
+          <b>Block configuration itself can affect occupancy.</b>
+          <img class="simple" src="images/c2/block_conf.svg" width="80%">
+          <ul>
+            <li>Number of threads per threadblock</li>
+            <li>Number of threadblocks</li>
+            <li>Amount of work per threadblock</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Improve ILP</h2>
+          <ul>
+            <li>Kernel unrolling: process more elements by thread
+            <pre width="100%"><code class="cpp"><span class="keyword">__global__</span> void unrolled(const float* in, float* out )
+{
+  const int tid = blockDim.x * blockIdx.x + threadIdx.x;
+  const int totalThrads = blockDim.x * gridDim.x;
+  const float tmp1 = f(in[tid]);
+  const float tmp2 = f(in[tid +totalThrads]);
+  out[tid] = tmp1;
+  out[tid + totalThrads] = tmp2;
+}
+</code></pre>
+            </li>
+            <li>Loop unrolling in device code(<b>#pragma unroll CONST_EXPR</b>): improve number of independent operations.
+            <pre width="100%"><code class="cpp"><span class="keyword">#pragma unroll 2
+for( int i = 0; i < N_ITERATIONS; i++ )
+</code></pre></li>
+            <li>Techniques used for increasing ILP on CPU are suitable</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>for modern GPUs ILP required</h2>
+          <p>sm_21+ can not achieve peak utilization without ILP.</p>
+          <ul>
+            <li>Kepler: 4 warp schedulers, dual-issue each. 192 compute cores process up to 6 warps each clock.
+            If there is no ILP only 128 of 192 cores are used. Compute cores utilization: <b>0.6(6)</b></li>
+            <li>Fermi (sm_21): 2 warp schedulers, dual-issue each. 48 compute cores process 3 warps each 2 clock.
+            If there is no ILP only 32 of 48 cores are used. Compute cores  utilization: <b>0.6(6)</b></li>
+          </ul>
+        </section>
+
+        <section id="sec_0_1">
+          <h1>Memory<br/>Optimization</h1>
+        </section>
+
+        <section>
+          <h2>Memory Types</h2>
+          <table class="tbl1">
+            <colgroup>
+              <col></col>
+              <col></col>
+              <col></col>
+              <col></col>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Memory</th>
+                <th>Scope</th>
+                <th>Location</th>
+                <th>Cached</th>
+                <th>Access</th>
+                <th>Lifetime</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Register</th><td>Thread</td><td>On-chip</td><td>N/A</td><td>R/W</td><td>Thread</td>
+              </tr>
+              <tr>
+                <th>Local</th><td>Thread</td><td>Off-chip</td><td>L1/L2</td><td>R/W</td><td>Thread</td>
+              </tr>
+              <tr>
+                <th>Shared</th><td>Block</td><td>On-chip</td><td>N/A</td><td>R/W</td><td>Block</td>
+              </tr>
+              <tr>
+                <th>Global</th><td>Grid + Host</td><td>Off-chip</td><td>L2</td><td>R/W</td><td>App</td>
+              </tr>
+              <tr>
+                <th>Constant</th><td>Grid + Host</td><td>Off-chip</td><td>L1,L2,L3</td><td>R</td><td>App</td>
+              </tr>
+              <tr>
+                <th>Texture</th><td>Grid + Host</td><td>Off-chip</td><td>L1,L2</td><td>R</td><td>App</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Memory types (Cont.)</h2>
+          <section>
+            <img src="images/c1/gk107b.jpg" width="58%">
+          </section>
+          <section>
+            <img src="images/c2/smx_sm.png" width="55%">
+          </section>
+        </section>
+
+        <section>
+          <h2>GPU caches</h2>
+            <b>GPU caches are not intended for the same use as CPU caches</b>
+            <ul>
+              <li><b>Not aimed at temporal reuse</b>. Smaller then CPU size (especially per thread, e.c.
+              Fermi: 48 Kb L1, 1536 threads on fly, cache/thread = 1 x 128-byte line).</li>
+              <li><b>Aimed at spatial reuse</b>, intended to smooth some access patterns, help with spilled registers and stack.</li>
+              <li><b>Do not tile relying on block size</b>, lines likely become evicted next few access
+                <ul>
+                  <li>If it is possible to tile use smem. Same latency, fully programmable</li>
+                </ul>
+              </li>
+              <li><b>L2 aimed to speed up atomics and gmem writes.</b></li>
+            </ul>
+        </section>
+
+        <section>
+          <h2>GMEM</h2>
+          <p>Learn your access pattern before thinking about latency hiding and try <b>try not to thresh the memory bus</b>.</p>
+          <p>Four general categories of inefficient memory access patterns:</p>
+          <ul>
+            <li><b>Miss-aligned</b> (offset) warp addresses</li>
+            <li><b>Strided</b> access between threads within a warp</li>
+            <li><b>Thread-affine</b> (each thread in a warp accesses a large contiguous region)</li>
+            <li><b>Irregular</b> (scattered) addresses</li>
+          </ul>
+          <p>Always be aware about bytes you actually need and bytes you transfer through the bus</p>
+        </section>
+
+        <section>
+          <h2>GMEM - Miss-aligned</h2>
+          <img src="images/c1/unaligned.svg" class="simple">
+          <ul>
+            <li>Add extra padding for data to force alignment</li>
+            <li>Use read-only texture L1</li>
+            <li>Combination of above</li>
+          </ul>
+          <!-- <img src="img/p11.png"> -->
+        </section>
+
+        <section>
+          <h2>GMEM - Strided</h2>
+          <img src="images/c2/stridden.svg" class="simple">
+          <section>
+            <ul>
+              <li>If pattern is regular, try to change data layout: <abbr title="Array of structures">AoS</abbr> -> <abbr title="Structure of arrays">SoA</abbr></li>
+            </ul>
+            <img src="images/c2/soa.svg" class="simple">
+          </section>
+          <section>
+            <ul>
+              <li>Use smem to correct access pattern.
+                <ol>
+                  <li>load gmem -> smem with best coalescing</li>
+                  <li>synchronize</li>
+                  <li>use</li>
+                </ol>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <ul>
+              <li>Use warp shuffle to permute elements for warp
+                <ol>
+                  <li>load needed by warp elements coalesced</li>
+                  <li>permute</li>
+                  <li>use</li>
+                </ol>
+              </li>
+              <img src="images/c2/shuffle.png" style="align:center;">
+              </li>
+            </ul>
+          </section>
+          <section>
+            <ul>
+              <li>Use proper caching strategy</li>
+              <ul>
+                <li><b>cg</b> - cache global.</li>
+                <li><b>ldg</b> - cache in texture L1.</li>
+                <li><b>cs</b> - cache streaming.</li>
+              </ul>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h2>GMEM - Thread-affine</h2>
+          <section>
+            <p>Each thread accesses relatively long contiguous memory region</p>
+            <img src="images/c2/th_affine.svg" class="simple">
+            <ul>
+              <li>Load big structures using AoS</li>
+              <li>Thread loads contiguous region of data</li>
+              <li>All threads load the same data</li>
+            </ul>
+          </section>
+          <section>
+            <p>Work assignment</p>
+            <pre><code class="cpp"> int tid = blockIdx.x * blockDim.x + threadIdx.x;</code></pre>
+            <pre><code class="cpp"> int threadN = N / blockDim.x * gridDim.x;
+  for (size_t i = tid * N; i < (tid + 1) * N; ++i )
+  {
+    sum =+ in[i]
+  }</code></pre>
+            <pre><code class="cpp"> for (size_t i = tid; i < N; i += blockDim.x * gridDim.x )
+  {
+    sum =+ in[i]
+  }</code></pre>
+          </section>
+          <section>
+            <h3>Uniform load</h3>
+            <p>All threads in a block access the same address as read only.</p>
+            <p>Memory operation uses constant 3-levels of memory caches</p>
+            <ul>
+              <li>Generated by compiler</li>
+              <li>Available as PTX asm insertion</li>
+            </ul>
+            <pre><code class="cpp"><span class="keyword">__device__ __forceinline__</span> float __ldu(const float* ptr)
+{
+  float val;
+  asm ("ldu.global.f32 %0, [%1];" : "="f(val) : l(ptr));
+  return val;
+}</code></pre>
+          </section>
+        </section>
+
+        <section>
+          <h2>GMEM - Irregular</h2>
+          <p>Random memory access. Threads in a warp access many lines, strides are irregular.</p>
+          <!-- <img src="img/p3.png" class="simple"> -->
+          <ul>
+            <li>Improve data locality</li>
+            <li>Try 2D-local arrays (Morton-ordered)</li>
+            <li>Use read-only texture L1</li>
+            <li>Kernel fission to localize the worst case.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Texture</h2>
+          <ul>
+              <li>Smaller transactions and different caching (dedicated L1, 48Kb, ~104 clock latency)</li>
+              <li>Cache is not polluted by other GMEM loads, separate partition for each warp scheduler helps to prevent cache threshing</li>
+              <li>Possible hardware interpolation (Note: 9-bit alpha)</li>
+              <li>Hardware handling of out-of-bound access</li>
+          </ul>
+          <p>Kepler improvements:</p>
+          <ul>
+            <li>sm_30+ Bindless textures. No global static variables. Can be used in threaded code</li>
+            <li>sm_32+ GMEM access through texture cache bypassing interpolation units.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>SMEM - Banking</h2>
+          <!-- <section> -->
+            <!-- <h4>No bank conflict</h4> -->
+            <!-- <img src="img/smem-no-bk.png"> -->
+          <!-- </section> -->
+          <!-- <section> -->
+            <!-- <h4>4- and 8-way bank conflicts</h4> -->
+            <!-- <img src="img/smem-bk.png"> -->
+          <!-- </section> -->
+          <section>
+            <h3>Kepler - 32-bit and 64-bit modes</h3>
+            <img src="images/c1/banks.svg">
+            <p>special case -2D smem usage (Fermi example)</p>
+            <pre><code class="cpp"><span class="keyword"> __shared__</span> float smem_buffer [32][32 + 1] </code></pre>
+          </section>
+          <!-- <p>note about throughput and volatile</p> -->
+        </section>
+
+        <section>
+          <h2>SMEM</h2>
+          <p><b>The common advices are:</b></p>
+          <ul>
+            <li>use smem to improve memory access pattern</li>
+            <li>use smem for stencil processing</li>
+          </ul>
+          <p><b>But the gap: smem v.s. math throughput has increased</b></p>
+          <ul>
+            <li>Tesla: 16(32bit) banks vs 8 thread processors (2:1)</li>
+            <li>GF100: 32(32bit) banks vs 32 thread processors (1:1)</li>
+            <li>GF104: 32(32bit) banks vs 48 thread processors (2:3)</li>
+            <li>Kepler: 32(64bit) banks vs 192 thread processors (1:3)</li>
+          </ul>
+          <p>Max size 48Kb (49152b), assume max occupancy 64x32,<br/>so <b>24</b> bytes per thread.<br/>
+          More intensive memory usage affects occupancy.</p>
+        </section>
+
+        <section>
+          <h2>SMEM (Cont.)</h2>
+          <p>smem + L1 use the same 64KB. Program-configurable split:</p>
+          <ul>
+            <li>Fermi: 48:16, 16:48</li>
+            <li>Kepler: 48:16, 16:48, 32:32</li>
+          </ul>
+          <p><b>cudaDeviceSetCacheConfig(), cudaFuncSetCacheConfig()</b></p>
+          <ul>
+            <li>prefer L1 to improve lmem usage</li>
+            <li>prefer smem for stencil kernels</li>
+          </ul>
+          <p>smen often used for:</p>
+          <ul>
+            <li>data sharing across the block</li>
+            <li>inter-block communication</li>
+            <li>bock level buffers (for scan or reduction)</li>
+            <li>for stencil code</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h2>LMEM</h2>
+          <p>Local memory is a stack memory analogy: call stack, register spilling.
+          Note: Both Local memory reads/writes are cached in L1.</p>
+          <ul style="none">
+            <li>Registers are for automatic variables
+            <pre><code class="cpp"> int a = 42;</code></pre>
+            </li>
+            <li>Volatile keyword enforce spilling</li>
+            <li>Registers do not support indexing: local memory is used for local arrays
+              <pre><code class="cpp"> int b[ SIZE ] = {0,};</code></pre>
+            </li>
+            <li>Register spilling so more instructions and memory traffic</li>
+          </ul>
+        </section>
+        <section>
+          <h2>spilling control</h2>
+            <ol>
+              <li>Use <b>__launch_bounds__</b> to help compiler to select maximum amount of registers.
+                <pre width="100%"><code class="cpp"><span class="keyword">__global__</span> void <span class="keyword">__launch_bounds__</span>(
+maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
+{
+  //...
+}</code></pre>
+              </li>
+              <li>Compile with <b>-maxrregcount</b> to enforce compiler optimization for register usage and register spilling if needed</li>
+              <li>By default you run less concurrent warps per SM.</li>
+            </ol>
+        </section>
+
+        <section id="sec_1_2">
+          <h1>Control flow</h1>
+        </section>
+
+        <section>
+          <h2>Control flow</h2>
+          <section>
+            <h3>Problems</h3>
+            <ul>
+              <li><b>Warp divergence</b>: branching, early loop exit... Inspect SASS to find divergent pieces of code.</li>
+              <li><b>Work amount is data dependent</b>: decide code-patch depending on input (like classification task)</li>
+              <li><b>To many synchronization logic</b>: intensive usage of parallel data structures, need lots of atomics,
+              __sychthreads(), e.t.c.</li>
+              <li><b>Resident warps</b>: occupy resources but do nothing.</li>
+              <li><b>Big blocks</b>: tail effect.</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Solutions</h3>
+            <ul>
+              <li>Understand your problem. Select best algorithm keeping in mind GPU architecture. Maximize independent parallelism</li>
+              <li>Compiler generates branch predication with -O3 during if/switch optimization but number of instructions
+              has to be less or equal than a given threshold. Threshold = 7 if lots of divergent warps, 4 otherwise.</li>
+              <li>Adjust thread block size.</li>
+              <li>Try work queues</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Kernel Fusion and Fission</h3>
+            <ul class="none">
+              <li><b>Fusion</b>
+                <ul>
+                  <li>Replace chain of kernel calls with fused one</li>
+                  <li>Helps to save memory reads/writes. Intermediate results can be kept in registers</li>
+                  <li>Enables further ILP optimizations</li>
+                  <li>Kernels should have almost the same access pattern</li>
+                </ul>
+              </li>
+              <li><b>Fission</b>
+                <ul>
+                  <li>Replace one kernel call with sequence</li>
+                  <li>Helps to localize ineffective memory access patterns</li>
+                  <li>Insert small kernel that repacks memory (e.c. integral image)</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+        </section>
+
+        <section id="sec_2">
+          <h2>it is always advised</h2>
+          <section>
+            <ul>
+              <li>Basic CUDA Code Optimizations
+                <ul>
+                  <li>use compiler flags</li>
+                  <li>do not trick compiler</li>
+
+                  <li>use structure of arrays</li>
+                  <li>improve memory layout</li>
+                  <li>load by cache line</li>
+                  <li>process by row</li>
+                  <li>cache data in registers</li>
+
+                  <li>re-compute instead of re-load values</li>
+                  <li>keep data on GPU</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <ul>
+              <li>Conventional parallelization optimizations
+              <ul>
+                <li>use light-weight locking,</li>
+                <li>... atomics,</li>
+                <li>... and lock-free code.</li>
+                <li>minimize locking,</li>
+                <li>... memory fences,</li>
+                <li>... and volatile accesses.</li>
+              </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <ul>
+              <li>Conventional architectural optimizations
+                <ul>
+                  <li>utilize shared memory,</li>
+                  <li>... constant memory,</li>
+                  <li>... streams,</li>
+                  <li>... thread voting,</li>
+                  <li>... and rsqrtf;</li>
+                  <li>detect compute capability and number of SMs;</li>
+                  <li>tune thread count,</li>
+                  <li>... blocks per SM,</li>
+                  <li>... launch bounds,</li>
+                  <li>and L1 cache/shared-memory configuration</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013</h3>
+        </section>
+
+      </div>
+    </div>
+    <script src="3dparty/reveal/lib/js/head.min.js"></script>
+    <script src="3dparty/reveal/js/reveal.min.js"></script>
+    <script>
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: false,
+                rollingLinks: false,
+
+                theme: Reveal.getQueryHash().theme,
+                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+                dependencies: [
+                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+    </script>
+  </body>
+</html>

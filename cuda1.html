@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Code GPU with CUDA</title>
+    <meta name="description" content="Code GPU with CUDA - NVIDIA GPU Architecture">
+    <meta name="author" content="Marina Kolpakova (cuda.geek)">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
+    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
+    <link rel="stylesheet" href="stylesheets/cuda.css">
+    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <script>
+      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
+        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="3dparty/reveal/lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+            <h1>Code GPU with CUDA</h1>
+            <h3>NVIDIA GPU Architecture</h3>
+            <small>Created by Marina Kolpakova (<a href="http://github.com/cuda-geek">cuda.geek</a>) for <a href="http://itseez.com">Itseez</a></small>
+        </section>
+
+        <section>
+          <section>
+            <h2>Outline</h2>
+            <ul>
+              <li><a href="#/sec_0">SIMT Architecture</a></li>
+              <li><a href="#/sec_1" style="color:#fff;">Warp scheduling</a></li>
+              <li><a href="#/sec_2" style="color:#fff;">Memory subsystem</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2>Out of scope</h2>
+            <ul>
+              <li>Teraflops and all such a stuff.</li>
+              <li>Computer graphic.</li>
+              <li>Surfaces and layered textures</li>
+              <li>Texture interpolation routine</li>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h2>Hardware revisions</h2>
+          <p class="left"><b>S.M.</b> (shading model) - particular hardware implementation.</p>
+          <table class="tbl1">
+            <colgroup>
+              <col></col>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Generation</th>
+                <th>S. M.</th>
+                <th>GPU models</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="background-color:rgba(100,100,100,0.5);" rowspan="4">Tesla</td>
+                <td>sm_10</td>
+                <td><b>G80</b> G92(b) G94(b)</td>
+              </tr>
+              <tr>
+                <td>sm_11</td>
+                <td>G86 G84 G98 G96(b) G94(b) G92(b)</td>
+              </tr>
+              <tr>
+                <td>sm_12</td>
+                <td>GT218 GT216 GT215</td>
+              </tr>
+              <tr>
+                <td>sm_13</td>
+                <td><b>GT200</b> GT200b</td>
+              </tr>
+              <tr>
+                <td rowspan="2">Fermi</td>
+                <td>sm_20</td>
+                <td><b>GF100</b> GF110</td>
+              </tr>
+              <tr>
+                <td>sm_21</td>
+                <td><b>GF104</b> GF114 GF116 GF108 GF106</td>
+              </tr>
+              <tr>
+                <td style="background-color:rgba(100,100,100,0.5);" rowspan="3">Kepler</td>
+                <td>sm_30</td>
+                <td><b>GK104</b> GK106 <b>GK107</b></td>
+              </tr>
+              <tr>
+                <td>sm_35</td>
+                <td><b>GK110</b> GK208</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="sec_0">
+          <h1>SIMT Architecture</h1>
+        </section>
+
+        <section>
+          <h2 >Latency v.s. Throughput architectures</h2>
+          <div class="left">
+          <p>Modern CPUs and GPUs are both multi-core systems.</p>
+            <ul class="none">
+              <li>CPUs are <b>latency</b> oriented
+                <ul>
+                  <li>Pipelining, out-of-order, superscalar</li>
+                  <li>Caching, on-die memory controllers</li>
+                  <li>Speculative execution, branch prediction.</li>
+                  <li><b>Compute cores only a small part of die</b></li>
+                </ul>
+              </li>
+              <li>GPUs are <b>throughput</b> oriented
+                <ul>
+                  <li>100s simple compute cores</li>
+                  <li>Zero cost scheduling of 1000s or threads</li>
+                  <li><b>Compute cores occupy most part of die.</b></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h2>SIMD <small>v.s.</small> SIMT <small>v.s.</small> SMT</h2>
+          <p><b>S</b>ingle <b>I</b>nstructure <b>M</b>ultiple <b>T</b>hread</p>
+          <div class="left">
+              <ul>
+                <li><b>SIMD</b>: elements of short vectors are processed in parallel.
+                      Represents problem like short vectors and processes it vector by vector
+                </li>
+                <li><b>SMT</b>: instructions of several threads are run in parallel.
+                      Represent problem like scope of separate task and assign it to different threads.
+                      Hardware multi-threading support.
+                </li>
+                <li><b>SIMT</b> vector processing + hardware threading.
+                  <ul>
+                    <li>threads grouped in <b>warps</b>; Warp execute the same instruction each cycle.</li>
+                    <li>thread scheduling and fast context switching between different warps to minimize stalls.</li>
+                  </ul>
+                </li>
+              </ul>
+          </div>
+        </section>
+
+        <section>
+          <h2>SIMT</h2>
+          <h3>Multi-threading depth x SIMD width</h3>
+          <ol>
+            <li>
+              <b>SIMT - an abstraction from vector hardware</b>
+              <ul>
+                <li>Threads grouped into <b>warp</b> (32 for NVIDIA).</li>
+                <li>One thread in a warp usually called <b>lane</b></li>
+                <li>Vector register file. Registers accessed line by line. Lane load laneId's element from register.</li>
+                <li>Single instruction counter for whole warp</li>
+                <li>A couple of special registers, like PC (can be scalar)</li>
+              </ul>
+            </li>
+              <li>
+                <b>SIMT H.W. responsible for warp scheduling</b>
+                <ul>
+                  <li>Dynamic or static scheduling.</li>
+                  <li>Zero overhead on context switching</li>
+                  <li>Long latency operation score-boarding.</li>
+                </ul>
+              </li>
+          </ol>
+          <small>Milty threading depth == number of resident warps</small>
+        </section>
+
+        <section>
+          <h2>SASS ISA</h2>
+          <p><b>SIMT</b> is like <b>RISC</b>: different instructions for memory operations operations and arithmetic instructions.
+          Arithmetic performed only on registers (exception is constants).</p>
+          <img src="images/c1/sass_isa.svg" alt="sass">
+          <small><b>S</b>treaming <b>ASS</b>embler.</small>
+        </section>
+
+        <section>
+          <h2>SIMT - Instruction pipeline</h2>
+          <div class="left">
+            <p>Shared fetch/decode, load-store units. Separated compute cores. Area/Power-efficiency thanks to regularity.</p>
+          </div>
+          <ol>
+            <li>(IF) Select/Fetch one instruction per warp.</li>
+            <li>(ID) Decode one instruction per warp.</li>
+            <li>(EX) Issue on block of compute cores.</li>
+            <li>(WB) Store results to register line.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>SIMT - pipeline</h2>
+          <ul class="none">
+            <li><b>Warp scheduler</b>  manages warps, select, decode instruction.</li>
+            <li><b>Execution units</b> - group of regular execution units: SC, SFU, LD/ST, DP</li>
+          </ul>
+          <img class="simple" src="images/c1/simt.svg">
+        </section>
+
+        <section>
+          <h2>Vector register file</h2>
+          <div class="left">
+            <p><b>~Zero warp switching require big register file</b> because each warp was it's own space in it.
+              While warp is resident on SM(X) it occupy portion or register file. GPU's register file is 32-bit, 64-bit
+              values stored in register pair (even registers).</p>
+          </div>
+            <img class="simple" src="images/c1/simt-regs.svg">
+            <ul>
+              <li>The coast is registers spent to keep redundant data items. register wastage on duplicate items.</li>
+              <li>Narrow data types are as costly as wide data types.</li>
+            </ul>
+            <p>Size of register file, # of banks depends on architecture. Fermi: 128KB, Kepler: 256KB.</p>
+        </section>
+
+        <section id="sec_1">
+          <h1>WArp Scheduling</h1>
+        </section>
+
+        <section>
+          <h2>Dynamic v.s. static scheduling</h2>
+          <ul style="list-style-type: none;">
+            <li><b>Static scheduling</b>
+              <ul style="margin-left: 65px;">
+                <li>instructions are fetched, executed &amp; completed in compiler-generated order. <b>In-order</b> execution.</li>
+                <li>one instruction stalls, all following stall too.</li>
+              </ul>
+            </li>
+            <li class="space-before"><b>Dynamic scheduling</b>
+              <ul style="margin-left: 65px;">
+                <li>instructions are fetched in compiler-generated order</li>
+                <li>instructions are executed <b>Out-of-order</b></li>
+                <li>Special unit to track dependencies and reorder instructions</li>
+                <li>independent instructions behind a stalled instruction can pass it</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Warp scheduling</h2>
+          <ul>
+            <li>GigaThread assign work on <b>S</b>tream <b>M</b>ultiprocessor (ne<b>X</b>t).</b></li>
+            <li>... Actually to one of <b>Warp Schedulers</b></li>
+            <li>So, warp <b>can not migrate</b> from one to another scheduler. </li>
+            <li>Depending on generation scheduling is dynamic (Fermi) or static (Kepler)
+              <img src="images/c1/scheduler.png" class="simple" width="80%">
+            </li>
+            <li>Anyway register scoreboarding for long lasting operations.</li>
+            <li><b>Warp has own lines in register file, PC, activity mask</b></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Warp scheduling (continued)</h2>
+          <div class="left">
+            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%" class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+). Such warp scheduler able to decode 2
+            instructions per warp per clock. Kepler relies on ILP.</p>
+            <p>The number of warp schedulers 2-4 and depends on arch.</p>
+            <p>Warps belongs to <b>blocks</b>. Hardware should track this too</p>
+          </div>
+        </section>
+
+        <section>
+          <h2>Divergence &amp; (re)convergence</h2>
+          <div  class="left">
+            <p><b>Divergence</b> - not all lanes in a warp take the same code path</p>
+            <p>Convergence handled via <b>convergence stack</b>. For NVIDIA GPUs <b>SSY</b> instruction- push
+              convergence stack (presents before potentially divergent instructions); <b>&lt;INSTR&gt;.S</b> indicates
+            <b>convergence point</b> (instruction after which all warp takes the same code patch).</p>
+            <p>Convergence stack entry indicates: convergence PC, next-path PC, and thread mask indicating threads
+              that will be active on that path.</p>
+            <small>Instruction replay.</small>
+          </div>
+        </section>
+
+        <section>
+          <h2>Divergent code example</h2>
+          <pre><code class="cpp"> (void) atomicAdd( &smem[0], src[threadIdx.x] );</code></pre>
+          <pre><code class="avrasm">    /*0050*/        <b>SSY</b> 0x80;
+    /*0058*/        <span class="keyword">LDSLK</span> P0, R3, [RZ];
+    /*0060*/    @P0 <span class="keyword">IADD</span> R3, R3, R0;
+    /*0068*/    @P0 <span class="keyword">STSUL</span> [RZ], R3;
+    /*0070*/   @!P0 <span class="keyword">BRA</span> 0x58;
+    /*0078*/        NOP.<b>S</b>;</code></pre>
+          <p>Assume warp size == 4</p>
+          <img class="simple" src="images/covergence.svg">
+        </section>
+
+        <section>
+          <h2>Predicated &amp; Conditional execution</h2>
+          <ul style="list-style-type: none;">
+            <li><b>Predicated execution</b>
+              <ul style="margin-left: 65px;">
+                <li>Usually used for if-then statements (rarely for if-then-else). Decision by compiler heuristic (~7).</li>
+                <li>Optimize divergence overhead.</li>
+              </ul>
+            </li>
+            <li class="space-before"><b>Conditional execution</b>
+              <ul style="margin-left: 65px;">
+                <li>Compare instruction set condition code (CC) registers.</li>
+                <li>CC == 4-bit state vector (sign, carry, zero, overflow)
+                  <pre><code class="avrasm"><span class="keyword">IMAD</span> R8.<b>CC</b>, R0, 0x4, R3;</code></pre>
+                </li>
+                <li>WB stage for CC-marked registers omitted.</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section id="sec_2">
+          <h1>Memory subsystem</h1>
+        </section>
+
+        <section>
+          <h2>GPU memories</h2>
+          <p>There are several types of GPU memories</p>
+          <ul class="none">
+            <li>On-chip
+              <ul>
+                <li>Register file</li>
+                <li>Shared (smem)</li>
+              </ul>
+            </li>
+            <li>Off-chip
+              <ul>
+                <li>Global (gmem)</li>
+                <li>Constant (cmem)</li>
+                <li>Texture (tex)</li>
+                <li>... well, we have Local (lmem) too</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>GMEM - Vector transactions</h2>
+          <ul>
+            <li>Global memory accessed on warp basis.
+              <img src="images/c1/coalesced.svg" width="100%" class="simple">
+              <small>Affine request example</small>
+            </li>
+            <li>SM(X) has load/store units able to handle global access.</li>
+            <li><b>Coalesced memory transaction == warp loads only elements that it needs</b>. sm_1x has vary strict
+            coalescing rules (even affine access pattern is restricted to 128 byte line for sm_11).</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Coalesced memory access</h2>
+          <div class="left">
+            <p>Modern GPUs have relaxed requirements. Fermi and Kepler GPUs define coalesced transaction as
+            transaction that <b>fits cache line</b>. Less cache lines we need more coalesced access we have.</p>
+          </div>
+          <img src="images/c1/still_coalesced.svg" class="simple">
+          <p>Address alignment by cache line size is preferred</p>
+          <img src="images/c1/unaligned.svg" class="simple">
+        </section>
+
+        <section>
+          <h2>Memory hierarchy</h2>
+          <p>GPU memory has 2 levels of caches.</p>
+          <img src="images/c1/gk107b.jpg" width="50%">
+        </section>
+
+        <section>
+          <h2>Cache characteristics</h2>
+          <table class="tbl1" style="width:100%">
+            <colgroup>
+              <col></col>
+              <col></col>
+              <col></col>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Cache</th>
+                <th colspan="2">L1</th>
+                <th colspan="2">L2</th>
+              </tr>
+              <tr>
+                <th>generation</th>
+                <th>Fermi</th>
+                <th>Kepler</th>
+                <th>Fermi</th>
+                <th>Kepler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>sizes, KB</td>
+                <td>16/48</td>
+                <td>16/32/48</td>
+                <td>up to 768</td>
+                <td>up to 1536</td>
+              </tr>
+              <tr>
+                <td>line width</td>
+                <td colspan="2">128B</td>
+                <td colspan="2">32B</td>
+              </tr>
+              <tr>
+                <td>latency</td>
+                <td>56 clock</td>
+                <td>-</td>
+                <td>282</td>
+                <td>158</td>
+              </tr>
+              <tr>
+                <td>mode</td>
+                <td>R, n-c</td>
+                <td>-</td>
+                <td colspan="2">R&amp;W, c, WB</td>
+              </tr>
+              <tr>
+                <td>associativity</td>
+                <td>2x64/6x64</td>
+                <td>-</td>
+                <td>?</td>
+                <td>?</td>
+              </tr>
+              <tr>
+                <td>usage</td>
+                <td>gmem, sys</td>
+                <td>sys</td>
+                <td colspan="2">gmem, sys, tex</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Memory request trajectory - LD.E</h2>
+          <ul style="list-style-type: none;">
+            <li><b>Fermi fully-cached load</b>
+              <ul style="margin-left: 65px;">
+                <li>load/store units compute physical address and how many cache lines warp requests (L1 line is 128B).</li>
+                <li>L1 hit -&gt; return line else go to L2.</li>
+                <li>L2 subdivides 128B line into 4x32B (L2 line size). If all required 32B lines are found in L2 return result else
+                go to gmem</li>
+                <li>gmem</li>
+              </ul>
+            </li>
+            <li class="space-before"><b>Kepler, Fermi L2 only mode</b>
+              <ul style="margin-left: 65px;">
+                <li>The same, but bypass L1 step</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>hardware additive memory load</h2>
+          <p>The following requests are equal from gmem point of view.</p>
+          <img src="images/c1/2_transactions.svg" class="simple">
+          <img src="images/c1/5_small.svg" class="simple">
+          <p>32B granularity useful if access pattern is close to random.</p>
+        </section>
+
+        <section>
+          <h2>Cache Load configurations</h2>
+          <ul style="list-style-type: none;">
+            <li><b>LD</b>
+              <ul style="margin-left: 65px;">
+                <li>Regular access (cache all): <b>No special suffix</b>.
+                  <pre><code class="avrasm"><span class="keyword">LD</span> R8, [R6];</code></pre>
+                </li>
+                <li>Cache only in L2 (cache global): <b>LD.CG</b>.
+                  <pre><code class="avrasm">LD.CG R4, [R16];</code></pre>
+                </li>
+                <li>Bypass caches (cache volatile) <b>LD.CV</b>
+                  <pre><code class="avrasm"><span class="keyword">LD.CV</span> R14, [R14];</code></pre>
+                </li>
+                <li>Cache streaming</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Memory request trajectory - ST.E</h2>
+          <ul>
+            <li>Store instruction invalidates L1 on all SM(X) if present (since L1s are on SM(X) non-coherent)</li>
+            <li>Request goes directly to L2. Default write strategy is <b>write back</b>. Can be configured
+              as write through.</li>
+            <li>Hit to L2 costs ~160 clocks in case we need not a write-back.</li>
+            <li>Go to gmem in case of L2 miss (penalty > 350 clocks)</li>
+          </ul>
+          <small>L2 is multi-ported</small>
+        </section>
+
+        <section>
+          <h2>Wide &amp; narrow types</h2>
+          <ul style="list-style-type: none;"><li><b>Wide</b>
+              <ul style="margin-left: 65px;">
+                <li>GPU supports wide memory transactions
+                  <pre><code class="avrasm">/*1618*/    LD.E.<b>128</b> R8, [R14];
+/*1630*/    ST.E.<b>128</b> [R18], R8;</code></pre>
+                </li>
+                <li>Only 64 and 128-bit transactions are supported since they can be mapped to 2(4) 32-bit registers</li>
+              </ul>
+            </li>
+            <li class="space-before"><b>Narrow</b>
+              <ul style="margin-left: 65px;">
+                <li><p>Example uchar SOA store: generate 2 store transactions</p>
+                  <pre><code class="cpp">struct uchar2{
+unsigned char x;
+unsigned char y;
+}</code></pre>
+<pre><code class="avrasm">/*02c8*/    ST.E.U8 [R6+0x1], R0;
+/*02d0*/    ST.E.U8 [R6], R3;</code></pre>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>GMEM Atomic operations</h2>
+          <p>Performed in L2 per 32B cache line.</p>
+          <table class="tbl1" style="width:100%">
+            <colgroup>
+              <col></col>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>throughput</th>
+                <th>Fermi, per clock</th>
+                <th>Kepler, per clock</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>shared address</td>
+                <td>1/9th</td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>independent</td>
+                <td>24</td>
+                <td>64</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Same address means the same cache line</p>
+          <ul>
+            <li>ATOM<pre style="width:100%;"><code class="avrasm"><span class="keyword">ATOM</span>.E.INC R4, [R6], R8;</code></pre></li>
+            <li>RED<pre style="width:100%;"><code class="avrasm"><span class="keyword">RED</span>.E.ADD [R2], R0;</code></pre></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Texture hardware</h2>
+          <ul>
+            <li>Legacy from graphics.</li>
+            <li>Read-only. Always loads through interpolation hardware.</li>
+            <li>Two caching levels: Dedicated L1, L2 cached with global loads</li>
+          </ul>
+          <table class="tbl1" style="width:100%">
+            <colgroup>
+              <col></col>
+              <col></col>
+              <col></col>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th></th>
+                <th>property</th>
+                <th>Fermi</th>
+                <th>sm_30</th>
+                <th>sm_35</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td  style="background-color:rgba(100,100,100,0.5);"  rowspan="4">L1</td>
+                <td>hit latency, clock</td>
+                <td>No data</td>
+                <td>104</td>
+                <td>108</td>
+              </tr>
+              <tr>
+                <td>line size, B</td>
+                <td>No data</td>
+                <td>128</td>
+                <td>128</td>
+              </tr>
+              <tr>
+                <td>size, KB</td>
+                <td>8</td>
+                <td>12</td>
+                <td>4<small style="vertical-align:bottom;">sbp</small>x12</td>
+              </tr>
+              <tr>
+                <td>(set)x(way)</td>
+                <td>No data</td>
+                <td>4x24</td>
+                <td>4x24</td>
+              </tr>
+              <tr>
+                <td rowspan="2">L2</td>
+                <td>hit latency, clock</td>
+                <td>No data</td>
+                <td>212</td>
+                <td>229</td>
+              </tr>
+              <tr>
+                <td>penalty, clock</td>
+                <td>No data</td>
+                <td>316</td>
+                <td>351</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Read-only data cache</h2>
+          <p><b>L1 Texture cache</b> is opened for <b>global load</b> bypassing interpolation hardware.
+          Supported by sm_35.</p>
+          <pre><code class="avrasm">  /*0288*/                <span class="keyword">TEXDEPBAR</span> 0x0;
+  /*0290*/                <span class="keyword">LDG</span>.E.64 R8, [R4];
+  /*0298*/                <span class="keyword">TEXDEPBAR</span> 0x0;
+  /*02a0*/                <span class="keyword">LDG</span>.E.64 R4, [R8];
+  /*02a8*/                <span class="keyword">IADD</span> R6, R6, 0x4;
+  /*02b0*/                <span class="keyword">TEXDEPBAR</span> 0x0;
+  /*02b8*/                <span class="keyword">LDG</span>.E.64 R8, [R4];
+
+  /*02c8*/                <span class="keyword">ISETP</span>.LT.AND P0, PT, R6, R7, PT;
+  /*02d0*/                <span class="keyword">TEXDEPBAR</span> 0x0;</code></pre>
+          <p>Size == 48KB (4 sub-partitions x 12Kb). Different warps go through different sub-partitions. One warp can use up to 12 KB.</p>
+        </section>
+
+        <section>
+          <h2>Constant memory</h2>
+          <p>Optimized for <b>uniform</b> access from the warp.</p>
+          <img src="images/c1/uniform.svg" class="simple">
+          <ul>
+            <li>Compile time constants.</li>
+            <li>Kernel parameters and configurations.</li>
+            <li>2-3 layers of caches. Latency: 4-800 clocks.</li>
+          </ul>
+        </section>
+
+         <section>
+          <h2>Load uniform</h2>
+          <p>the LDU instruction can perform similar constant caching for any global memory location.
+          LDU = load (block-) uniform variable from memory. It is loaded through the uniform cache.</p>
+          <ul>
+            <li>variable resides in global memory</li>
+            <li>prefix pointer with <code>const</code> keyword</li>
+            <li>Memory access must be uniform across all threads in the block, basically, not dependent on threadIdx</li>
+          </ul>
+          <pre><code class="cpp"><span class="keyword">__global__</span> void kernel( test_t *g_dst, const test_t *g_src )
+{
+  const int tid = /**/;
+  g_dst[tid] = g_src[0] + g_src[<span class="keyword">blockIdx.x</span>];
+}</code></pre>
+          <pre><code class="avrasm">  /*0078*/        LDU.E R0, [R4];
+  /*0080*/        LDU.E R2, [R2];</code></pre>
+        </section>
+
+        <section>
+          <h2>Shared memory</h2>
+          <p>Banked: Successive 4 -byte words placed to successive banks</p>
+          <p>sm_1x - 16x4byte, sm_2x - 32x4byte, sm_3x - 32x64byte </p>
+          <img src="images/c1/banks.svg" width="90%">
+          <p>atomic operations: lock/unlock manner</p>
+          <pre><code class="cpp">         (void) atomicAdd( &smem[0], src[threadIdx.x] );</code></pre>
+            <pre><code class="avrasm">  /*0050*/        <b>SSY</b> 0x80;
+  /*0058*/        <span class="keyword">LDSLK</span> P0, R3, [RZ];
+  /*0060*/    @P0 <span class="keyword">IADD</span> R3, R3, R0;
+  /*0068*/    @P0 <span class="keyword">STSUL</span> [RZ], R3;
+  /*0070*/   @!P0 <span class="keyword">BRA</span> 0x58;
+  /*0078*/        NOP.<b>S</b>;</code></pre>
+        </section>
+
+        <section>
+          <h2>Register spilling</h2>
+          <p><b>Local memory</b> name refers to memory where registers and other thread data is spilled.
+          Physically resides in gmem, but <b>likely cached</b>. One local variable require one cache line for spilling
+           because it is spilled for warp.</p>
+          <ul>
+            <li>Addressing is resolved by the compiler</li>
+            <li>Stores are cached in L1</li>
+          </ul>
+          <p>Analogy with <b>CPU stack variables</b>.</p>
+        </section>
+
+        <section>
+          <h2>LDL/STL Access Operation</h2>
+          <ul style="list-style-type: none;">
+            <li><b>Store writes line to L1</b>
+              <ul style="margin-left: 65px;">
+                <li>If evicted, than line is written to L2</li>
+                <li>The line could also be evicted from L2, in this case it is written to DRAM</li>
+              </ul>
+            </li>
+            <li><b>Load requests line from L1</b>
+              <ul style="margin-left: 65px;">
+                <li>If a hit, operation is complete</li>
+                <li>If a miss, then request the line from L2</li>
+                <li>If L2 miss, then request the line from DRAM</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013</h3>
+        </section>
+
+  <!--
+        <section>
+            <h2>Divergence dead-lock example</h2>
+        </section> -->
+      </div>
+    </div>
+    <script src="3dparty/reveal/lib/js/head.min.js"></script>
+    <script src="3dparty/reveal/js/reveal.min.js"></script>
+    <script>
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: false,
+                rollingLinks: false,
+
+                theme: Reveal.getQueryHash().theme,
+                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+                dependencies: [
+                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+    </script>
+  </body>
+</html>
