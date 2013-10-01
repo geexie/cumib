@@ -19,3 +19,6 @@
 # executable names
 global
 laneid
+
+# device flags beckup file
+device_flags
