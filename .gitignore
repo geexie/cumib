@@ -17,8 +17,9 @@
 *.csv
 
 # executable names
-global
-laneid
+global-*
+laneid-*
+mapped-*
 
 # device flags beckup file
 device_flags
