@@ -87,16 +87,22 @@ NVCC_FLAGS += -gencode arch=$(virtual_arch),code=$(binary_arch) -Xptxas -dlcm=$(
 global-$(TARGET_ARCH): global_load.d.o print_device_info.o global_load.o
 	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
+mapped-$(TARGET_ARCH): mapped.o print_device_info.o mapped.d.o
+	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
+
 global_load.d.o: global_load.o print_device_info.o
+	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
+
+mapped.d.o: mapped.o print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
 %.o: %.cu cudassert.cuh device_flags
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) -dc -o $@ $<
 
-laneid: laneid.cu cudassert.cuh device_flags
+laneid-$(TARGET_ARCH): laneid.cu cudassert.cuh device_flags
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) laneid.cu -o laneid
 
-all: laneid global
+all: laneid-$(TARGET_ARCH) global-$(TARGET_ARCH) mapped-$(TARGET_ARCH)
 
 .PHONY: clean force
 

@@ -169,7 +169,7 @@ int main(int argc, char **argv)
     static const size_t min_array_size = static_cast<size_t>(std::pow(2., 15.));
 
     // replace with max available size
-    static const size_t max_array_size = static_cast<size_t>(std::pow(2., 27.));
+    static const size_t max_array_size = static_cast<size_t>(std::pow(2., /*27*/16.));
 
     run_mapped_tests<test_t>(min_array_size, max_array_size);
 }
