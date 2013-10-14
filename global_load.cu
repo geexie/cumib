@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include <stdio.h>
 
-int getL2CacheSize(int deviceId)
+static int getL2CacheSize(int deviceId)
 {
     cudaDeviceProp prop;
     cuda_assert( cudaGetDeviceProperties(&prop, deviceId) );
@@ -35,7 +35,7 @@ int getL2CacheSize(int deviceId)
     return prop.l2CacheSize;
 }
 
-int getMajorCC(int deviceId)
+static int getMajorCC(int deviceId)
 {
     cudaDeviceProp prop;
     cuda_assert( cudaGetDeviceProperties(&prop, deviceId) );
@@ -43,7 +43,7 @@ int getMajorCC(int deviceId)
     return prop.major;
 }
 
-size_t getGmemSize(int deviceId)
+static size_t getGmemSize(int deviceId)
 {
     cudaDeviceProp prop;
     cuda_assert( cudaGetDeviceProperties(&prop, deviceId) );
