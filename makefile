@@ -76,33 +76,42 @@ ifeq ($(CUDA_GENERATION), 21)
 virtual_arch = compute_20
 endif
 
+SRCS = laneid.cu mapped.cu global_load.cu print_device_info.cu
+
 CACHE_STRATEGY ?= cg
 NVCC_FLAGS += -gencode arch=$(virtual_arch),code=$(binary_arch) -Xptxas -dlcm=$(CACHE_STRATEGY)
-#--verbose
+# --verbose
+
+all_targets = laneid-$(TARGET_ARCH) global-$(TARGET_ARCH) mapped-$(TARGET_ARCH)
 
 ################################################################################
 # Targets
 ################################################################################
 
-global-$(TARGET_ARCH): global_load.d.o print_device_info.o global_load.o
+global-$(TARGET_ARCH): global_load.dev.o print_device_info.o global_load.o
 	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
-mapped-$(TARGET_ARCH): mapped.o print_device_info.o mapped.d.o
+mapped-$(TARGET_ARCH): mapped.o print_device_info.o mapped.dev.o
 	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
-global_load.d.o: global_load.o print_device_info.o
+global_load.dev.o: global_load.o print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
-mapped.d.o: mapped.o print_device_info.o
+mapped.dev.o: mapped.o print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
-%.o: %.cu cudassert.cuh device_flags
-	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) -dc -o $@ $<
-
-laneid-$(TARGET_ARCH): laneid.cu cudassert.cuh device_flags
+laneid-$(TARGET_ARCH): laneid.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) laneid.cu -o laneid
 
-all: laneid-$(TARGET_ARCH) global-$(TARGET_ARCH) mapped-$(TARGET_ARCH)
+%.o: %.cu device_flags
+	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dc -o $@ $<
+
+%.cu.d: %.cu
+	$(SHELL) -ec '$(DEVICE_CC) -M $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) $< |  sed -n "H;$$ {g;s@.*:\(.*\)@$< := \$$\(wildcard\1\)\n$*.o $@: $$\($<\)@;p}" > $@'
+
+all: $(all_targets)
+
+include $(SRCS:.cu=.cu.d)
 
 .PHONY: clean force
 
@@ -110,4 +119,4 @@ device_flags: force
 	echo '$(NVCC_FLAGS)' | cmp -s - $@ || echo '$(NVCC_FLAGS)' > $@
 
 clean:
-	$(RM) *.o global laneid
+	$(RM) *.o *.cu.d $(all_targets)
