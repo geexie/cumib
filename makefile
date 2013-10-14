@@ -89,10 +89,10 @@ all_targets = laneid-$(TARGET_ARCH) global-$(TARGET_ARCH) mapped-$(TARGET_ARCH)
 ################################################################################
 
 global-$(TARGET_ARCH): global_load.dev.o print_device_info.o global_load.o
-	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
+	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $^ -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
 mapped-$(TARGET_ARCH): mapped.o print_device_info.o mapped.dev.o
-	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $? -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
+	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $^ -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
 global_load.dev.o: global_load.o print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
