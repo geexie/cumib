@@ -39,7 +39,11 @@ __global__ void inc_kernel(unsigned int *cnt)
 template<typename T>
 __global__ void copy1d1d(const T *src, T *dst)
 {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 300
+    const int index = (blockIdx.y * gridDim.x + blockIdx.x) * blockDim.x + threadIdx.x;
+#else
     const int index = blockIdx.x * blockDim.x + threadIdx.x;
+#endif
     dst[index] = src[index];
 }
 
@@ -65,10 +69,11 @@ template<typename T, typename D> struct MPtr
     MPtr(const size_t size, bool fill = false)
     {
         cuda_assert(cudaMalloc((void**) &_ptr, sizeof(T) * size));
-        if (fill)
+        if (0 && fill)
         {
             fillWithTid<<<size / CTA_SIZE, CTA_SIZE>>>(_ptr);
             cuda_assert(cudaDeviceSynchronize());
+            cuda_assert(cudaGetLastError());
         }
     }
 
@@ -113,6 +118,14 @@ private:
     T* _ptr;
 };
 
+static int getMajorCC(int deviceId)
+{
+    cudaDeviceProp prop;
+    cuda_assert( cudaGetDeviceProperties(&prop, deviceId) );
+    // in bytes
+    return prop.major;
+}
+
 template<typename Pi, typename Po>
 static void run_mapped_test(const size_t min_array_size, const size_t  max_array_size)
 {
@@ -124,13 +137,20 @@ static void run_mapped_test(const size_t min_array_size, const size_t  max_array
     double mtime;
 
     static const int cta_size = 128;
+    int deviceId = 0;
+    cuda_assert(cudaGetDevice(&deviceId));
+    const int major_cc = getMajorCC(deviceId);
 
     for (size_t size = min_array_size; size < max_array_size; size *=2)
     {
         printf("run: %zi\t", size);
+        dim3 block(size/cta_size);
+        // a quite dirty fix for Fermi because it support grid size less then 65536 each dimension
+        if((major_cc < 3) && (size/cta_size) >= 65536)
+            block = dim3( static_cast<int>(sqrt(size/cta_size)), static_cast<int>(sqrt(size/cta_size)));
 
         gettimeofday(&start, 0);
-        copy1d1d<<<size/cta_size, cta_size>>>(src.ptr(), dst.ptr());
+        copy1d1d<<<block, cta_size>>>(src.ptr(), dst.ptr());
         cuda_assert(cudaDeviceSynchronize());
         cuda_assert(cudaGetLastError());
         gettimeofday(&end, 0);
@@ -168,8 +188,7 @@ int main(int argc, char **argv)
 
     static const size_t min_array_size = static_cast<size_t>(std::pow(2., 15.));
 
-    // replace with max available size
-    static const size_t max_array_size = static_cast<size_t>(std::pow(2., /*27*/16.));
+    static const size_t max_array_size = static_cast<size_t>(std::pow(2., 27));
 
     run_mapped_tests<test_t>(min_array_size, max_array_size);
 }
