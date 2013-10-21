@@ -27,6 +27,13 @@
 #include <cstdlib>
 #include <stdio.h>
 
+// #include <sm_32_intrinsics.h>
+
+template<typename T>
+static __device__ __inline__ T __ldg(const T *ptr)
+{
+    unsigned long long ret; asm volatile ("ld.global.nc.u64 %0, [%1];"  : "=l"(ret) : "l" (ptr)); return (T)ret; }
+
 static int getL2CacheSize(int deviceId)
 {
     cudaDeviceProp prop;
@@ -55,6 +62,8 @@ template<typename T, typename D>
 __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iterations, D* latency,
                                int declared_cache_size, bool do_warnup)
 {
+    if (threadIdx.x >= stride) return;
+
     T *j = ((T*) a) + threadIdx.x;
 
     int repeats = array_size / stride;
@@ -63,12 +72,12 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
     volatile D sum_time = 0;
 
     latency[0] = 0;
-    int wurnup_repeats = min(repeats, declared_cache_size / stride);
+    int wurnup_repeats = min(repeats, declared_cache_size / stride / (int)sizeof(T));
 
     if (do_warnup)
     {
         for (int curr = 0; curr < wurnup_repeats; ++curr)
-            j = *(T **)j;
+            j = reinterpret_cast<T*>(__ldg(j));
     }
 
     // Yes, it's race conditions but we go not care.
@@ -79,7 +88,7 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
         T *j = ((T*) a) + threadIdx.x;;
         start_time = clock64();
         for (int curr = 0; curr < repeats; ++curr)
-            j = *(T **)j;
+            j = reinterpret_cast<T*>(__ldg(j));
         end_time = clock64();
 
         sum_time += (end_time - start_time);
@@ -115,17 +124,27 @@ struct CacheBenchmarker
         clock_64_t   sum_latency = 0;
 
         T ** d_a;
-        clock_64_t * d_latency;
+        clock_64_t* d_latency;
 
         cuda_assert(cudaMalloc((void **) &d_a, sizeof(T) * (array_size + extra_tail_size)));
         cuda_assert(cudaMalloc((void **) &d_latency, sizeof(clock_64_t)));
 
-        for (int i = 0; i < array_size; i += stride)
-            for (int j = 0; j < stride; ++j)
-            {
-                h_a[i+j] = ((uintptr_t)d_a) + ((i + stride) % array_size) * sizeof(T) + sizeof(T) * j;
-            }
+        // for (int i = 0; i < array_size; i += stride)
+        // {
+        //     for (int j = 0; j < stride; ++j)
+        //     {
+        //         h_a[i+j] = ((uintptr_t)d_a) + ((i + stride) % array_size) * sizeof(T) + sizeof(T) * j;
+        //     }
+        // }
 
+        for (int i = 0; i < array_size; ++i)
+        {
+                h_a[i] = ((uintptr_t)d_a) + (i + stride) * sizeof(T);
+                // printf("%d %ul\n", i, (i + stride) * sizeof(T));
+        }
+
+        // for (int i = 0; i < array_size; i++)
+        //     printf("%p\n", h_a[i]);
 
         cuda_assert(cudaMemcpy((void *)d_a, (void *)h_a, sizeof(T) * array_size, cudaMemcpyHostToDevice));
 
@@ -185,6 +204,7 @@ int main(int argc, char const *argv[])
     int deviceId = 0;
     if (argc > DEVICE_ID_INDEX)
         deviceId = atoi(argv[DEVICE_ID_INDEX]);
+
     printf("run benchmark on device #%d\n", deviceId);
 
     // retrieve current device compute capability
@@ -195,7 +215,7 @@ int main(int argc, char const *argv[])
         return 0;
     }
 
-    int cahce_type = 2;
+    int cahce_type = 1;
     if (argc > CACHE_TYPE_INDEX)
         cahce_type = atoi(argv[CACHE_TYPE_INDEX]);
 
@@ -209,15 +229,17 @@ int main(int argc, char const *argv[])
         transactionWidth = atoi(argv[TRANSACTION_WIDTH_INDEX]);
     const int stride = transactionWidth / elem_size;
 
+    printf("!!!%d\n", stride);
+
     // # of iterations inside the kernel and # of kernel invocations.
     const int innerIterations = 1;
-    int outerIterations = 10;
+    int outerIterations = 1;
 
     if (argc > NUM_KERNEL_INV_INDEX)
         outerIterations = atoi(argv[NUM_KERNEL_INV_INDEX]);
 
     // execute strided load function one time before main measurements
-    bool doWarnup = true;
+    bool doWarnup = false;
     if (argc > DO_WARNUP_INDEX)
         doWarnup = (bool)atoi(argv[DO_WARNUP_INDEX]);
 
@@ -229,14 +251,14 @@ int main(int argc, char const *argv[])
         case 1:
         {
             // configuration 16kb
-            static const int l1_size = 16 * 1024;
-            printf("configured for l1 size %d bytes\n", l1_size);
+            static const int dc_size = 12 * 1024;
+            printf("configured for l1 size %d bytes\n", dc_size);
 
             const int declaredL2Size = getL2CacheSize(deviceId);
-            const int maxCache = declaredL2Size + (declaredL2Size >> 2);
+            const int maxCache  = 12 * 1024;//declaredL2Size + (declaredL2Size >> 2);
 
-            cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferShared));
-            CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, l1_size, doWarnup);
+            cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferL1));
+            CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, dc_size, doWarnup);
 
             for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
                 benchmarker.run_global_test<test_type>(N);
