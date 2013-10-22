@@ -27,8 +27,6 @@
 #include <cstdlib>
 #include <stdio.h>
 
-// #include <sm_32_intrinsics.h>
-
 template<typename T>
 static __device__ __inline__ T __ldg(const T *ptr)
 {
@@ -112,15 +110,13 @@ struct CacheBenchmarker
     {}
 
     template<typename T>
-    void run_global_test(int array_size)
+    void run_global_test(int array_size, int block_x, int block_y)
     {
-        int block_x = 32;
-        int block_y = 3;
-
-        // allocate 1 more element to prevent compiler optimization that throws out kernel inner loop computations.
+        // allocate 1 more element to prevent compiler optimization that throws out kernel inner loop computations,
+        // if kernel does not perform any result load.
         static const int extra_tail_size = (inner_iterations + 1);
 
-        T*  h_a = (T *)malloc(sizeof(T) * (array_size + extra_tail_size) * block_y);
+        T*  h_a = (T *)malloc(sizeof(T) * block_y * (array_size + extra_tail_size));
 
         clock_64_t   h_latency   = 0;
         clock_64_t   sum_latency = 0;
@@ -131,26 +127,14 @@ struct CacheBenchmarker
         cuda_assert(cudaMalloc((void **) &d_a, block_y * sizeof(T) * (array_size + extra_tail_size)));
         cuda_assert(cudaMalloc((void **) &d_latency, sizeof(clock_64_t)));
 
-        // for (int i = 0; i < array_size; i += stride)
-        // {
-        //     for (int j = 0; j < stride; ++j)
-        //     {
-        //         h_a[i+j] = ((uintptr_t)d_a) + ((i + stride) % array_size) * sizeof(T) + sizeof(T) * j;
-        //     }
-        // }
+
         for (int y = 0; y < block_y; ++y)
             for (int i = 0; i < array_size; ++i)
-            {
                 h_a[y * array_size + i] = ((uintptr_t)d_a) + y * array_size * sizeof(T) + (i + stride) * sizeof(T);
-                // printf("%d %ul\n", i, (i + stride) * sizeof(T));
-            }
-
-        // for (int i = 0; i < array_size; i++)
-        //     printf("%p\n", h_a[i]);
 
         cuda_assert(cudaMemcpy((void *)d_a, (void *)h_a, sizeof(T) * array_size * block_y, cudaMemcpyHostToDevice));
 
-        // try better approaches to ensure that benchmark's kernel is only one executed.
+        // ToDo: try better approaches to ensure that benchmark's kernel is only one executed.
         cuda_assert(cudaDeviceSynchronize());
 
         dim3 block = dim3(block_x, block_y);
@@ -206,7 +190,6 @@ int main(int argc, char const *argv[])
     int deviceId = 0;
     if (argc > DEVICE_ID_INDEX)
         deviceId = atoi(argv[DEVICE_ID_INDEX]);
-
     printf("run benchmark on device #%d\n", deviceId);
 
     // retrieve current device compute capability
@@ -231,11 +214,9 @@ int main(int argc, char const *argv[])
         transactionWidth = atoi(argv[TRANSACTION_WIDTH_INDEX]);
     const int stride = transactionWidth / elem_size;
 
-    printf("!!!%d\n", stride);
-
     // # of iterations inside the kernel and # of kernel invocations.
     const int innerIterations = 1;
-    int outerIterations = 1;
+    int outerIterations = 10;
 
     if (argc > NUM_KERNEL_INV_INDEX)
         outerIterations = atoi(argv[NUM_KERNEL_INV_INDEX]);
@@ -252,18 +233,41 @@ int main(int argc, char const *argv[])
     {
         case 1:
         {
-            // configuration 16kb
-            static const int dc_size = 24 * 1024;
-            printf("configured for l1 size %d bytes\n", dc_size);
+            // Fermi: it uses L1 for global loads. Lets use it
+            if (cc_major == 2)
+            {
+                // configuration 16kb
+                static const int dc_size = 16 * 1024;
+                printf("configured for l1 size %d bytes\n", dc_size);
 
-            const int declaredL2Size = getL2CacheSize(deviceId);
-            const int maxCache  = 24 * 1024;//declaredL2Size + (declaredL2Size >> 2);
+                const int declaredL2Size = getL2CacheSize(deviceId);
+                const int maxCache  = declaredL2Size + (declaredL2Size >> 2);
 
-            cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferL1));
-            CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, dc_size, doWarnup);
+                cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferL1));
+                CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, dc_size, doWarnup);
 
-            for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
-                benchmarker.run_global_test<test_type>(N);
+                for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
+                    benchmarker.run_global_test<test_type>(N, stride, 1);
+
+            }
+            // Kepler: try to benchmark LDG
+            else
+            {
+                int block_x = 32;
+                int block_y = 4;
+
+                static const int dc_size = 16 * 1024;
+                printf("texture cache size %d bytes\n", dc_size);
+
+                const int declaredL2Size = getL2CacheSize(deviceId);
+                const int maxCache  = 64 * 1024;
+
+                cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferL1));
+                CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, dc_size, doWarnup);
+
+                for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
+                    benchmarker.run_global_test<test_type>(N, block_x, block_y);
+            }
 
             break;
         }
@@ -279,7 +283,7 @@ int main(int argc, char const *argv[])
             CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, declaredL2Size, doWarnup);
 
             for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
-                benchmarker.run_global_test<test_type>(N);
+                benchmarker.run_global_test<test_type>(N, stride, 1);
             break;
         }
     }

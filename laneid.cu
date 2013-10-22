@@ -29,11 +29,13 @@ typedef int test_t;
 
 static __device__ __forceinline__ unsigned int laneId()
 {
-    unsigned int ret;
 #ifdef __CUDA_ARCH__
+    unsigned int ret;
     asm("mov.u32 %0, %laneid;" : "=r"(ret) );
-#endif
     return ret;
+#else
+    return 0;
+#endif
 }
 
 __global__ void laneid_kernel(test_t* src)
