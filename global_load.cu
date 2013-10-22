@@ -28,9 +28,25 @@
 #include <stdio.h>
 
 template<typename T>
-static __device__ __inline__ T __ldg(const T *ptr)
+struct Ldg
 {
-    unsigned long long ret; asm volatile ("ld.global.nc.u64 %0, [%1];"  : "=l"(ret) : "l" (ptr)); return (T)ret; }
+    __device__ __forceinline__ T* operator()(const T *ptr)
+    {
+        unsigned long long ret;
+        asm volatile ("ld.global.nc.u64 %0, [%1];"  : "=l"(ret) : "l" (ptr));
+        return reinterpret_cast<T*>((T)ret);
+    }
+};
+
+template<typename T>
+struct Ld
+{
+    __device__ __forceinline__ T* operator()(const T *j)
+    {
+        return *(T **)j;
+    }
+};
+
 
 static int getL2CacheSize(int deviceId)
 {
@@ -56,10 +72,11 @@ static size_t getGmemSize(int deviceId)
     return prop.totalGlobalMem;
 }
 
-template<typename T, typename D>
+template<typename T, typename D, typename L>
 __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iterations, D* latency,
-                               int declared_cache_size, bool do_warnup)
+                               int declared_cache_size, bool do_warnup, L func)
 {
+    // disable unused lanes
     if (threadIdx.x >= stride) return;
 
     T *j = ((T*) a) + threadIdx.y * array_size +  threadIdx.x;
@@ -75,7 +92,7 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
     if (do_warnup)
     {
         for (int curr = 0; curr < wurnup_repeats; ++curr)
-            j = reinterpret_cast<T*>(__ldg(j));
+            j = func(j);
     }
 
     // Yes, it's race conditions but we go not care.
@@ -86,7 +103,7 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
         T *j = ((T*) a) + threadIdx.y * array_size +  threadIdx.x;
         start_time = clock64();
         for (int curr = 0; curr < repeats; ++curr)
-            j = reinterpret_cast<T*>(__ldg(j));
+            j = func(j);
         end_time = clock64();
 
         sum_time += (end_time - start_time);
@@ -95,7 +112,7 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
         ((T*)a)[array_size * blockDim.y + k] = (T)j;
     }
 
-    // now we need to store correct data.
+    // now we need to store correct data. Ensure correct data in case of multi-warp block
     if (!threadIdx.x)
         atomicAdd((unsigned long long int*)latency, (unsigned long long int)sum_time);
 }
@@ -109,7 +126,7 @@ struct CacheBenchmarker
     declared_cache_size(_declared_cache_size), do_warnup(_do_warnup)
     {}
 
-    template<typename T>
+    template<typename T, typename L>
     void run_global_test(int array_size, int block_x, int block_y)
     {
         // allocate 1 more element to prevent compiler optimization that throws out kernel inner loop computations,
@@ -140,10 +157,12 @@ struct CacheBenchmarker
         dim3 block = dim3(block_x, block_y);
         dim3 grid = dim3(1);
 
+        L func;
+
         for (int outer = 0; outer < outer_iterations; ++outer)
         {
             latency_kernel<<<grid, block>>>(d_a, array_size, stride, inner_iterations, d_latency,
-                                            declared_cache_size, do_warnup);
+                                            declared_cache_size, do_warnup, func);
 
             cuda_assert(cudaDeviceSynchronize ());
             cuda_assert(cudaGetLastError());
@@ -200,7 +219,7 @@ int main(int argc, char const *argv[])
         return 0;
     }
 
-    int cahce_type = 1;
+    int cahce_type = 2;
     if (argc > CACHE_TYPE_INDEX)
         cahce_type = atoi(argv[CACHE_TYPE_INDEX]);
 
@@ -237,17 +256,18 @@ int main(int argc, char const *argv[])
             if (cc_major == 2)
             {
                 // configuration 16kb
-                static const int dc_size = 16 * 1024;
-                printf("configured for l1 size %d bytes\n", dc_size);
+                static const int l1_size = 16 * 1024;
+                printf("configured for l1 size %d bytes\n", l1_size);
 
                 const int declaredL2Size = getL2CacheSize(deviceId);
-                const int maxCache  = declaredL2Size + (declaredL2Size >> 2);
+                const int maxCache = declaredL2Size + (declaredL2Size >> 2);
 
-                cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferL1));
-                CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, dc_size, doWarnup);
+                cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int, Ld<test_type> >,
+                    cudaFuncCachePreferL1));
+                CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, l1_size, doWarnup);
 
                 for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
-                    benchmarker.run_global_test<test_type>(N, stride, 1);
+                    benchmarker.run_global_test<test_type, Ld<test_type> >(N, stride, 1);
 
             }
             // Kepler: try to benchmark LDG
@@ -262,11 +282,10 @@ int main(int argc, char const *argv[])
                 const int declaredL2Size = getL2CacheSize(deviceId);
                 const int maxCache  = 64 * 1024;
 
-                cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferL1));
                 CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, dc_size, doWarnup);
 
                 for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
-                    benchmarker.run_global_test<test_type>(N, block_x, block_y);
+                    benchmarker.run_global_test<test_type, Ldg<test_type> >(N, block_x, block_y);
             }
 
             break;
@@ -283,7 +302,7 @@ int main(int argc, char const *argv[])
             CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, declaredL2Size, doWarnup);
 
             for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
-                benchmarker.run_global_test<test_type>(N, stride, 1);
+                benchmarker.run_global_test<test_type, Ld<test_type> >(N, stride, 1);
             break;
         }
     }
