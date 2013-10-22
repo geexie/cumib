@@ -64,7 +64,7 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
 {
     if (threadIdx.x >= stride) return;
 
-    T *j = ((T*) a) + threadIdx.x;
+    T *j = ((T*) a) + threadIdx.y * array_size +  threadIdx.x;
 
     int repeats = array_size / stride;
 
@@ -81,11 +81,11 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
     }
 
     // Yes, it's race conditions but we go not care.
-    ((T*)a)[array_size + inner_iterations] = (T)j;
+    ((T*)a)[array_size * blockDim.y + inner_iterations] = (T)j;
 
     for (int k = 0; k < inner_iterations; ++k)
     {
-        T *j = ((T*) a) + threadIdx.x;;
+        T *j = ((T*) a) + threadIdx.y * array_size +  threadIdx.x;
         start_time = clock64();
         for (int curr = 0; curr < repeats; ++curr)
             j = reinterpret_cast<T*>(__ldg(j));
@@ -94,12 +94,12 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
         sum_time += (end_time - start_time);
 
         // the race condition again
-        ((T*)a)[array_size + k] = (T)j;
+        ((T*)a)[array_size * blockDim.y + k] = (T)j;
     }
 
     // now we need to store correct data.
     if (!threadIdx.x)
-        latency[0] = sum_time;
+        atomicAdd((unsigned long long int*)latency, (unsigned long long int)sum_time);
 }
 
 struct CacheBenchmarker
@@ -114,11 +114,13 @@ struct CacheBenchmarker
     template<typename T>
     void run_global_test(int array_size)
     {
-        int block_x = stride;
+        int block_x = 32;
+        int block_y = 3;
+
         // allocate 1 more element to prevent compiler optimization that throws out kernel inner loop computations.
         static const int extra_tail_size = (inner_iterations + 1);
 
-        T*  h_a = (T *)malloc(sizeof(T) * (array_size + extra_tail_size));
+        T*  h_a = (T *)malloc(sizeof(T) * (array_size + extra_tail_size) * block_y);
 
         clock_64_t   h_latency   = 0;
         clock_64_t   sum_latency = 0;
@@ -126,7 +128,7 @@ struct CacheBenchmarker
         T ** d_a;
         clock_64_t* d_latency;
 
-        cuda_assert(cudaMalloc((void **) &d_a, sizeof(T) * (array_size + extra_tail_size)));
+        cuda_assert(cudaMalloc((void **) &d_a, block_y * sizeof(T) * (array_size + extra_tail_size)));
         cuda_assert(cudaMalloc((void **) &d_latency, sizeof(clock_64_t)));
 
         // for (int i = 0; i < array_size; i += stride)
@@ -136,22 +138,22 @@ struct CacheBenchmarker
         //         h_a[i+j] = ((uintptr_t)d_a) + ((i + stride) % array_size) * sizeof(T) + sizeof(T) * j;
         //     }
         // }
-
-        for (int i = 0; i < array_size; ++i)
-        {
-                h_a[i] = ((uintptr_t)d_a) + (i + stride) * sizeof(T);
+        for (int y = 0; y < block_y; ++y)
+            for (int i = 0; i < array_size; ++i)
+            {
+                h_a[y * array_size + i] = ((uintptr_t)d_a) + y * array_size * sizeof(T) + (i + stride) * sizeof(T);
                 // printf("%d %ul\n", i, (i + stride) * sizeof(T));
-        }
+            }
 
         // for (int i = 0; i < array_size; i++)
         //     printf("%p\n", h_a[i]);
 
-        cuda_assert(cudaMemcpy((void *)d_a, (void *)h_a, sizeof(T) * array_size, cudaMemcpyHostToDevice));
+        cuda_assert(cudaMemcpy((void *)d_a, (void *)h_a, sizeof(T) * array_size * block_y, cudaMemcpyHostToDevice));
 
         // try better approaches to ensure that benchmark's kernel is only one executed.
         cuda_assert(cudaDeviceSynchronize());
 
-        dim3 block = dim3(block_x);
+        dim3 block = dim3(block_x, block_y);
         dim3 grid = dim3(1);
 
         for (int outer = 0; outer < outer_iterations; ++outer)
@@ -171,8 +173,8 @@ struct CacheBenchmarker
 
         free(h_a);
 
-        printf("%lu, %d\n", array_size * sizeof(T),
-            static_cast<int>(sum_latency / (array_size / (double)stride * outer_iterations * inner_iterations)));
+        printf("%lu, %d\n", array_size * sizeof(T) * block_y,
+            static_cast<int>(sum_latency / (array_size / (double)stride * outer_iterations * inner_iterations * block_y)));
     }
 
 private:
@@ -239,7 +241,7 @@ int main(int argc, char const *argv[])
         outerIterations = atoi(argv[NUM_KERNEL_INV_INDEX]);
 
     // execute strided load function one time before main measurements
-    bool doWarnup = false;
+    bool doWarnup = true;
     if (argc > DO_WARNUP_INDEX)
         doWarnup = (bool)atoi(argv[DO_WARNUP_INDEX]);
 
@@ -251,11 +253,11 @@ int main(int argc, char const *argv[])
         case 1:
         {
             // configuration 16kb
-            static const int dc_size = 12 * 1024;
+            static const int dc_size = 24 * 1024;
             printf("configured for l1 size %d bytes\n", dc_size);
 
             const int declaredL2Size = getL2CacheSize(deviceId);
-            const int maxCache  = 12 * 1024;//declaredL2Size + (declaredL2Size >> 2);
+            const int maxCache  = 24 * 1024;//declaredL2Size + (declaredL2Size >> 2);
 
             cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int>, cudaFuncCachePreferL1));
             CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, dc_size, doWarnup);
