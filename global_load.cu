@@ -32,9 +32,12 @@ struct Ldg
 {
     __device__ __forceinline__ T* operator()(const T *ptr)
     {
+#if 0
         unsigned long long ret;
         asm volatile ("ld.global.nc.u64 %0, [%1];"  : "=l"(ret) : "l" (ptr));
         return reinterpret_cast<T*>((T)ret);
+#endif
+        return (T*)0;
     }
 };
 
@@ -91,18 +94,19 @@ __global__ void latency_kernel(T** a, int array_size, int stride, int inner_iter
 
     if (do_warnup)
     {
-        for (int curr = 0; curr < wurnup_repeats; ++curr)
+        for (int curr = 0; curr < repeats; ++curr)
             j = func(j);
     }
 
     // Yes, it's race conditions but we go not care.
-    ((T*)a)[array_size * blockDim.y + inner_iterations] = (T)j;
+    if (blockIdx.x > 64)
+        ((T*)a)[array_size * blockDim.y + inner_iterations] = (T)j;
 
     for (int k = 0; k < inner_iterations; ++k)
     {
         T *j = ((T*) a) + threadIdx.y * array_size +  threadIdx.x;
         start_time = clock64();
-        for (int curr = 0; curr < repeats; ++curr)
+        for (int curr = 0; curr < wurnup_repeats; ++curr)
             j = func(j);
         end_time = clock64();
 
@@ -177,7 +181,7 @@ struct CacheBenchmarker
         free(h_a);
 
         printf("%lu, %d\n", array_size * sizeof(T) * block_y,
-            static_cast<int>(sum_latency / (array_size / (double)stride * outer_iterations * inner_iterations * block_y)));
+            static_cast<int>(sum_latency / ( min(array_size, declared_cache_size / (int)sizeof(T)) / (double)stride * outer_iterations * inner_iterations * block_y)));
     }
 
 private:
@@ -263,7 +267,7 @@ int main(int argc, char const *argv[])
                 const int maxCache = declaredL2Size + (declaredL2Size >> 2);
 
                 cuda_assert(cudaFuncSetCacheConfig(latency_kernel<test_type, long long int, Ld<test_type> >,
-                    cudaFuncCachePreferL1));
+                    cudaFuncCachePreferShared));
                 CacheBenchmarker benchmarker(stride, innerIterations, outerIterations, l1_size, doWarnup);
 
                 for (int N = min_array_size; N <= maxCache / elem_size; N += stride)
