@@ -22,6 +22,7 @@
 */
 
 #include "cudassert.cuh"
+#include "flatten.cuh"
 
 #include <stdint.h>
 #include <cstdlib>
@@ -51,6 +52,26 @@ struct Ld
     }
 };
 
+template<typename T>
+struct Nop
+{
+    __device__ __forceinline__ T* operator()(T *j)
+    {
+        asm volatile ("" : : : "memory");
+        return j;
+    }
+};
+
+template<typename T>
+struct TestPrint
+{
+    T* operator()(T* ptr) const
+    {
+        printf("%p\n", ptr);
+        ++ptr;
+        return ptr;
+    }
+};
 
 static int getL2CacheSize(int deviceId)
 {
