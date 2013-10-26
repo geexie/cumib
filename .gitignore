@@ -13,10 +13,6 @@
 *.la
 *.a
 
-# Profiler and execution logs
-*.log
-*.csv
-
 # executable names
 global-*
 laneid-*
