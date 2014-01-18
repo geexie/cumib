@@ -33,13 +33,16 @@ struct Ldg
 {
     __device__ __forceinline__ T* operator()(const T *ptr)
     {
-#if defined (__CUDA_ARCH__) && __CUDA_ARCH__ >= 320
+#if defined (__CUDA_ARCH__) && __CUDA_ARCH__ > 320
         unsigned long long ret;
         asm volatile ("ld.global.nc.u64 %0, [%1];"  : "=l"(ret) : "l" (ptr));
         return reinterpret_cast<T*>((T)ret);
-#else
-        return (T*)0;
+#elif defined (__CUDA_ARCH__) && __CUDA_ARCH__ == 320
+        unsigned int ret;
+        asm volatile ("ld.global.nc.u32 %0, [%1];"  : "=r"(ret) : "r" (ptr));
+        return reinterpret_cast<T*>((T)ret);
 #endif
+        return (T*)0;
     }
 };
 
