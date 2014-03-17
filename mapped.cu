@@ -1,7 +1,7 @@
 /*
 * The MIT License (MIT)
 *
-* Copyright (c) 2013 cuda.geek (cuda.geek@gmail.com)
+* Copyright (c) 2013-2014 cuda.geek (cuda.geek@gmail.com)
 *
 * Permission is hereby granted, free of charge, to any  person obtaining a copy of
 * this software  and associated  documentation  files (the "Software"), to deal in
@@ -22,12 +22,11 @@
 */
 
 #include "cudassert.cuh"
+#include "cumib.cuh"
 
-#include <assert.h>
-#include <cstdlib>
-#include <stdio.h>
-#include <sys/time.h>
 #include <cmath>
+
+using namespace cumib;
 
 __global__ void inc_kernel(unsigned int *cnt)
 {
@@ -126,41 +125,41 @@ static int getMajorCC(int deviceId)
     return prop.major;
 }
 
+static dim3 declareGrid(int size, int cta_size)
+{
+    int deviceId = 0;
+    cuda_assert(cudaGetDevice(&deviceId));
+    const int major_cc = getMajorCC(deviceId);
+
+    dim3 grid(size/cta_size);
+    if((major_cc < 3) && (size/cta_size) >= 65536)
+        grid = dim3( static_cast<int>(sqrt(size/cta_size)), static_cast<int>(sqrt(size/cta_size)));
+
+    return grid;
+}
+
 template<typename Pi, typename Po>
 static void run_mapped_test(const size_t min_array_size, const size_t  max_array_size)
 {
     Pi src(max_array_size, true);
     Po dst(max_array_size);
 
-    struct timeval start, end;
-    long long seconds, useconds;
-    double mtime;
+    HostTimer timer;
 
     static const int cta_size = 128;
-    int deviceId = 0;
-    cuda_assert(cudaGetDevice(&deviceId));
-    const int major_cc = getMajorCC(deviceId);
 
     for (size_t size = min_array_size; size < max_array_size; size *=2)
     {
         printf("run: %zi\t", size);
-        dim3 block(size/cta_size);
-        // a quite dirty fix for Fermi because it support grid size less then 65536 each dimension
-        if((major_cc < 3) && (size/cta_size) >= 65536)
-            block = dim3( static_cast<int>(sqrt(size/cta_size)), static_cast<int>(sqrt(size/cta_size)));
 
-        gettimeofday(&start, 0);
-        copy1d1d<<<block, cta_size>>>(src.ptr(), dst.ptr());
+        dim3 grid = declareGrid(size, cta_size);
+
+        timer.go();
+        copy1d1d<<<grid, cta_size>>>(src.ptr(), dst.ptr());
         cuda_assert(cudaDeviceSynchronize());
         cuda_assert(cudaGetLastError());
-        gettimeofday(&end, 0);
 
-        seconds  = end.tv_sec  - start.tv_sec;
-        useconds = end.tv_usec - start.tv_usec;
-
-        mtime = ((seconds) * 1000 + useconds / 1000.0) + 0.5;
-
-        // sanity checks
+        float mtime = timer.measure();
         printf("%s -> %s:\t %f ms\n", src.space(), dst.space(), mtime);
     }
 }
@@ -170,8 +169,8 @@ static void run_mapped_tests(const size_t min_array_size, const size_t  max_arra
 {
     run_mapped_test<MPtr<T,Dispatcher<GMEM_DEVICE> >, MPtr<T,Dispatcher<GMEM_DEVICE> > >(min_array_size, max_array_size);
     run_mapped_test<MPtr<T,Dispatcher<GMEM_DEVICE> >, MPtr<T,Dispatcher<GMEM_HOST> > >(min_array_size, max_array_size);
-    run_mapped_test<MPtr<T,Dispatcher<GMEM_HOST> >, MPtr<T,Dispatcher<GMEM_DEVICE> > >(min_array_size, max_array_size);
-    run_mapped_test<MPtr<T,Dispatcher<GMEM_HOST> >, MPtr<T,Dispatcher<GMEM_HOST> > >(min_array_size, max_array_size);
+    run_mapped_test<MPtr<T,Dispatcher<GMEM_HOST> >,   MPtr<T,Dispatcher<GMEM_DEVICE> > >(min_array_size, max_array_size);
+    run_mapped_test<MPtr<T,Dispatcher<GMEM_HOST> >,   MPtr<T,Dispatcher<GMEM_HOST> > >(min_array_size, max_array_size);
 }
 
 int main(int argc, char **argv)
@@ -187,8 +186,6 @@ int main(int argc, char **argv)
     printCudaDeviceInfo(deviceId);
 
     static const size_t min_array_size = static_cast<size_t>(std::pow(2., 15.));
-
     static const size_t max_array_size = static_cast<size_t>(std::pow(2., 27));
-
     run_mapped_tests<test_t>(min_array_size, max_array_size);
 }

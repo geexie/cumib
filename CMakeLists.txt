@@ -52,3 +52,5 @@ include_directories("${CMAKE_SOURCE_DIR}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xptxas -dlcm=ca")
 add_executable(${the_name}_global global_load.cu print_device_info.cu)
+add_executable(${the_name}_laneid laneid.cu)
+add_executable(${the_name}_mapped mapped.cu print_device_info.cu)

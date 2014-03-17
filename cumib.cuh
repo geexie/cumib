@@ -24,6 +24,10 @@
 #ifndef __CUMIB_CUMIB_CUH__
 #define __CUMIB_CUMIB_CUH__
 
+#include <cstdlib>
+#include <stdio.h>
+#include <sys/time.h>
+
 #if _WIN32 || _WIN64
 # if _WIN64
 #  define __CUMIB_ENV_64__
@@ -81,6 +85,36 @@ public:
 private:
     cudaEvent_t _start;
     cudaEvent_t _stop;
+};
+
+class HostTimer {
+
+public:
+    HostTimer() {}
+
+    ~HostTimer(){}
+
+    void go()
+    {
+        gettimeofday(&start, 0);
+    }
+
+    //returns time after _start event to current point in Ms.
+    float measure()
+    {
+        gettimeofday(&end, 0);
+
+        seconds  = end.tv_sec  - start.tv_sec;
+        useconds = end.tv_usec - start.tv_usec;
+
+        mtime = ((seconds) * 1000 + useconds / 1000.0) + 0.5;
+        return (float)mtime;
+    }
+
+private:
+    struct timeval start, end;
+    long long seconds, useconds;
+    double mtime;
 };
 
 }
