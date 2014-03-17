@@ -23,58 +23,13 @@
 
 #include "cudassert.cuh"
 #include "flatten.cuh"
+#include "memory.cuh"
 
 #include <stdint.h>
 #include <cstdlib>
 #include <stdio.h>
 
-template<typename T>
-struct Ldg
-{
-    __device__ __forceinline__ T* operator()(const T *ptr)
-    {
-#if defined (__CUDA_ARCH__) && __CUDA_ARCH__ > 320
-        unsigned long long ret;
-        asm volatile ("ld.global.nc.u64 %0, [%1];"  : "=l"(ret) : "l" (ptr));
-        return reinterpret_cast<T*>((T)ret);
-#elif defined (__CUDA_ARCH__) && __CUDA_ARCH__ == 320
-        unsigned int ret;
-        asm volatile ("ld.global.nc.u32 %0, [%1];"  : "=r"(ret) : "r" (ptr));
-        return reinterpret_cast<T*>((T)ret);
-#endif
-        return (T*)0;
-    }
-};
-
-template<typename T>
-struct Ld
-{
-    __device__ __forceinline__ T* operator()(const T *j)
-    {
-        return *(T **)j;
-    }
-};
-
-template<typename T>
-struct Nop
-{
-    __device__ __forceinline__ T* operator()(T *j)
-    {
-        asm volatile ("" : : : "memory");
-        return j;
-    }
-};
-
-template<typename T>
-struct TestPrint
-{
-    T* operator()(T* ptr) const
-    {
-        printf("%p\n", ptr);
-        ++ptr;
-        return ptr;
-    }
-};
+using namespace cumib;
 
 static int getL2CacheSize(int deviceId)
 {
