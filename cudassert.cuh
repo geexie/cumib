@@ -1,7 +1,7 @@
 /*
 * The MIT License (MIT)
 *
-* Copyright (c) 2013 cuda.geek (cuda.geek@gmail.com)
+* Copyright (c) 2013-2014 cuda.geek (cuda.geek@gmail.com)
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy of
 * this software and associated documentation files (the "Software"), to deal in
@@ -21,8 +21,8 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef CUMIB_CUDAASSERT_CUH
-#define CUMIB_CUDAASSERT_CUH
+#ifndef __CUMIB_CUDAASSERT_CUH__
+#define __CUMIB_CUDAASSERT_CUH__
 
 #include <stdio.h>
 
@@ -37,6 +37,6 @@ inline void cudaAssert(cudaError_t code, const char *file, int line, bool abort 
    }
 }
 
-void printCudaDeviceInfo(int deviceId);
+void printCudaDeviceInfo(int deviceId, bool verbose = false);
 
 #endif
