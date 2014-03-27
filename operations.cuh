@@ -41,6 +41,20 @@ struct And<int>
     { int tmp; asm volatile ("add.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
 };
 
+template<>
+struct And<unsigned int>
+{
+    __device__ __forceinline__ unsigned int operator()(const unsigned int& a, const unsigned int& b) const
+    { unsigned int tmp; asm volatile ("add.u32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+template<>
+struct And<float>
+{
+    __device__ __forceinline__ float operator()(const float& a, const float& b) const
+    { float tmp; asm volatile ("add.f32 %0, %1, %2;": "=f"(tmp):"f"(a), "f"(b)); return tmp; }
+};
+
 template<typename T>
 struct Sub
 {
@@ -52,6 +66,20 @@ struct Sub<int>
 {
     __device__ __forceinline__ int operator()(const int& a, const int& b) const
     { int tmp; asm volatile ("sub.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+template<>
+struct Sub<unsigned int>
+{
+    __device__ __forceinline__ unsigned int operator()(const unsigned int& a, const unsigned int& b) const
+    { unsigned int tmp; asm volatile ("sub.u32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+template<>
+struct Sub<float>
+{
+    __device__ __forceinline__ float operator()(const float& a, const float& b) const
+    { float tmp; asm volatile ("sub.f32 %0, %1, %2;": "=f"(tmp):"f"(a), "f"(b)); return tmp; }
 };
 
 
