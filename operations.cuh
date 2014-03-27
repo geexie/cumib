@@ -31,17 +31,27 @@ namespace cumib {
 template<typename T>
 struct And
 {
-    __device__ __forceinline__ T operator()(const T& a, const T& b) const
-    {
-        T tmp;
-        asm volatile ("add.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp;
-    }
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a+b; }
+};
+
+template<>
+struct And<int>
+{
+    __device__ __forceinline__ int operator()(const int& a, const int& b) const
+    { int tmp; asm volatile ("add.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
 };
 
 template<typename T>
 struct Sub
 {
     __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a-b; }
+};
+
+template<>
+struct Sub<int>
+{
+    __device__ __forceinline__ int operator()(const int& a, const int& b) const
+    { int tmp; asm volatile ("sub.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
 };
 
 

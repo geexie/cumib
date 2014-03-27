@@ -48,11 +48,11 @@ template<class Op, typename T> struct Repeat<Op, T, 1>
     }
 };
 
-template<typename T, typename D, typename Op>
+template<typename T, typename D, typename Op, int REPEATS>
 static __global__ void latency_kernel(const T* in, T* out, D* latency, int inner_repeats)
 {
     Op op;
-    Repeat<Op, T, 64> composite_op;
+    Repeat<Op, T, REPEATS> composite_op;
 
     T a = in[threadIdx.x];
     T b = in[threadIdx.x+1];
@@ -61,7 +61,7 @@ static __global__ void latency_kernel(const T* in, T* out, D* latency, int inner
 
     start = clock64();
 
-    for (int i=0; i<inner_repeats; ++i)
+    for (int i=0; i<inner_repeats/REPEATS; ++i)
     {
         a = composite_op(op, a, b);
     }
@@ -74,7 +74,7 @@ static __global__ void latency_kernel(const T* in, T* out, D* latency, int inner
     latency[(blockIdx.x*blockDim.x + threadIdx.x)*2+1] = stop;
 }
 
-template<typename T, typename D>
+template<typename T, typename D, int REPEATS>
 struct LatencyTest
 {
     template <typename Op>
@@ -90,13 +90,13 @@ struct LatencyTest
 
         D* latency; cuda_assert(cudaMalloc(&latency, sizeof(latency_value)));
 
-        static const int inner_repeats = 256;
-        static const int outer_repeats =  32;
+        static const int inner_repeats = 1024;
+        static const int outer_repeats = 2048;
 
         for (int i = 0; i < outer_repeats; ++i)
         {
             cuda_assert(cudaGetLastError());
-            latency_kernel<T, D, Op><<<1, 1>>>(src, dst, latency, inner_repeats);
+            latency_kernel<T, D, Op, REPEATS><<<1, 1>>>(src, dst, latency, inner_repeats);
             cuda_assert(cudaGetLastError());
             cuda_assert(cudaThreadSynchronize());
 
@@ -112,7 +112,7 @@ int main(int argc, char const *argv[])
 {
     typedef typename ConstructOperationList<And<int>, Sub<int> >::OpList BaseMathList;
 
-    ForEach<BaseMathList, LatencyTest<int, long long int> > all;
+    ForEach<BaseMathList, LatencyTest<int, long long int, 128> > all;
     all();
 
     return 0;
