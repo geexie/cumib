@@ -31,13 +31,17 @@ namespace cumib {
 template<typename T>
 struct And
 {
-    void operator()(/*const T& a, const T& b*/) {std::cout << "a+b" << std::endl;}
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const
+    {
+        T tmp;
+        asm volatile ("add.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp;
+    }
 };
 
 template<typename T>
 struct Sub
 {
-    void operator()(/*const T& a, const T& b*/) {std::cout << "a-b" << std::endl;}
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a-b; }
 };
 
 
@@ -81,21 +85,20 @@ struct ConstructOperationList<>
 };
 
 // for each operation in list apply
-template <class TList> struct ForEach;
+template <class OpList, class OpRoot> struct ForEach;
 
-template <> struct ForEach<Empty>
+template <class OpRoot> struct ForEach<Empty, OpRoot>
 {
     void operator()(){}
 };
 
-template <class T, class U>
-struct ForEach< OperationList<T, U> >
+template <class T, class U, class OpRoot>
+struct ForEach< OperationList<T, U>, OpRoot>
 {
     void operator()()
     {
-        T op;
-        op();
-        ForEach<U> op2;
+        OpRoot::template measure<T>();
+        ForEach<U, OpRoot> op2;
         op2();
     }
 };

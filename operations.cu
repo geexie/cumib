@@ -28,19 +28,21 @@
 using namespace cumib;
 using namespace std;
 
+// a = a+b+b+b+b+b+b+b
 
 template<class Op, typename T, int times> struct Repeat
 {
-    void operator()(Op op, const T& a, const T& b) const
+    __device__ __forceinline__ T operator()(const Op& op, const T& a, const T& b) const
     {
         Repeat<Op, T, times-1> prev;
-        return prev(op, a, op(a, b));
+        T tmp = prev(op, a, b);
+        return op(tmp, b);
     }
 };
 
 template<class Op, typename T> struct Repeat<Op, T, 1>
 {
-    void operator()(Op op, const T& a, const T& b) const
+    __device__ __forceinline__ T operator()(const Op& op, const T& a, const T& b) const
     {
         return op(a, b);
     }
@@ -59,45 +61,50 @@ static __global__ void latency_kernel(const T* in, T* out, D* latency, int inner
 
     start = clock64();
 
-    for (int i=0; i<inner_repeats/64; ++i)
+    for (int i=0; i<inner_repeats; ++i)
     {
-        composite_op(a, b);
+        a = composite_op(op, a, b);
     }
 
-    start = clock64();
+    stop = clock64();
 
-    out[threadIdx] = (a + b);
+    out[threadIdx.x] = (a + b);
 
     latency[(blockIdx.x*blockDim.x + threadIdx.x)*2]   = start;
     latency[(blockIdx.x*blockDim.x + threadIdx.x)*2+1] = stop;
+}
 
-};
-
-template<typename T, typename D, typename Op>
+template<typename T, typename D>
 struct LatencyTest
 {
+    template <typename Op>
     static void measure()
     {
+        D latency_value[2];
+        D latency_value_avg = D(0);
+
         std::cout << "measure" << std::endl;
-        // T* src;
-        // T* dst;
-        // D* latency;
-        // D latency_value[2];
-        // D latency_value_avg = D(0);
 
-        // static const int inner_repeats = 256;
-        // static const int outer_repeats =  16;
+        T* src; cuda_assert(cudaMalloc(&src, sizeof(T)*2));
+        T* dst; cuda_assert(cudaMalloc(&dst, sizeof(T)*2));
 
-        // for (int i = 0; i < outer_repeats; ++i)
-        // {
-        //     latency_kernel<T, D, Op><<<1, 1>>>(src, dst, latency);
-        //     cuda_assert(cudaGetLastError());
-        //     cuda_assert(cudaThreadSynchronize());
+        D* latency; cuda_assert(cudaMalloc(&latency, sizeof(latency_value)));
 
-        //     cudaMemcpy(latency, &latency_value, sizeof(latency_value), cudaMemcpyDeviceToHost);
-        //     latency_value_avg += latency_value[1] - latency_value[0];
-        // }
-        // printf ("%.3f clock\n", ((double)(latency_value_avg)/(inner_repeats*outer_repeats)));
+        static const int inner_repeats = 256;
+        static const int outer_repeats =  32;
+
+        for (int i = 0; i < outer_repeats; ++i)
+        {
+            cuda_assert(cudaGetLastError());
+            latency_kernel<T, D, Op><<<1, 1>>>(src, dst, latency, inner_repeats);
+            cuda_assert(cudaGetLastError());
+            cuda_assert(cudaThreadSynchronize());
+
+            cudaMemcpy(&latency_value[0], latency, sizeof(latency_value), cudaMemcpyDeviceToHost);
+            latency_value_avg += latency_value[1] - latency_value[0];
+        }
+
+        printf ("%.3f clock\n", ((double)(latency_value_avg)/(inner_repeats*outer_repeats)));
     }
 };
 
@@ -105,7 +112,7 @@ int main(int argc, char const *argv[])
 {
     typedef typename ConstructOperationList<And<int>, Sub<int> >::OpList BaseMathList;
 
-    ForEach<BaseMathList/*, LatencyTest*/> all;
+    ForEach<BaseMathList, LatencyTest<int, long long int> > all;
     all();
 
     return 0;
