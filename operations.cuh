@@ -28,33 +28,35 @@
 
 namespace cumib {
 
+// addition
 template<typename T>
-struct And
+struct Add
 {
     __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a+b; }
 };
 
 template<>
-struct And<int>
+struct Add<int>
 {
     __device__ __forceinline__ int operator()(const int& a, const int& b) const
     { int tmp; asm volatile ("add.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
 };
 
 template<>
-struct And<unsigned int>
+struct Add<unsigned int>
 {
     __device__ __forceinline__ unsigned int operator()(const unsigned int& a, const unsigned int& b) const
     { unsigned int tmp; asm volatile ("add.u32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
 };
 
 template<>
-struct And<float>
+struct Add<float>
 {
     __device__ __forceinline__ float operator()(const float& a, const float& b) const
     { float tmp; asm volatile ("add.f32 %0, %1, %2;": "=f"(tmp):"f"(a), "f"(b)); return tmp; }
 };
 
+// subtraction
 template<typename T>
 struct Sub
 {
@@ -82,6 +84,19 @@ struct Sub<float>
     { float tmp; asm volatile ("sub.f32 %0, %1, %2;": "=f"(tmp):"f"(a), "f"(b)); return tmp; }
 };
 
+// multiplication
+template<typename T>
+struct Mul
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a*b; }
+};
+
+// division
+template<typename T>
+struct Div
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a/b; }
+};
 
 struct Empty {};
 
@@ -140,6 +155,28 @@ struct ForEach< OperationList<T, U>, OpRoot>
         op2();
     }
 };
+
+template<typename>
+struct TypeTraits;
+
+#define DEF_TYPE_TRAIT(a) template<> struct TypeTraits<a> { static char* name() {return #a;}};
+// #define DEF_TYPE_TRAIT(a) template<> struct TypeTraits<a> { static char* name() {return #a;}};
+
+DEF_TYPE_TRAIT(Add<int>)
+DEF_TYPE_TRAIT(Sub<int>)
+DEF_TYPE_TRAIT(Mul<int>)
+DEF_TYPE_TRAIT(Div<int>)
+
+DEF_TYPE_TRAIT(Add<unsigned int>)
+DEF_TYPE_TRAIT(Sub<unsigned int>)
+DEF_TYPE_TRAIT(Mul<unsigned int>)
+DEF_TYPE_TRAIT(Div<unsigned int>)
+
+DEF_TYPE_TRAIT(Add<float>)
+DEF_TYPE_TRAIT(Sub<float>)
+DEF_TYPE_TRAIT(Mul<float>)
+DEF_TYPE_TRAIT(Div<float>)
+
 
 
 } // namespace cumib

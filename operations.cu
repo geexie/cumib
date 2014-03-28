@@ -24,6 +24,7 @@
 #include "operations.cuh"
 #include "cudassert.cuh"
 #include <iostream>
+#include <typeinfo>
 
 using namespace cumib;
 using namespace std;
@@ -83,7 +84,6 @@ struct LatencyTest
         D latency_value[2];
         D latency_value_avg = D(0);
 
-        std::cout << "measure" << std::endl;
 
         T* src; cuda_assert(cudaMalloc(&src, sizeof(T)*2));
         T* dst; cuda_assert(cudaMalloc(&dst, sizeof(T)*2));
@@ -104,16 +104,24 @@ struct LatencyTest
             latency_value_avg += latency_value[1] - latency_value[0];
         }
 
-        printf ("%.3f clock\n", ((double)(latency_value_avg)/(inner_repeats*outer_repeats)));
+        printf("%s %.3f clocks\n", TypeTraits<Op>::name() ,
+         ((double)(latency_value_avg)/(inner_repeats*outer_repeats)));
     }
 };
 
+template<typename T>
+void run_all_latency_tests()
+{
+    typedef typename ConstructOperationList<Add<T>, Sub<T>, Mul<T>, Div<T> >::OpList BaseMathList;
+    ForEach<BaseMathList, LatencyTest<T, long long int, 128> > all;
+    all();
+}
+
 int main(int argc, char const *argv[])
 {
-    typedef typename ConstructOperationList<And<int>, Sub<int> >::OpList BaseMathList;
-
-    ForEach<BaseMathList, LatencyTest<int, long long int, 128> > all;
-    all();
+    run_all_latency_tests<int>();
+    run_all_latency_tests<unsigned int>();
+    run_all_latency_tests<float>();
 
     return 0;
 }
