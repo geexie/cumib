@@ -183,6 +183,30 @@ struct Shfl
     __device__ __forceinline__ T operator()(const T& a, const T& b) const { return __shfl(a, b); }
 };
 
+// vote
+template<typename T>
+struct Ballot
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& /*b*/) const { return __ballot(a); }
+};
+
+template<typename T>
+struct All
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& /*b*/) const { return __all(a); }
+};
+
+template<typename T>
+struct Any
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& /*b*/) const { return __any(a); }
+};
+
+struct Sync
+{
+    __device__ __forceinline__ void operator()(void) const { return __syncthreads(); }
+};
+
 struct Empty {};
 
 template<typename Op1, typename Op2>
@@ -282,6 +306,10 @@ DEF_TYPE_TRAIT(Mad<double>)
 DEF_TYPE_TRAIT(Min<double>)
 
 DEF_TYPE_TRAIT(Shfl<int>)
+DEF_TYPE_TRAIT(Ballot<int>)
+DEF_TYPE_TRAIT(All<int>)
+DEF_TYPE_TRAIT(Any<int>)
+DEF_TYPE_TRAIT(Sync)
 
 } // namespace cumib
 
