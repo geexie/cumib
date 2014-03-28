@@ -43,6 +43,13 @@ struct Add<int>
 };
 
 template<>
+struct Add<long long int>
+{
+    __device__ __forceinline__ long long int operator()(const long long int& a, const long long int& b) const
+    { long long int tmp; asm volatile ("add.s64 %0, %1, %2;": "=l"(tmp):"l"(a), "l"(b)); return tmp; }
+};
+
+template<>
 struct Add<unsigned int>
 {
     __device__ __forceinline__ unsigned int operator()(const unsigned int& a, const unsigned int& b) const
@@ -84,6 +91,14 @@ struct Sub<float>
     { float tmp; asm volatile ("sub.f32 %0, %1, %2;": "=f"(tmp):"f"(a), "f"(b)); return tmp; }
 };
 
+template<>
+struct Sub<long long int>
+{
+    __device__ __forceinline__ long long int operator()(const long long int& a, const long long int& b) const
+    { long long int tmp; asm volatile ("sub.s64 %0, %1, %2;": "=l"(tmp):"l"(a), "l"(b)); return tmp; }
+};
+
+
 // multiplication
 template<typename T>
 struct Mul
@@ -96,6 +111,13 @@ template<typename T>
 struct Div
 {
     __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a/b; }
+};
+
+// shuffle
+template<typename T>
+struct Shfl
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return __shfl(a, b); }
 };
 
 struct Empty {};
@@ -166,16 +188,24 @@ DEF_TYPE_TRAIT(Add<int>)
 DEF_TYPE_TRAIT(Sub<int>)
 DEF_TYPE_TRAIT(Mul<int>)
 DEF_TYPE_TRAIT(Div<int>)
+DEF_TYPE_TRAIT(Shfl<int>)
 
 DEF_TYPE_TRAIT(Add<unsigned int>)
 DEF_TYPE_TRAIT(Sub<unsigned int>)
 DEF_TYPE_TRAIT(Mul<unsigned int>)
 DEF_TYPE_TRAIT(Div<unsigned int>)
+DEF_TYPE_TRAIT(Shfl<unsigned int>)
 
 DEF_TYPE_TRAIT(Add<float>)
 DEF_TYPE_TRAIT(Sub<float>)
 DEF_TYPE_TRAIT(Mul<float>)
 DEF_TYPE_TRAIT(Div<float>)
+DEF_TYPE_TRAIT(Shfl<float>)
+
+DEF_TYPE_TRAIT(Add<long long int>)
+DEF_TYPE_TRAIT(Sub<long long int>)
+DEF_TYPE_TRAIT(Mul<long long int>)
+DEF_TYPE_TRAIT(Div<long long int>)
 
 
 
