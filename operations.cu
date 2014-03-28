@@ -112,7 +112,7 @@ struct LatencyTest
 template<typename T>
 void run_all_latency_tests()
 {
-    typedef typename ConstructOperationList<Add<T>, Sub<T>, Mul<T>, Div<T> >::OpList BaseMathList;
+    typedef typename ConstructOperationList<Add<T>, Sub<T>, Mul<T>, Div<T>, Mad<T>, Min<T> >::OpList BaseMathList;
     ForEach<BaseMathList, LatencyTest<T, long long int, 128> > all;
     all();
 }
@@ -131,7 +131,8 @@ int main(int argc, char const *argv[])
     run_all_latency_tests<unsigned int>();
     run_all_latency_tests<float>();
     run_all_latency_tests<long long int>();
-
+    run_all_latency_tests<double>();
+    printf("\n");
     run_type_agnostic_tests<int>();
 
     return 0;

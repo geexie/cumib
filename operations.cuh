@@ -28,6 +28,55 @@
 
 namespace cumib {
 
+// minimum & maximum
+template<typename T>
+struct Min
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return min(a,b); }
+};
+
+template<>
+struct Min<int>
+{
+    __device__ __forceinline__ int operator()(const int& a, const int& b) const
+    { int tmp; asm volatile ("min.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+template<>
+struct Min<long long int>
+{
+    __device__ __forceinline__ long long int operator()(const long long int& a, const long long int& b) const
+    { long long int tmp; asm volatile ("min.s64 %0, %1, %2;": "=l"(tmp):"l"(a), "l"(b)); return tmp; }
+};
+
+template<>
+struct Min<unsigned int>
+{
+    __device__ __forceinline__ unsigned int operator()(const unsigned int& a, const unsigned int& b) const
+    { unsigned int tmp; asm volatile ("min.u32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+template<>
+struct Min<float>
+{
+    __device__ __forceinline__ float operator()(const float& a, const float& b) const
+    { float tmp; asm volatile ("min.f32 %0, %1, %2;": "=f"(tmp):"f"(a), "f"(b)); return tmp; }
+};
+
+template<>
+struct Min<double>
+{
+    __device__ __forceinline__ double operator()(const double& a, const double& b) const
+    { double tmp; asm volatile ("min.f64 %0, %1, %2;": "=d"(tmp):"d"(a), "d"(b)); return tmp; }
+};
+
+// multiply & addition
+template<typename T>
+struct Mad
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a*b+b; }
+};
+
 // addition
 template<typename T>
 struct Add
@@ -63,6 +112,13 @@ struct Add<float>
     { float tmp; asm volatile ("add.f32 %0, %1, %2;": "=f"(tmp):"f"(a), "f"(b)); return tmp; }
 };
 
+template<>
+struct Add<double>
+{
+    __device__ __forceinline__ double operator()(const double& a, const double& b) const
+    { double tmp; asm volatile ("add.f64 %0, %1, %2;": "=d"(tmp):"d"(a), "d"(b)); return tmp; }
+};
+
 // subtraction
 template<typename T>
 struct Sub
@@ -96,6 +152,13 @@ struct Sub<long long int>
 {
     __device__ __forceinline__ long long int operator()(const long long int& a, const long long int& b) const
     { long long int tmp; asm volatile ("sub.s64 %0, %1, %2;": "=l"(tmp):"l"(a), "l"(b)); return tmp; }
+};
+
+template<>
+struct Sub<double>
+{
+    __device__ __forceinline__ double operator()(const double& a, const double& b) const
+    { double tmp; asm volatile ("sub.f64 %0, %1, %2;": "=d"(tmp):"d"(a), "d"(b)); return tmp; }
 };
 
 
@@ -182,32 +245,43 @@ template<typename>
 struct TypeTraits;
 
 #define DEF_TYPE_TRAIT(a) template<> struct TypeTraits<a> { static char* name() {return #a;}};
-// #define DEF_TYPE_TRAIT(a) template<> struct TypeTraits<a> { static char* name() {return #a;}};
 
 DEF_TYPE_TRAIT(Add<int>)
 DEF_TYPE_TRAIT(Sub<int>)
 DEF_TYPE_TRAIT(Mul<int>)
 DEF_TYPE_TRAIT(Div<int>)
-DEF_TYPE_TRAIT(Shfl<int>)
+DEF_TYPE_TRAIT(Mad<int>)
+DEF_TYPE_TRAIT(Min<int>)
 
 DEF_TYPE_TRAIT(Add<unsigned int>)
 DEF_TYPE_TRAIT(Sub<unsigned int>)
 DEF_TYPE_TRAIT(Mul<unsigned int>)
 DEF_TYPE_TRAIT(Div<unsigned int>)
-DEF_TYPE_TRAIT(Shfl<unsigned int>)
+DEF_TYPE_TRAIT(Mad<unsigned int>)
+DEF_TYPE_TRAIT(Min<unsigned int>)
 
 DEF_TYPE_TRAIT(Add<float>)
 DEF_TYPE_TRAIT(Sub<float>)
 DEF_TYPE_TRAIT(Mul<float>)
 DEF_TYPE_TRAIT(Div<float>)
-DEF_TYPE_TRAIT(Shfl<float>)
+DEF_TYPE_TRAIT(Mad<float>)
+DEF_TYPE_TRAIT(Min<float>)
 
 DEF_TYPE_TRAIT(Add<long long int>)
 DEF_TYPE_TRAIT(Sub<long long int>)
 DEF_TYPE_TRAIT(Mul<long long int>)
 DEF_TYPE_TRAIT(Div<long long int>)
+DEF_TYPE_TRAIT(Mad<long long int>)
+DEF_TYPE_TRAIT(Min<long long int>)
 
+DEF_TYPE_TRAIT(Add<double>)
+DEF_TYPE_TRAIT(Sub<double>)
+DEF_TYPE_TRAIT(Mul<double>)
+DEF_TYPE_TRAIT(Div<double>)
+DEF_TYPE_TRAIT(Mad<double>)
+DEF_TYPE_TRAIT(Min<double>)
 
+DEF_TYPE_TRAIT(Shfl<int>)
 
 } // namespace cumib
 
