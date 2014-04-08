@@ -200,6 +200,18 @@ void run_control_tests()
 
 int main(int argc, char const *argv[])
 {
+    enum
+    {
+        DEVICE_ID_INDEX = 1,
+    };
+
+    int deviceId = 0;
+    if (argc > DEVICE_ID_INDEX)
+        deviceId = atoi(argv[DEVICE_ID_INDEX]);
+
+    printf("run benchmark on device #%d\n", deviceId);
+    cuda_assert(cudaSetDevice(deviceId));
+
     run_all_latency_tests<int>();
     printf("\n");
 
