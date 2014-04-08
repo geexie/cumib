@@ -74,7 +74,7 @@ struct Ld
 template<typename T> struct Ldg;
 
 #if defined (__CUDA_ARCH__) && __CUDA_ARCH__ >= 320
-# if __CUMIB_ENV_64__
+# if defined(__CUMIB_ENV_64__)
 
 template<typename T>
 struct Ldg

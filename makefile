@@ -40,7 +40,7 @@
 # global  (=cg) for L2 plot.
 ##################################################################################
 
-suppoted_cuda_arch = 20 21 30 32 35
+suppoted_cuda_arch = 20 21 30 32 35 50
 
 HOST_NAME = $(shell uname -s 2>/dev/null | tr "[:upper:]" "[:lower:]")
 HOST_ARCH = $(shell uname -m | sed -e "s/i386/i686/")
@@ -94,10 +94,16 @@ global-$(TARGET_ARCH): global_load.dev.o print_device_info.o global_load.o
 mapped-$(TARGET_ARCH): mapped.o print_device_info.o mapped.dev.o
 	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $^ -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
+operations-$(TARGET_ARCH): operations.o print_device_info.o operations.dev.o
+	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $^ -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
+
 global_load.dev.o: global_load.o print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
 mapped.dev.o: mapped.o print_device_info.o
+	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
+
+operations.dev.o: operations.o print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
 laneid-$(TARGET_ARCH): laneid.o
