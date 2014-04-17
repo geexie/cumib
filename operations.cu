@@ -198,6 +198,13 @@ void run_control_tests()
     all();
 }
 
+void run_bit_manipulation_tests()
+{
+    typedef typename ConstructOperationList<Prmt >::OpList BaseMathList;
+    ForEach<BaseMathList, LatencyTest<int, long long int, 128> > all;
+    all();
+}
+
 int main(int argc, char const *argv[])
 {
     enum
@@ -211,6 +218,7 @@ int main(int argc, char const *argv[])
 
     printf("run benchmark on device #%d\n", deviceId);
     cuda_assert(cudaSetDevice(deviceId));
+    printCudaDeviceInfo(deviceId, true);
 
     run_all_latency_tests<int>();
     printf("\n");
@@ -231,5 +239,8 @@ int main(int argc, char const *argv[])
     printf("\n");
 
     run_control_tests();
+    printf("\n");
+
+    run_bit_manipulation_tests();
     return 0;
 }

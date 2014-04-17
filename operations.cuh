@@ -207,6 +207,12 @@ struct Sync
     __device__ __forceinline__ void operator()(void) const { return __syncthreads(); }
 };
 
+struct Prmt
+{
+    __device__ __forceinline__ int operator()(const int& a, const int& b) const
+    { int tmp; asm volatile ("prmt.b32 %0, %1, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
 struct Empty {};
 
 template<typename Op1, typename Op2>
@@ -310,6 +316,7 @@ DEF_TYPE_TRAIT(Ballot<int>)
 DEF_TYPE_TRAIT(All<int>)
 DEF_TYPE_TRAIT(Any<int>)
 DEF_TYPE_TRAIT(Sync)
+DEF_TYPE_TRAIT(Prmt)
 
 } // namespace cumib
 
