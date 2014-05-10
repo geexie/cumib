@@ -205,6 +205,14 @@ void run_bit_manipulation_tests()
     all();
 }
 
+template<typename T>
+void run_video_tests()
+{
+    typedef typename ConstructOperationList<VAdd<T>, VMin<T> >::OpList BaseMathList;
+    ForEach<BaseMathList, LatencyTest<T, long long int, 128> > all;
+    all();
+}
+
 int main(int argc, char const *argv[])
 {
     enum
@@ -236,6 +244,12 @@ int main(int argc, char const *argv[])
     printf("\n");
 
     run_type_agnostic_tests<int>();
+    printf("\n");
+
+    run_video_tests<int>();
+    printf("\n");
+
+    run_video_tests<unsigned int>();
     printf("\n");
 
     run_control_tests();

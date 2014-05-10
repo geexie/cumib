@@ -207,6 +207,48 @@ struct Sync
     __device__ __forceinline__ void operator()(void) const { return __syncthreads(); }
 };
 
+// video addition
+template<typename T>
+struct VAdd
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return a+b; }
+};
+
+template<>
+struct VAdd<int>
+{
+    __device__ __forceinline__ int operator()(const int& a, const int& b) const
+    { int tmp; asm volatile ("vadd.s32.s32.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+template<>
+struct VAdd<unsigned int>
+{
+    __device__ __forceinline__ unsigned operator()(const unsigned int& a, const unsigned int& b) const
+    { unsigned int tmp; asm volatile ("vadd.u32.u32.u32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+// video addition
+template<typename T>
+struct VMin
+{
+    __device__ __forceinline__ T operator()(const T& a, const T& b) const { return min(a,b); }
+};
+
+template<>
+struct VMin<int>
+{
+    __device__ __forceinline__ int operator()(const int& a, const int& b) const
+    { int tmp; asm volatile ("vmin.s32.s32.s32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
+template<>
+struct VMin<unsigned int>
+{
+    __device__ __forceinline__ unsigned operator()(const unsigned int& a, const unsigned int& b) const
+    { unsigned int tmp; asm volatile ("vmin.u32.u32.u32 %0, %1, %2;": "=r"(tmp):"r"(a), "r"(b)); return tmp; }
+};
+
 struct Prmt
 {
     __device__ __forceinline__ int operator()(const int& a, const int& b) const
@@ -317,6 +359,12 @@ DEF_TYPE_TRAIT(All<int>)
 DEF_TYPE_TRAIT(Any<int>)
 DEF_TYPE_TRAIT(Sync)
 DEF_TYPE_TRAIT(Prmt)
+
+DEF_TYPE_TRAIT(VAdd<int>)
+DEF_TYPE_TRAIT(VMin<int>)
+
+DEF_TYPE_TRAIT(VAdd<unsigned int>)
+DEF_TYPE_TRAIT(VMin<unsigned int>)
 
 } // namespace cumib
 
