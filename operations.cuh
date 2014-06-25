@@ -316,7 +316,7 @@ struct ForEach< OperationList<T, U>, OpRoot>
 template<typename>
 struct TypeTraits;
 
-#define DEF_TYPE_TRAIT(a) template<> struct TypeTraits<a> { static char* name() {return #a;}};
+#define DEF_TYPE_TRAIT(a) template<> struct TypeTraits<a> { static const char* name() {return #a;}};
 
 DEF_TYPE_TRAIT(Add<int>)
 DEF_TYPE_TRAIT(Sub<int>)
