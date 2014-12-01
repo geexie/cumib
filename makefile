@@ -112,6 +112,9 @@ laneid-$(TARGET_ARCH): laneid.o
 transpose-$(TARGET_ARCH): transpose.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) transpose.cu -o $@
 
+threshold-$(TARGET_ARCH): threshold.o
+	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) threshold.cu -o $@
+
 %.o: %.cu device_flags
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dc -o $@ $<
 
