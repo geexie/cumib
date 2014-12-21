@@ -37,24 +37,24 @@
             <h2>Outline</h2>
             <ul>
               <li><a href="#/sec_0">SIMT Architecture</a></li>
-              <li><a href="#/sec_1" style="color:#fff;">Warp scheduling</a></li>
-              <li><a href="#/sec_2" style="color:#fff;">Memory subsystem</a></li>
+              <li><a href="#/sec_1">Warp scheduling</a></li>
+              <li><a href="#/sec_2">Memory subsystem</a></li>
             </ul>
           </section>
           <section>
             <h2>Out of scope</h2>
             <ul>
-              <li>Teraflops and all such a stuff.</li>
-              <li>Computer graphic.</li>
+              <li>Teraflops and all that stuff</li>
+              <li>Computer graphics</li>
               <li>Surfaces and layered textures</li>
-              <li>Texture interpolation routine</li>
+              <li>Texture interpolation HW</li>
             </ul>
           </section>
         </section>
 
         <section>
           <h2>Hardware revisions</h2>
-          <p class="left"><b>S.M.</b> (shading model) - particular hardware implementation.</p>
+          <p class="left"><b>SM</b> (shading model) &ndash; particular hardware implementation.</p>
           <table class="tbl1">
             <colgroup>
               <col></col>
@@ -64,7 +64,7 @@
             <thead>
               <tr>
                 <th>Generation</th>
-                <th>S. M.</th>
+                <th>SM</th>
                 <th>GPU models</th>
               </tr>
             </thead>
@@ -101,8 +101,25 @@
                 <td><b>GK104</b> GK106 <b>GK107</b></td>
               </tr>
               <tr>
+                <td>sm_32</td>
+                <td><b>GK20A</b></td>
+              </tr>
+              <tr>
                 <td>sm_35</td>
                 <td><b>GK110</b> GK208</td>
+              </tr>
+              <tr>
+                <td style="background-color:rgba(0,0,0,0.5);" rowspan="3">Maxwell</td>
+                <td>sm_50</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>sm_52</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>sm_53</td>
+                <td></td>
               </tr>
             </tbody>
           </table>
@@ -113,23 +130,23 @@
         </section>
 
         <section>
-          <h2 >Latency v.s. Throughput architectures</h2>
+          <h2 >Latency <small>vs</small> Throughput architectures</h2>
           <div class="left">
           <p>Modern CPUs and GPUs are both multi-core systems.</p>
             <ul class="none">
-              <li>CPUs are <b>latency</b> oriented
+              <li>CPUs are <b>latency</b> oriented:
                 <ul>
                   <li>Pipelining, out-of-order, superscalar</li>
                   <li>Caching, on-die memory controllers</li>
-                  <li>Speculative execution, branch prediction.</li>
-                  <li><b>Compute cores only a small part of die</b></li>
+                  <li>Speculative execution, branch prediction</li>
+                  <li><b>Compute cores occupy only a small part of die</b></li>
                 </ul>
               </li>
-              <li>GPUs are <b>throughput</b> oriented
+              <li>GPUs are <b>throughput</b> oriented:
                 <ul>
                   <li>100s simple compute cores</li>
                   <li>Zero cost scheduling of 1000s or threads</li>
-                  <li><b>Compute cores occupy most part of die.</b></li>
+                  <li><b>Compute cores occupy most part of die</b></li>
                 </ul>
               </li>
             </ul>
@@ -138,19 +155,19 @@
 
         <section>
           <h2>SIMD <small>v.s.</small> SIMT <small>v.s.</small> SMT</h2>
-          <p><b>S</b>ingle <b>I</b>nstructure <b>M</b>ultiple <b>T</b>hread</p>
+          <p><b>S</b>ingle <b>I</b>nstruction <b>M</b>ultiple <b>T</b>hread</p>
           <div class="left">
               <ul>
                 <li><b>SIMD</b>: elements of short vectors are processed in parallel.
-                      Represents problem like short vectors and processes it vector by vector
+                      Represents problem as short vectors and processes it vector by vector.
                 </li>
                 <li><b>SMT</b>: instructions of several threads are run in parallel.
-                      Represent problem like scope of separate task and assign it to different threads.
+                      Represents problem as scope of separate tasks and assigns them to different threads.
                       Hardware multi-threading support.
                 </li>
                 <li><b>SIMT</b> vector processing + hardware threading.
                   <ul>
-                    <li>threads grouped in <b>warps</b>; Warp execute the same instruction each cycle.</li>
+                    <li>threads grouped in <b>warps</b>; Warp executes the same instruction each cycle.</li>
                     <li>thread scheduling and fast context switching between different warps to minimize stalls.</li>
                   </ul>
                 </li>
@@ -160,42 +177,42 @@
 
         <section>
           <h2>SIMT</h2>
-          <h3>Multi-threading depth x SIMD width</h3>
+          <h3>depth of Multi-threading &times; width of SIMD</h3>
           <ol>
             <li>
-              <b>SIMT - an abstraction from vector hardware</b>
+              <b>SIMT is abstraction over vector hardware:</b>
               <ul>
-                <li>Threads grouped into <b>warp</b> (32 for NVIDIA).</li>
-                <li>One thread in a warp usually called <b>lane</b></li>
-                <li>Vector register file. Registers accessed line by line. Lane load laneId's element from register.</li>
+                <li>Threads grouped into <b>warps</b> (32 for NVIDIA)</li>
+                <li>A thread in a warp usually called <b>lane</b></li>
+                <li>Vector register file. Registers accessed line by line. A lane loads laneId's element from register</li>
                 <li>Single instruction counter for whole warp</li>
                 <li>A couple of special registers, like PC (can be scalar)</li>
               </ul>
             </li>
               <li>
-                <b>SIMT H.W. responsible for warp scheduling</b>
+                <b>SIMT HW responsible for warp scheduling:</b>
                 <ul>
-                  <li>Dynamic or static scheduling.</li>
+                  <li>Dynamic or static scheduling</li>
                   <li>Zero overhead on context switching</li>
-                  <li>Long latency operation score-boarding.</li>
+                  <li>Long latency operation score-boarding</li>
                 </ul>
               </li>
           </ol>
-          <small>Milty threading depth == number of resident warps</small>
+          <small>Depth of multi-threading == number of resident warps</small>
         </section>
 
         <section>
           <h2>SASS ISA</h2>
-          <p><b>SIMT</b> is like <b>RISC</b>: different instructions for memory operations operations and arithmetic instructions.
-          Arithmetic performed only on registers (exception is constants).</p>
+          <p><b>SIMT</b> is like <b>RISC</b>: different instructions for memory operations and arithmetic instructions.
+          Arithmetic performed only on registers (except immediates).</p>
           <img src="images/c1/sass_isa.svg" alt="sass">
           <small><b>S</b>treaming <b>ASS</b>embler.</small>
         </section>
 
         <section>
-          <h2>SIMT - Instruction pipeline</h2>
+          <h2>SIMT: Instruction pipeline</h2>
           <div class="left">
-            <p>Shared fetch/decode, load-store units. Separated compute cores. Area/Power-efficiency thanks to regularity.</p>
+            <p>Shared fetch/decode, load-store units. Separated compute cores. Area-/power-efficiency thanks to regularity.</p>
           </div>
           <ol>
             <li>(IF) Select/Fetch one instruction per warp.</li>
@@ -206,10 +223,10 @@
         </section>
 
         <section>
-          <h2>SIMT - pipeline</h2>
+          <h2>SIMT: pipeline</h2>
           <ul class="none">
-            <li><b>Warp scheduler</b>  manages warps, select, decode instruction.</li>
-            <li><b>Execution units</b> - group of regular execution units: SC, SFU, LD/ST, DP</li>
+            <li><b>Warp scheduler</b>  manages warps, selects &amp; decodes instructions.</li>
+            <li><b>Execution units</b> are SC, SFU, LD/ST, DP</li>
           </ul>
           <img class="simple" src="images/c1/simt.svg">
         </section>
@@ -217,16 +234,16 @@
         <section>
           <h2>Vector register file</h2>
           <div class="left">
-            <p><b>~Zero warp switching require big register file</b> because each warp was it's own space in it.
-              While warp is resident on SM(X) it occupy portion or register file. GPU's register file is 32-bit, 64-bit
-              values stored in register pair (even registers).</p>
+            <p><b>~Zero warp switching requires a big register file</b> because each warp has its own space in it.
+              While warp is resident on SM(X) it occupies a portion of register file. GPU's register file is 32-bit. 64-bit
+              values are stored in register pair (even registers).</p>
           </div>
-            <img class="simple" src="images/c1/simt-regs.svg">
-            <ul>
-              <li>The coast is registers spent to keep redundant data items. register wastage on duplicate items.</li>
-              <li>Narrow data types are as costly as wide data types.</li>
-            </ul>
-            <p>Size of register file, # of banks depends on architecture. Fermi: 128KB, Kepler: 256KB.</p>
+          <img class="simple" src="images/c1/simt-regs.svg">
+          <ul>
+            <li>The cost is register wastage on duplicate items.</li>
+            <li>Narrow data types are as costly as wide data types.</li>
+          </ul>
+          <p>Size of register file<!--, # of banks--> depends on architecture. Fermi: 128&thinsp;KB, Kepler: 256&thinsp;KB.</p>
         </section>
 
         <section id="sec_1">
@@ -234,12 +251,12 @@
         </section>
 
         <section>
-          <h2>Dynamic v.s. static scheduling</h2>
+          <h2>Dynamic <small>vs</small> static scheduling</h2>
           <ul style="list-style-type: none;">
             <li><b>Static scheduling</b>
               <ul style="margin-left: 65px;">
-                <li>instructions are fetched, executed &amp; completed in compiler-generated order. <b>In-order</b> execution.</li>
-                <li>one instruction stalls, all following stall too.</li>
+                <li>instructions are fetched, executed &amp; completed in compiler-generated order. <b>In-order</b> execution</li>
+                <li>in case one instruction stalls, all following stall too</li>
               </ul>
             </li>
             <li class="space-before"><b>Dynamic scheduling</b>
@@ -258,7 +275,7 @@
           <ul>
             <li>GigaThread assign work on <b>S</b>tream <b>M</b>ultiprocessor (ne<b>X</b>t).</b></li>
             <li>... Actually to one of <b>Warp Schedulers</b></li>
-            <li>So, warp <b>can not migrate</b> from one to another scheduler. </li>
+            <li>So, warp <b>can not migrate</b> between schedulers. </li>
             <li>Depending on generation scheduling is dynamic (Fermi) or static (Kepler)
               <img src="images/c1/scheduler.png" class="simple" width="80%">
             </li>
@@ -268,23 +285,23 @@
         </section>
 
         <section>
-          <h2>Warp scheduling (continued)</h2>
+          <h2>Warp scheduling (cont)</h2>
           <div class="left">
-            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%" class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+). Such warp scheduler able to decode 2
+            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%" class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+). They decode 2
             instructions per warp per clock. Kepler relies on ILP.</p>
-            <p>The number of warp schedulers 2-4 and depends on arch.</p>
-            <p>Warps belongs to <b>blocks</b>. Hardware should track this too</p>
+            <p>The number of warp schedulers is 2 to 4 and depends on arch.</p>
+            <p>Warps belong to <b>blocks</b>. Hardware tracks this as well.</p>
           </div>
         </section>
 
         <section>
           <h2>Divergence &amp; (re)convergence</h2>
           <div  class="left">
-            <p><b>Divergence</b> - not all lanes in a warp take the same code path</p>
-            <p>Convergence handled via <b>convergence stack</b>. For NVIDIA GPUs <b>SSY</b> instruction- push
-              convergence stack (presents before potentially divergent instructions); <b>&lt;INSTR&gt;.S</b> indicates
-            <b>convergence point</b> (instruction after which all warp takes the same code patch).</p>
-            <p>Convergence stack entry indicates: convergence PC, next-path PC, and thread mask indicating threads
+            <p><b>Divergence</b>: not all lanes in a warp take the same code path</p>
+            <p>Convergence handled via <b>convergence stack</b>. For NVIDIA GPUs <b>SSY</b> instruction pushes
+              convergence stack (occurs before potentially divergent instructions); <b>&lt;INSTR&gt;.S</b> indicates
+            <b>convergence point</b> (instruction after which all lanes in a warp take the same code path).</p>
+            <p>Convergence stack entry includes: convergence PC, next-path PC, and thread mask indicating threads
               that will be active on that path.</p>
             <small>Instruction replay.</small>
           </div>
@@ -308,17 +325,17 @@
           <ul style="list-style-type: none;">
             <li><b>Predicated execution</b>
               <ul style="margin-left: 65px;">
-                <li>Usually used for if-then statements (rarely for if-then-else). Decision by compiler heuristic (~7).</li>
+                <li>Frequently used for if-then statements (rarely for if-then-else). Decision by compiler heuristic.</li>
                 <li>Optimize divergence overhead.</li>
               </ul>
             </li>
             <li class="space-before"><b>Conditional execution</b>
               <ul style="margin-left: 65px;">
                 <li>Compare instruction set condition code (CC) registers.</li>
-                <li>CC == 4-bit state vector (sign, carry, zero, overflow)
+                <li>CC is 4-bit state vector (sign, carry, zero, overflow)
                   <pre><code class="avrasm"><span class="keyword">IMAD</span> R8.<b>CC</b>, R0, 0x4, R3;</code></pre>
                 </li>
-                <li>WB stage for CC-marked registers omitted.</li>
+                <li>No WB stage for CC-marked registers.</li>
               </ul>
             </li>
           </ul>
@@ -329,8 +346,7 @@
         </section>
 
         <section>
-          <h2>GPU memories</h2>
-          <p>There are several types of GPU memories</p>
+          <h2>GPU memory types</h2>
           <ul class="none">
             <li>On-chip
               <ul>
@@ -350,14 +366,14 @@
         </section>
 
         <section>
-          <h2>GMEM - Vector transactions</h2>
+          <h2>GMEM: Vector transactions</h2>
           <ul>
             <li>Global memory accessed on warp basis.
               <img src="images/c1/coalesced.svg" width="100%" class="simple">
               <small>Affine request example</small>
             </li>
             <li>SM(X) has load/store units able to handle global access.</li>
-            <li><b>Coalesced memory transaction == warp loads only elements that it needs</b>. sm_1x has vary strict
+            <li><b>Coalesced memory transaction == warp loads only elements that it needs</b>. sm_1x has very strict
             coalescing rules (even affine access pattern is restricted to 128 byte line for sm_11).</li>
           </ul>
         </section>
@@ -366,7 +382,7 @@
           <h2>Coalesced memory access</h2>
           <div class="left">
             <p>Modern GPUs have relaxed requirements. Fermi and Kepler GPUs define coalesced transaction as
-            transaction that <b>fits cache line</b>. Less cache lines we need more coalesced access we have.</p>
+            transaction that <b>fits cache line</b>. The less cache lines we need the more coalesced access we have.</p>
           </div>
           <img src="images/c1/still_coalesced.svg" class="simple">
           <p>Address alignment by cache line size is preferred</p>
@@ -447,7 +463,7 @@
         </section>
 
         <section>
-          <h2>Memory request trajectory - LD.E</h2>
+          <h2>Memory request trajectory: LD.E</h2>
           <ul style="list-style-type: none;">
             <li><b>Fermi fully-cached load</b>
               <ul style="margin-left: 65px;">
