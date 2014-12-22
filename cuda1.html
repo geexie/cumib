@@ -465,37 +465,38 @@
         <section>
           <h2>Memory request trajectory: LD.E</h2>
           <ul style="list-style-type: none;">
-            <li><b>Fermi fully-cached load</b>
+            <li><b>Fermi: fully-cached load</b>
               <ul style="margin-left: 65px;">
-                <li>load/store units compute physical address and how many cache lines warp requests (L1 line is 128B).</li>
-                <li>L1 hit -&gt; return line else go to L2.</li>
-                <li>L2 subdivides 128B line into 4x32B (L2 line size). If all required 32B lines are found in L2 return result else
+                <li>LD/ST units compute physical address and number of cache lines warp requests (L1 line is 128&thinsp;B)</li>
+                <li>L1 hit -&gt; return line else go to L2</li>
+                <li>L2 subdivides 128&thinsp;B line into 4x32&thinsp;B (L2 line size). If all required 32&thinsp;B lines are found in L2 return result else
                 go to gmem</li>
                 <li>gmem</li>
               </ul>
             </li>
-            <li class="space-before"><b>Kepler, Fermi L2 only mode</b>
+            <li class="space-before"><b>Kepler</b>
               <ul style="margin-left: 65px;">
-                <li>The same, but bypass L1 step</li>
+                <li>discrete GPUs: like Fermi by bypass L1</li>
+                <li>integrated GPUs: the same as Fermi</li>
               </ul>
             </li>
           </ul>
         </section>
 
         <section>
-          <h2>hardware additive memory load</h2>
+          <h2>duality of cache line</h2>
           <p>The following requests are equal from gmem point of view.</p>
           <img src="images/c1/2_transactions.svg" class="simple">
           <img src="images/c1/5_small.svg" class="simple">
-          <p>32B granularity useful if access pattern is close to random.</p>
+          <p>32&thinsp;B granularity useful if access pattern is close to random.</p>
         </section>
 
         <section>
-          <h2>Cache Load configurations</h2>
+          <h2>Load Caching configurations</h2>
           <ul style="list-style-type: none;">
             <li><b>LD</b>
               <ul style="margin-left: 65px;">
-                <li>Regular access (cache all): <b>No special suffix</b>.
+                <li>Default (cache all): <b>No special suffix</b>.
                   <pre><code class="avrasm"><span class="keyword">LD</span> R8, [R6];</code></pre>
                 </li>
                 <li>Cache only in L2 (cache global): <b>LD.CG</b>.
@@ -511,12 +512,12 @@
         </section>
 
         <section>
-          <h2>Memory request trajectory - ST.E</h2>
+          <h2>Memory request trajectory: ST.E</h2>
           <ul>
-            <li>Store instruction invalidates L1 on all SM(X) if present (since L1s are on SM(X) non-coherent)</li>
+            <li>Store instruction invalidates cache line L1 on all SM, if present (since L1s are on SM non-coherent)</li>
             <li>Request goes directly to L2. Default write strategy is <b>write back</b>. Can be configured
               as write through.</li>
-            <li>Hit to L2 costs ~160 clocks in case we need not a write-back.</li>
+            <li>Hit to L2 costs ~160 clocks in case write-back is not needed.</li>
             <li>Go to gmem in case of L2 miss (penalty > 350 clocks)</li>
           </ul>
           <small>L2 is multi-ported</small>
@@ -535,7 +536,7 @@
             </li>
             <li class="space-before"><b>Narrow</b>
               <ul style="margin-left: 65px;">
-                <li><p>Example uchar SOA store: generate 2 store transactions</p>
+                <li><p>Example: uchar2 SOA store results in 2 store transactions</p>
                   <pre><code class="cpp">struct uchar2{
 unsigned char x;
 unsigned char y;
@@ -550,7 +551,7 @@ unsigned char y;
 
         <section>
           <h2>GMEM Atomic operations</h2>
-          <p>Performed in L2 per 32B cache line.</p>
+          <p>Performed in L2 per 32&thinsp;B cache line.</p>
           <table class="tbl1" style="width:100%">
             <colgroup>
               <col></col>
@@ -589,7 +590,7 @@ unsigned char y;
           <ul>
             <li>Legacy from graphics.</li>
             <li>Read-only. Always loads through interpolation hardware.</li>
-            <li>Two caching levels: Dedicated L1, L2 cached with global loads</li>
+            <li>Two-level: Dedicated L1, cached L2 for texture and global loads</li>
           </ul>
           <table class="tbl1" style="width:100%">
             <colgroup>
@@ -665,7 +666,7 @@ unsigned char y;
 
   /*02c8*/                <span class="keyword">ISETP</span>.LT.AND P0, PT, R6, R7, PT;
   /*02d0*/                <span class="keyword">TEXDEPBAR</span> 0x0;</code></pre>
-          <p>Size == 48KB (4 sub-partitions x 12Kb). Different warps go through different sub-partitions. One warp can use up to 12 KB.</p>
+          <p>Size is 48&thinsp;KB (4 sub-partitions x 12&thinsp;Kb). Different warps go through different sub-partitions. Single warp can use up to 12&thinsp;KB.</p>
         </section>
 
         <section>
@@ -681,12 +682,12 @@ unsigned char y;
 
          <section>
           <h2>Load uniform</h2>
-          <p>the LDU instruction can perform similar constant caching for any global memory location.
-          LDU = load (block-) uniform variable from memory. It is loaded through the uniform cache.</p>
+          <p>The LDU instruction can employ constant cache hierarchy for any global memory location.
+          LDU = load (block-) uniform variable from memory.</p>
           <ul>
             <li>variable resides in global memory</li>
             <li>prefix pointer with <code>const</code> keyword</li>
-            <li>Memory access must be uniform across all threads in the block, basically, not dependent on threadIdx</li>
+            <li>Memory access must be uniform across all threads in the block (not dependent on threadIdx)</li>
           </ul>
           <pre><code class="cpp"><span class="keyword">__global__</span> void kernel( test_t *g_dst, const test_t *g_src )
 {
@@ -699,10 +700,10 @@ unsigned char y;
 
         <section>
           <h2>Shared memory</h2>
-          <p>Banked: Successive 4 -byte words placed to successive banks</p>
-          <p>sm_1x - 16x4byte, sm_2x - 32x4byte, sm_3x - 32x64byte </p>
+          <p>Banked: Successive 4-byte words placed to successive banks</p>
+          <p>sm_1x &ndash; 16x4&thinsp;b, sm_2x &ndash; 32x4&thinsp;b, sm_3x &ndash; 32x64&thinsp;b</p>
           <img src="images/c1/banks.svg" width="90%">
-          <p>atomic operations: lock/unlock manner</p>
+          <p>Atomic operations are done in lock/unlock manner</p>
           <pre><code class="cpp">         (void) atomicAdd( &smem[0], src[threadIdx.x] );</code></pre>
             <pre><code class="avrasm">  /*0050*/        <b>SSY</b> 0x80;
   /*0058*/        <span class="keyword">LDSLK</span> P0, R3, [RZ];
