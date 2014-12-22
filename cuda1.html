@@ -715,10 +715,10 @@ unsigned char y;
 
         <section>
           <h2>Register spilling</h2>
-          <p><b>Local memory</b> name refers to memory where registers and other thread data is spilled.
-          Physically resides in gmem, but <b>likely cached</b>. One local variable require one cache line for spilling
-           because it is spilled for warp.</p>
           <ul>
+            <li><b>Local memory</b> refers to memory where registers are spilled</li>
+            <li>Physically resides in gmem, but <b>likely cached</b></li>
+            <li>A local variable require a cache line for spilling because spilling is done per warp</li>
             <li>Addressing is resolved by the compiler</li>
             <li>Stores are cached in L1</li>
           </ul>
@@ -748,11 +748,6 @@ unsigned char y;
           <h1>THE END</h1>
           <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013</h3>
         </section>
-
-  <!--
-        <section>
-            <h2>Divergence dead-lock example</h2>
-        </section> -->
       </div>
     </div>
     <script src="3dparty/reveal/lib/js/head.min.js"></script>
