@@ -496,10 +496,10 @@
           <ul style="list-style-type: none;">
             <li><b>LD</b>
               <ul style="margin-left: 65px;">
-                <li>Default (cache all): <b>No special suffix</b>.
+                <li>Default (cache all): <b>No special suffix</b>
                   <pre><code class="avrasm"><span class="keyword">LD</span> R8, [R6];</code></pre>
                 </li>
-                <li>Cache only in L2 (cache global): <b>LD.CG</b>.
+                <li>Cache only in L2 (cache global): <b>LD.CG</b>
                   <pre><code class="avrasm">LD.CG R4, [R16];</code></pre>
                 </li>
                 <li>Bypass caches (cache volatile) <b>LD.CV</b>
@@ -514,7 +514,7 @@
         <section>
           <h2>Memory request trajectory: ST.E</h2>
           <ul>
-            <li>Store instruction invalidates cache line L1 on all SM, if present (since L1s are on SM non-coherent)</li>
+            <li>Store instruction invalidates cache line in L1 on all SMs, if present (since L1s are on SM and non-coherent)</li>
             <li>Request goes directly to L2. Default write strategy is <b>write back</b>. Can be configured
               as write through.</li>
             <li>Hit to L2 costs ~160 clocks in case write-back is not needed.</li>
@@ -568,7 +568,7 @@ unsigned char y;
             <tbody>
               <tr>
                 <td>shared address</td>
-                <td>1/9th</td>
+                <td>1/9&thinsp;th</td>
                 <td>1</td>
               </tr>
               <tr>
@@ -588,9 +588,9 @@ unsigned char y;
         <section>
           <h2>Texture hardware</h2>
           <ul>
-            <li>Legacy from graphics.</li>
-            <li>Read-only. Always loads through interpolation hardware.</li>
-            <li>Two-level: Dedicated L1, cached L2 for texture and global loads</li>
+            <li>Legacy from graphics</li>
+            <li>Read-only. Always loads through interpolation hardware</li>
+            <li>Two-level: Dedicated L1, shared L2 for texture and global loads</li>
           </ul>
           <table class="tbl1" style="width:100%">
             <colgroup>
@@ -666,7 +666,11 @@ unsigned char y;
 
   /*02c8*/                <span class="keyword">ISETP</span>.LT.AND P0, PT, R6, R7, PT;
   /*02d0*/                <span class="keyword">TEXDEPBAR</span> 0x0;</code></pre>
-          <p>Size is 48&thinsp;KB (4 sub-partitions x 12&thinsp;Kb). Different warps go through different sub-partitions. Single warp can use up to 12&thinsp;KB.</p>
+          <ul>
+            <li>Size is 48&thinsp;KB (4 sub-partitions x 12&thinsp;KB)</li>
+            <li>Different warps go through different sub-partitions</li>
+            <li>Single warp can use up to 12&thinsp;KB</li>
+          </ul>
         </section>
 
         <section>
@@ -674,19 +678,19 @@ unsigned char y;
           <p>Optimized for <b>uniform</b> access from the warp.</p>
           <img src="images/c1/uniform.svg" class="simple">
           <ul>
-            <li>Compile time constants.</li>
-            <li>Kernel parameters and configurations.</li>
-            <li>2-3 layers of caches. Latency: 4-800 clocks.</li>
+            <li>Compile time constants</li>
+            <li>Kernel parameters and configurations</li>
+            <li>2&ndash;3 layers of caches. Latency: 4&ndash;800 clocks</li>
           </ul>
         </section>
 
          <section>
           <h2>Load uniform</h2>
-          <p>The LDU instruction can employ constant cache hierarchy for any global memory location.
+          <p>The LDU instruction can employ constant cache hierarchy for each global memory location.
           LDU = load (block-) uniform variable from memory.</p>
           <ul>
-            <li>variable resides in global memory</li>
-            <li>prefix pointer with <code>const</code> keyword</li>
+            <li>Variable resides in global memory</li>
+            <li>Prefix pointer with <code>const</code> keyword</li>
             <li>Memory access must be uniform across all threads in the block (not dependent on threadIdx)</li>
           </ul>
           <pre><code class="cpp"><span class="keyword">__global__</span> void kernel( test_t *g_dst, const test_t *g_src )
@@ -701,7 +705,7 @@ unsigned char y;
         <section>
           <h2>Shared memory</h2>
           <p>Banked: Successive 4-byte words placed to successive banks</p>
-          <p>sm_1x &ndash; 16x4&thinsp;b, sm_2x &ndash; 32x4&thinsp;b, sm_3x &ndash; 32x64&thinsp;b</p>
+          <p>sm_1x &ndash; 16x4&thinsp;B, sm_2x &ndash; 32x4&thinsp;B, sm_3x &ndash; 32x64&thinsp;B</p>
           <img src="images/c1/banks.svg" width="90%">
           <p>Atomic operations are done in lock/unlock manner</p>
           <pre><code class="cpp">         (void) atomicAdd( &smem[0], src[threadIdx.x] );</code></pre>
@@ -721,8 +725,8 @@ unsigned char y;
             <li>A local variable require a cache line for spilling because spilling is done per warp</li>
             <li>Addressing is resolved by the compiler</li>
             <li>Stores are cached in L1</li>
+            <li>Analogy with <b>CPU stack variables</b></li>
           </ul>
-          <p>Analogy with <b>CPU stack variables</b>.</p>
         </section>
 
         <section>
@@ -730,7 +734,7 @@ unsigned char y;
           <ul style="list-style-type: none;">
             <li><b>Store writes line to L1</b>
               <ul style="margin-left: 65px;">
-                <li>If evicted, than line is written to L2</li>
+                <li>If evicted, then line is written to L2</li>
                 <li>The line could also be evicted from L2, in this case it is written to DRAM</li>
               </ul>
             </li>
@@ -746,7 +750,7 @@ unsigned char y;
 
         <section id="end1">
           <h1>THE END</h1>
-          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013</h3>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013&ndash;2015</h3>
           <h4><a href="cuda2.html">next</a></h4>
         </section>
       </div>

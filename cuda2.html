@@ -30,7 +30,7 @@
 
         <section>
             <h1>Code GPU with CUDA</h1>
-            <h3>Common optimizations</h3>
+            <h3>Common optimization techniques</h3>
             <small>Created by Marina Kolpakova (<a href="http://github.com/cuda-geek">cuda.geek</a>) for <a href="http://itseez.com">Itseez</a></small>
             <h4><a href="cuda1.html#/end1">previous</a></h4>
         </section>
@@ -39,15 +39,15 @@
           <section>
             <h2>Outline</h2>
             <ul>
-              <li><a href="#/sec_0" style="color:#fff;">CUDA introduction</a></li>
-              <li><a href="#/sec_1" style="color:#fff;">Device code optimization</a>
+              <li><a href="#/sec_0">Introduction to CUDA</a></li>
+              <li><a href="#/sec_1">Device code optimization</a>
                 <ul>
-                  <li><a href="#/sec_0_0" style="color:#fff;">Improve parallelism</a></li>
-                  <li><a href="#/sec_0_1" style="color:#fff;">Improve memory accesses</a></li>
-                  <li><a href="#/sec_0_2" style="color:#fff;">Improve control flow</a></li>
+                  <li><a href="#/sec_0_0">Improve parallelism</a></li>
+                  <li><a href="#/sec_0_1">Improve memory accesses</a></li>
+                  <li><a href="#/sec_0_2">Improve control flow</a></li>
                 </ul>
               </li>
-              <li><a href="#/sec_2" style="color:#fff;">Common principles</a></li>
+              <li><a href="#/sec_2">General principles</a></li>
             </ul>
           </section>
           <section>
@@ -62,28 +62,28 @@
         </section>
 
         <section id="sec_0">
-          <h1>CUDA introduction</h1>
+          <h1>Introduction to CUDA</h1>
         </section>
 
         <section>
-          <h2>Used terminology</h2>
+          <h2>Terminology</h2>
           <ul class="none">
-            <li><b>Device</b> - CUDA capable NVIDIA GPU.</li>
-            <li><b>Device code</b> - code, executed on the device.</li>
-            <li><b>Host</b> - x86/x64/arm CPU.</li>
-            <li><b>Host code</b> - code, executed on the host.</li>
+            <li><b>Device</b> &ndash; CUDA-capable NVIDIA GPU.</li>
+            <li><b>Device code</b> &ndash; code executed on the device.</li>
+            <li><b>Host</b> &ndash; x86/x64/arm CPU.</li>
+            <li><b>Host code</b> &ndash; code executed on the host.</li>
           </ul>
         </section>
 
         <section>
-          <h2>C.U.D.A.</h2>
-          <p> <b>C.U.D.A.</b> is a <b>C</b>ompute <b>U</b>nified <b>D</b>evice <b>A</b>rhitecture.</p>
+          <h2>CUDA</h2>
+          <p> <b>CUDA</b> is a <b>C</b>ompute <b>U</b>nified <b>D</b>evice <b>A</b>rhitecture.</p>
           <ol>
             <li>Capable Hardware</li>
             <li>Device ISA</li>
             <li>Compiler, GPU assembler</li>
             <li>NVIDIA driver</li>
-            <li>C++ based H.L. language, CUDA Runtime</li>
+            <li>C++ based HL language, CUDA Runtime</li>
           </ol>
           <p>CUDA defines <b>programming</b>, <b>execution</b> and <b>memory</b> models</p>
         </section>
@@ -91,7 +91,7 @@
         <section>
           <h2>Programming model</h2>
           <section>
-            <p>Work for GPU threads represented as <b>kernel</b> (function that is marked with <span style="color:rgb(227, 206, 171);"> __global__</span> keyword)</p>
+            <p>Work for GPU threads represented as <b>kernel</b> (function with <span style="color:rgb(227, 206, 171);"> __global__</span> keyword)</p>
               <pre><code class="cpp"><span class="keyword">  __global__</span> void kernel()
   {
     //
@@ -99,8 +99,8 @@
             <ul>
               <li>kernel is an entry point into device code</li>
               <li>kernel represents a task for <b>single</b> thread (<b>scalar notation</b>)</li>
-              <li>Every thread in a particular grid executes the same kernel function</li>
-              <li>Threads use theirs <b>threadIdx</b> and <b>blockIdx</b> to dispatch work for it.</li>
+              <li>Every thread in a particular grid executes the same kernel</li>
+              <li>Threads use their <b>threadIdx</b> and <b>blockIdx</b> to dispatch work</li>
             </ul>
           </section>
           <section>
@@ -108,7 +108,7 @@
             <img class="simple" src="images/c2/threads.svg" alt="0">
           </section>
           <section>
-            <p>Threads are grouped in blocks</p>
+            <p>Threads are grouped into blocks</p>
             <div style="align:left;">
               <img class="simple" src="images/c2/blocks.svg" alt="0">
               <p>Each thread has a thread ID</p>
@@ -141,7 +141,7 @@
             <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
           </section>
           <section>
-            <p>One or multiple (sm_20+) kernels are executed on device.</p>
+            <p>One or multiple (sm_20+) kernels are executed on the device.</p>
             <img class="simple" src="images/c2/grid_gpu.svg" alt="gid on GPU">
             </section>
         </section>
@@ -211,12 +211,12 @@
         </section>
 
         <section>
-          <h2>How Identify performance limiters</h2>
+          <h2>How to identify performance limiters</h2>
           <ul class="none">
             <li>
               <b>Time</b>
               <ul>
-                <li>Subsample when measure performance.</li>
+                <li>Subsample when measuring performance.</li>
                 <li>Determine your code wall time. You'll optimize it.</li>
               </ul>
             </li>
@@ -224,14 +224,14 @@
               <b>Profile</b>
               <ul>
                 <li>Collect metrics and events.</li>
-                <li>Determine bounding factors (e.c. memory, divergence).</li>
+                <li>Determine limiting factors (e.c. memory, divergence).</li>
               </ul>
             </li>
             <li>
               <b>Prototype</b>
               <ul>
                 <li>Prototype kernel parts separately and time them.</li>
-                <li>Determine memory access or math patterns.</li>
+                <li>Determine memory access or data dependency patterns.</li>
               </ul>
             </li>
             <li>
@@ -247,16 +247,16 @@
         </section>
 
         <section id="sec_0_0">
-          <h2>Factors that bound performance</h2>
+          <h2>Factors that limit performance</h2>
           <p>Optimize for GPU <b><mrow><mo>&#x2243;</mo></mrow></b> Optimize for <b>latency</b>.<br/>
           SIMT architecture makes GPU to be latent at all:</p>
           <ul>
-            <li>gmem (~350)</li>
+            <li>gmem (~350 cycles)</li>
             <li>caches (L1: ~56 , L2: ~160)</li>
             <li>registers (~10 cycles for FADD)</li>
           </ul>
           <blockquote style="width:100%" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-          Hiding latency is the only GPU specific optimization principle.
+          Hiding latency is the only GPU-specific optimization principle.
           </blockquote>
           <p>Factors that pervert latency hiding:</p>
           <ul>
@@ -270,7 +270,7 @@
           <h2>Little's law</h2>
           <ul class="none">
             <li><b>Throughput</b> is how many operations are performed in one cycle.</li>
-            <li><b>Latency</b> is how many cycles pipeline stalls before other depended operation. </li>
+            <li><b>Latency</b> is how many cycles pipeline stalls before another dependent operation. </li>
           </ul>
           <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
             <b>
@@ -289,7 +289,7 @@
         </section>
 
         <section>
-          <h2>Little's law - FFMA example</h2>
+          <h2>Little's law: FFMA example</h2>
           <ul class="none">
             <li><b>Fermi</b> GF100
               <ul>
@@ -321,11 +321,11 @@
             <li><b>T</b>hread <b>L</b>evel <b>P</b>arallelism
               <ul>
                 <li>run more warps per SM</li>
-                <li>bounding factors:
+                <li>limiting factors:
                   <ul>
                     <li>bad launch configuration</li>
                     <li>resource consuming kernels</li>
-                    <li>not well parallelized code</li>
+                    <li>poorly parallelized code</li>
                   </ul>
                 </li>
               </ul>
@@ -333,7 +333,7 @@
             <li><b>I</b>nstruction <b>L</b>evel <b>P</b>arallelism
               <ul>
                 <li>instruction dual issue</li>
-                <li>bounding factors - pipeline hazards
+                <li>limiting factors are pipeline hazards
                   <ul>
                     <li>structural hazards</li>
                     <li>data hazards</li>
@@ -351,16 +351,16 @@
             <li><b>Occupancy</b> is actual number of warps running concurrently on a multiprocessor divided by maximum number
             of warps that can be run concurrently by hardware.</li>
             <li>Kepler can keep up to 64 resident warps belonging to 16 blocks BUT you need recourses for them: registers, smem.</li>
-            <li>Kepler has 64K x 32-bit registers or <br/>65536<small style="vertical-align:bottom;">registers</small>
+            <li>Kepler has 64&thinsp;K x 32-bit registers or <br/>65536<small style="vertical-align:bottom;">registers</small>
           / 64 <small style="vertical-align:bottom;">warps</small> /
-          32 <small style="vertical-align:bottom;">warp_size</small> = <b>32 32bit-registers/thread</b>.</li>
+          32 <small style="vertical-align:bottom;">warp_size</small> = <b>32 x  32 bit registers / thread</b>.</li>
           </ul>
           <b><br/>Improve occupancy to achieve better TLP</b>
           <!-- <p>Think about work repartitioning, if your kernel is to heavy</p> -->
         </section>
 
         <section>
-          <h2>Configuration selection</h2>
+          <h2>Adjust configuration</h2>
           <b>Block configuration itself can affect occupancy.</b>
           <img class="simple" src="images/c2/block_conf.svg" width="80%">
           <ul>
@@ -385,7 +385,7 @@
 }
 </code></pre>
             </li>
-            <li>Loop unrolling in device code(<b>#pragma unroll CONST_EXPR</b>): improve number of independent operations.
+            <li>Loop unrolling in device code (<b>#pragma unroll CONST_EXPR</b>): improve number of independent operations.
             <pre width="100%"><code class="cpp"><span class="keyword">#pragma unroll 2
 for( int i = 0; i < N_ITERATIONS; i++ )
 </code></pre></li>
@@ -394,7 +394,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
         </section>
 
         <section>
-          <h2>for modern GPUs ILP required</h2>
+          <h2>ILP required for modern GPU<small>s</small></h2>
           <p>sm_21+ can not achieve peak utilization without ILP.</p>
           <ul>
             <li>Kepler: 4 warp schedulers, dual-issue each. 192 compute cores process up to 6 warps each clock.
@@ -464,14 +464,14 @@ for( int i = 0; i < N_ITERATIONS; i++ )
 
         <section>
           <h2>GPU caches</h2>
-            <b>GPU caches are not intended for the same use as CPU caches</b>
+            <b>GPU caches are not intended for the same use as CPU's</b>
             <ul>
-              <li><b>Not aimed at temporal reuse</b>. Smaller then CPU size (especially per thread, e.c.
-              Fermi: 48 Kb L1, 1536 threads on fly, cache/thread = 1 x 128-byte line).</li>
-              <li><b>Aimed at spatial reuse</b>, intended to smooth some access patterns, help with spilled registers and stack.</li>
-              <li><b>Do not tile relying on block size</b>, lines likely become evicted next few access
+              <li><b>Not aimed at temporal reuse</b>. Smaller than CPU size (especially per thread, e.g.
+              Fermi: 48&thinsp;KB L1, 1536 threads on fly, cache / thread = 1 x 128-byte line).</li>
+              <li><b>Aimed at spatial reuse</b>. Intended to smooth some access patterns, help with spilled registers and stack.</li>
+              <li><b>Do not tile relying on block size</b>. Lines likely become evicted next few access
                 <ul>
-                  <li>If it is possible to tile use smem. Same latency, fully programmable</li>
+                  <li>Use smem for tiling. Same latency, fully programmable</li>
                 </ul>
               </li>
               <li><b>L2 aimed to speed up atomics and gmem writes.</b></li>
@@ -480,7 +480,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
 
         <section>
           <h2>GMEM</h2>
-          <p>Learn your access pattern before thinking about latency hiding and try <b>try not to thresh the memory bus</b>.</p>
+          <p>Learn your access pattern before thinking about latency hiding and <b>try not to thresh the memory bus</b>.</p>
           <p>Four general categories of inefficient memory access patterns:</p>
           <ul>
             <li><b>Miss-aligned</b> (offset) warp addresses</li>
@@ -492,7 +492,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
         </section>
 
         <section>
-          <h2>GMEM - Miss-aligned</h2>
+          <h2>GMEM: Miss-aligned</h2>
           <img src="images/c1/unaligned.svg" class="simple">
           <ul>
             <li>Add extra padding for data to force alignment</li>
@@ -503,7 +503,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
         </section>
 
         <section>
-          <h2>GMEM - Strided</h2>
+          <h2>GMEM: Strided</h2>
           <img src="images/c2/stridden.svg" class="simple">
           <section>
             <ul>
@@ -526,7 +526,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
             <ul>
               <li>Use warp shuffle to permute elements for warp
                 <ol>
-                  <li>load needed by warp elements coalesced</li>
+                  <li>coalescingly load elements needed by warp</li>
                   <li>permute</li>
                   <li>use</li>
                 </ol>
@@ -539,27 +539,27 @@ for( int i = 0; i < N_ITERATIONS; i++ )
             <ul>
               <li>Use proper caching strategy</li>
               <ul>
-                <li><b>cg</b> - cache global.</li>
-                <li><b>ldg</b> - cache in texture L1.</li>
-                <li><b>cs</b> - cache streaming.</li>
+                <li><b>cg</b> &ndash; cache global</li>
+                <li><b>ldg</b> &ndash; cache in texture L1</li>
+                <li><b>cs</b> &ndash; cache streaming</li>
               </ul>
             </ul>
           </section>
         </section>
 
         <section>
-          <h2>GMEM - Thread-affine</h2>
+          <h2>GMEM: Thread-affine</h2>
           <section>
-            <p>Each thread accesses relatively long contiguous memory region</p>
+            <p>Each thread accesses relatively long continuous memory region</p>
             <img src="images/c2/th_affine.svg" class="simple">
             <ul>
               <li>Load big structures using AoS</li>
-              <li>Thread loads contiguous region of data</li>
+              <li>Thread loads continuous region of data</li>
               <li>All threads load the same data</li>
             </ul>
           </section>
           <section>
-            <p>Work assignment</p>
+            <p>Work distribution</p>
             <pre><code class="cpp"> int tid = blockIdx.x * blockDim.x + threadIdx.x;</code></pre>
             <pre><code class="cpp"> int threadN = N / blockDim.x * gridDim.x;
   for (size_t i = tid * N; i < (tid + 1) * N; ++i )
@@ -574,7 +574,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
           <section>
             <h3>Uniform load</h3>
             <p>All threads in a block access the same address as read only.</p>
-            <p>Memory operation uses constant 3-levels of memory caches</p>
+            <p>Memory operation uses 3-level constant cache</p>
             <ul>
               <li>Generated by compiler</li>
               <li>Available as PTX asm insertion</li>
@@ -589,7 +589,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
         </section>
 
         <section>
-          <h2>GMEM - Irregular</h2>
+          <h2>GMEM: Irregular</h2>
           <p>Random memory access. Threads in a warp access many lines, strides are irregular.</p>
           <!-- <img src="img/p3.png" class="simple"> -->
           <ul>
@@ -603,7 +603,7 @@ for( int i = 0; i < N_ITERATIONS; i++ )
         <section>
           <h2>Texture</h2>
           <ul>
-              <li>Smaller transactions and different caching (dedicated L1, 48Kb, ~104 clock latency)</li>
+              <li>Smaller transactions and different caching (dedicated L1, 48&thinsp;KB, ~104 clock latency)</li>
               <li>Cache is not polluted by other GMEM loads, separate partition for each warp scheduler helps to prevent cache threshing</li>
               <li>Possible hardware interpolation (Note: 9-bit alpha)</li>
               <li>Hardware handling of out-of-bound access</li>
@@ -611,12 +611,12 @@ for( int i = 0; i < N_ITERATIONS; i++ )
           <p>Kepler improvements:</p>
           <ul>
             <li>sm_30+ Bindless textures. No global static variables. Can be used in threaded code</li>
-            <li>sm_32+ GMEM access through texture cache bypassing interpolation units.</li>
+            <li>sm_32+ GMEM access through texture cache bypassing interpolation units</li>
           </ul>
         </section>
 
         <section>
-          <h2>SMEM - Banking</h2>
+          <h2>SMEM: Banking</h2>
           <!-- <section> -->
             <!-- <h4>No bank conflict</h4> -->
             <!-- <img src="img/smem-no-bk.png"> -->
@@ -626,9 +626,9 @@ for( int i = 0; i < N_ITERATIONS; i++ )
             <!-- <img src="img/smem-bk.png"> -->
           <!-- </section> -->
           <section>
-            <h3>Kepler - 32-bit and 64-bit modes</h3>
+            <h3>Kepler: 32-bit and 64-bit modes</h3>
             <img src="images/c1/banks.svg">
-            <p>special case -2D smem usage (Fermi example)</p>
+            <p>special case: 2D smem usage (Fermi example)</p>
             <pre><code class="cpp"><span class="keyword"> __shared__</span> float smem_buffer [32][32 + 1] </code></pre>
           </section>
           <!-- <p>note about throughput and volatile</p> -->
@@ -636,25 +636,25 @@ for( int i = 0; i < N_ITERATIONS; i++ )
 
         <section>
           <h2>SMEM</h2>
-          <p><b>The common advices are:</b></p>
+          <p><b>The common techniques are:</b></p>
           <ul>
             <li>use smem to improve memory access pattern</li>
             <li>use smem for stencil processing</li>
           </ul>
-          <p><b>But the gap: smem v.s. math throughput has increased</b></p>
+          <p><b>But the gap between smem and math throughput is increasing</b></p>
           <ul>
-            <li>Tesla: 16(32bit) banks vs 8 thread processors (2:1)</li>
-            <li>GF100: 32(32bit) banks vs 32 thread processors (1:1)</li>
-            <li>GF104: 32(32bit) banks vs 48 thread processors (2:3)</li>
-            <li>Kepler: 32(64bit) banks vs 192 thread processors (1:3)</li>
+            <li>Tesla: 16 (32 bit) banks vs 8 thread processors (2:1)</li>
+            <li>GF100: 32 (32 bit) banks vs 32 thread processors (1:1)</li>
+            <li>GF104: 32 (32 bit) banks vs 48 thread processors (2:3)</li>
+            <li>Kepler: 32 (64 bit) banks vs 192 thread processors (1:3)</li>
           </ul>
-          <p>Max size 48Kb (49152b), assume max occupancy 64x32,<br/>so <b>24</b> bytes per thread.<br/>
+          <p>Max size 48&thinsp;KB (49152&thinsp;B), assume max occupancy 64x32,<br/>so <b>24</b> bytes per thread.<br/>
           More intensive memory usage affects occupancy.</p>
         </section>
 
         <section>
           <h2>SMEM (Cont.)</h2>
-          <p>smem + L1 use the same 64KB. Program-configurable split:</p>
+          <p>smem + L1 use the same 64K&thinsp;B. Program-configurable split:</p>
           <ul>
             <li>Fermi: 48:16, 16:48</li>
             <li>Kepler: 48:16, 16:48, 32:32</li>
@@ -668,25 +668,25 @@ for( int i = 0; i < N_ITERATIONS; i++ )
           <ul>
             <li>data sharing across the block</li>
             <li>inter-block communication</li>
-            <li>bock level buffers (for scan or reduction)</li>
-            <li>for stencil code</li>
+            <li>bock-level buffers (for scan or reduction)</li>
+            <li>stencil code</li>
           </ul>
         </section>
 
 
         <section>
           <h2>LMEM</h2>
-          <p>Local memory is a stack memory analogy: call stack, register spilling.
+          <p>Local memory is a stack memory analogue: call stack, register spilling.
           Note: Both Local memory reads/writes are cached in L1.</p>
           <ul style="none">
             <li>Registers are for automatic variables
             <pre><code class="cpp"> int a = 42;</code></pre>
             </li>
-            <li>Volatile keyword enforce spilling</li>
+            <li>Volatile keyword enforces spilling</li>
             <li>Registers do not support indexing: local memory is used for local arrays
               <pre><code class="cpp"> int b[ SIZE ] = {0,};</code></pre>
             </li>
-            <li>Register spilling so more instructions and memory traffic</li>
+            <li>Register spilling leads to more instructions and memory traffic</li>
           </ul>
         </section>
         <section>
@@ -700,7 +700,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
 }</code></pre>
               </li>
               <li>Compile with <b>-maxrregcount</b> to enforce compiler optimization for register usage and register spilling if needed</li>
-              <li>By default you run less concurrent warps per SM.</li>
+              <li>By default you run less concurrent warps per SM</li>
             </ol>
         </section>
 
@@ -713,12 +713,12 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
           <section>
             <h3>Problems</h3>
             <ul>
-              <li><b>Warp divergence</b>: branching, early loop exit... Inspect SASS to find divergent pieces of code.</li>
-              <li><b>Work amount is data dependent</b>: decide code-patch depending on input (like classification task)</li>
-              <li><b>To many synchronization logic</b>: intensive usage of parallel data structures, need lots of atomics,
-              __sychthreads(), e.t.c.</li>
-              <li><b>Resident warps</b>: occupy resources but do nothing.</li>
-              <li><b>Big blocks</b>: tail effect.</li>
+              <li><b>Warp divergence</b>: branching, early loop exit... Inspect SASS to find divergent pieces of code</li>
+              <li><b>Workload is data dependent</b>: code-path depends on input (like classification task)</li>
+              <li><b>Too many synchronization logic</b>: intensive usage of parallel data structures, lots of atomics,
+              __sychthreads(), etc</li>
+              <li><b>Resident warps</b>: occupy resources but do nothing</li>
+              <li><b>Big blocks</b>: tail effect</li>
             </ul>
           </section>
           <section>
@@ -726,8 +726,8 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
             <ul>
               <li>Understand your problem. Select best algorithm keeping in mind GPU architecture. Maximize independent parallelism</li>
               <li>Compiler generates branch predication with -O3 during if/switch optimization but number of instructions
-              has to be less or equal than a given threshold. Threshold = 7 if lots of divergent warps, 4 otherwise.</li>
-              <li>Adjust thread block size.</li>
+              has to be less or equal than a given threshold. Threshold = 7 if lots of divergent warps, 4 otherwise</li>
+              <li>Adjust thread block size</li>
               <li>Try work queues</li>
             </ul>
           </section>
@@ -744,9 +744,9 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
               </li>
               <li><b>Fission</b>
                 <ul>
-                  <li>Replace one kernel call with sequence</li>
+                  <li>Replace one kernel call with a chain</li>
                   <li>Helps to localize ineffective memory access patterns</li>
-                  <li>Insert small kernel that repacks memory (e.c. integral image)</li>
+                  <li>Insert small kernels that repack data (e.g. integral image)</li>
                 </ul>
               </li>
             </ul>
@@ -768,7 +768,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
                   <li>process by row</li>
                   <li>cache data in registers</li>
 
-                  <li>re-compute instead of re-load values</li>
+                  <li>re-compute values instead of re-loading</li>
                   <li>keep data on GPU</li>
                 </ul>
               </li>
@@ -801,7 +801,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
                   <li>tune thread count,</li>
                   <li>... blocks per SM,</li>
                   <li>... launch bounds,</li>
-                  <li>and L1 cache/shared-memory configuration</li>
+                  <li>and L1 cache/shared memory configuration</li>
                 </ul>
               </li>
             </ul>
@@ -810,7 +810,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
 
         <section>
           <h1>THE END</h1>
-          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013</h3>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013 &ndash; 2015</h3>
         </section>
 
       </div>
