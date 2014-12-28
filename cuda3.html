@@ -38,16 +38,16 @@
           <section>
             <h2>Outline</h2>
             <ul>
-              <li><a href="#/sec_0" style="color:#fff;">Streaming kernels</a>
+              <li><a href="#/sec_0">Streaming kernels</a>
                 <ul>
                   <li>Threshold</li>
                   <li>Transpose</li>
                 </ul>
               </li>
               <!-- <li>Stencil kernel</li> -->
-              <li><a href="#/sec_1" style="color:#fff;">Reduction</a></li>
+              <li><a href="#/sec_1">Reduction</a></li>
               <!-- <li>Scan</li> -->
-              <li><a href="#/sec_2" style="color:#fff;">Profiling</a>
+              <li><a href="#/sec_2">Profiling</a>
                 <ul>
                     <li>What and how to measure?</li>
                     <li>Case study: transpose</li>
@@ -88,16 +88,16 @@
             <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename Ptr2DIn, typename Ptr2DOut, typename Op&gt;
 __global__ void streaming(const Ptr2DIn src, Ptr2DOut dst)
 {
-const int x = <span class="keyword">blockDim.x</span> * <span class="keyword">blockIdx.x</span> + <span class="keyword">threadIdx.x</span>;
-const int y = <span class="keyword">blockDim.y</span> * <span class="keyword">blockIdx.y</span> + <span class="keyword">threadIdx.y</span>;
+     const int x = <span class="keyword">blockDim.x</span> * <span class="keyword">blockIdx.x</span> + <span class="keyword">threadIdx.x</span>;
+     const int y = <span class="keyword">blockDim.y</span> * <span class="keyword">blockIdx.y</span> + <span class="keyword">threadIdx.y</span>;
 
-if (x < dst.cols && y < dst.rows)
-dst(y, x) = saturate_cast&lt;Ptr2DOut::elem_type&gt;(Op::apply(src(x, y)));
+     if (x < dst.cols && y < dst.rows)
+         dst(y, x) = saturate_cast&lt;Ptr2DOut::elem_type&gt;(Op::apply(src(x, y)));
 }</code></pre>
             <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">dim3</span> block(block_x, block_y);
 <span class="keyword">dim3</span> grid(roundUp(dst.cols, block_x), roundUp(dst.rows, block_y));
 streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keyword">&gt;&gt;&gt;</span>(src, dst);</code></pre>
-            <p>Arithmetic and conversions, repack by map, resize, e.t.c.</p>
+            <p>General arithmetic and conversions, repack by map, resize, etc.</p>
           </section>
         </section>
 
@@ -160,7 +160,7 @@ streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keywor
           </section>
 
           <section>
-            <h3>Kernel unrolling: warp per image row</h3>
+            <h3>Kernel unrolling: image row per warp</h3>
             <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void threshold_ww(const <span <span class="cls">DPtr</span>&lt;unsigned char&gt; src, <span class="cls">DPtr</span>&lt;unsigned char&gt; dst,
     int cols, int rows, unsigned char threshold)
 {
@@ -442,28 +442,31 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
           <section>
             <h3>Results</h3>
               <table class="tbl1" style="width:100%;">
-              <colgroup>
-                <col></col>
-                <col></col>
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>approach</th>
-                  <th>time*, ms</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><th>Copy</th>                    <td>0.485622</td></tr>
-                <tr><th>CopySharedMem</th>           <td>0.494275</td></tr>
-                <tr><th>CopySharedMemPlus1</th>      <td>0.499900</td></tr>
-                <tr><th><b>TransposeCoalescedPlus1</b></th> <td>0.568909</td></tr>
-                <tr><th>TransposeCoalesced</th>      <td>0.807763</td></tr>
-                <tr><th>TransposeShuffle</th>        <td>0.653080</td></tr>
-                <tr><th>TransposeNaive</th>          <td>1.469810</td></tr>
-                <tr><th>TransposeNaiveBlock</th>     <td>1.734700</td></tr>
-              </tbody>
-            </table>
-            <small>* Time has been measured on 1080p input for GK107 with 2 SMX (1 GHz), 128-bit GDDR5</small>
+                <colgroup>
+                  <col></col>
+                  <col></col>
+                  <col></col>
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>approach</th>
+                    <th>dGPU*, ms</th>
+                    <th>mGPU**, ms</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th>Copy</th>                    <td>0.485622</td><td>2.18203</td></tr>
+                  <tr><th>CopySharedMem</th>           <td>0.494275</td><td>2.19761</td></tr>
+                  <tr><th>CopySharedMemPlus1</th>      <td>0.4999</td><td>2.18819</td></tr>
+                  <tr><th>TransposeCoalescedPlus1</th> <td>0.568909</td><td>2.3453</td></tr>
+                  <tr><th>TransposeCoalesced</th>      <td>0.807763</td><td>3.27421</td></tr>
+                  <tr><th>TransposeShuffle</th>        <td>1.25308</td><td>2.35187</td></tr>
+                  <tr><th>TransposeNaive</th>          <td>1.46981</td><td>5.33752</td></tr>
+                  <tr><th>TransposeNaiveBlock</th>     <td>1.7347</td><td>5.47734</td></tr>
+                </tbody>
+              </table>
+            <small>* dGPU time has been measured on 1080p input for GK107 with 2 SMX (1 GHz), 128-bit GDDR5</small>
+            <small>** mGPU time has been measured on 1080p input for GK20A with 1 SMX (0.6 GHz)</small>
           </section>
         </section>
 
@@ -599,8 +602,8 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
 </code></pre>
           <p>Naive implementation with CUDA atomics is limited by write queue atomic throughput,<br/>therefore <b>hierarchical approaches</b> are used:</p>
           <ul>
-            <li>Grid level - meta reduction approach</li>
-            <li>Block level - block reduction approach</li>
+            <li>Grid level: meta reduction approach</li>
+            <li>Block level: block reduction approach</li>
           </ul>
         </section>
 
@@ -810,6 +813,130 @@ __device__ __forceinline__</span> void warp_reduce(int val, volatile int* smem)
                         <h3>Integral image</h3>
                     </section> -->
                 <!-- </section> -->
+        <section>
+          <h1>Optimizing<br>Control flow</h1>
+        </section>
+
+        <section>
+          <h2>Sliding window detector</h2>
+          <section>
+            <img src="images/c3/slw.png" class="simple" width="50%" style="display:inline;">
+            <pre style="width:40%;display:inline;float:right;"><code>
+
+function isPedestrain(x)
+d ← 0
+for t = 1...T do
+    d ← d + C(x)
+    if d < rt then
+        return false
+    end if
+end for
+return true
+end function
+
+</code></pre>
+          </section>
+          <section>
+            <h3>Thread per window</h3>
+            <img class="simple" src="images/c3/tpp.svg">
+          </section>
+          <section>
+            <h3>Thread per window: analysis</h3>
+            <ul>
+                <li>Coalesced access to gmem in the beginning</li>
+                <li>Sparse access to the latest stages</li>
+                <li>Unbalanced workload. Time of block residence on SM is
+                <br><b>T(b) = max{T(w_0) , ..., T(w_blok_size) }</b></li>
+                <li>Warp processes 32 sequential window positions, so it likely diverge</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Warp per window</h3>
+            <img class="simple" src="images/c3/wpp.svg">
+          </section>
+          <section>
+            <h3>Warp per window: analysis</h3>
+            <ul>
+              <li>All lanes in a warp load different features. Access pattern is random</li>
+              <li>Textures are used to amortize random pattern</li>
+              <li>Work balanced for a warp. Warps in a block compute neighboring windows . Likelihood that block needs same number of features is hight</li>
+              <li>Use warp-wide prefix sum for decision making.</li>
+            </ul>
+            <pre style="width:100%"><code class="cpp">for ( int offset = ExecutionPolicy::warp_pixels; offset < 32; offset *= 2)
+{
+    asm volatile  ( " { "
+    " .reg .f32 r0 ; "
+    " .reg .pred p ; "
+    " shfl.up.b32 r0|p , %0 , %1 , 0x0 ; "
+    " @p add.f32 r0 , r0 , %0; "
+    " mov . f32 %0 , r0 ; "
+    " } " : " +f " ( impact ) : "r" ( offset ) ) ;
+}
+</code></pre>
+                </section>
+                <section>
+                    <h3>Warp per N windows</h3>
+                    <img class="simple" src="images/c3/wp4p.svg">
+                </section>
+                <section>
+                    <h3>Warp per N windows: analysis, N = 4</h3>
+                    <pre style="width:100%"><code class="cpp"><span class="keyword">__device__ __forceinline__</span> static int pixel() { return <span class="keyword">threadIdx.x</span> &amp; 3; }
+<span class="keyword">__device__ __forceinline__</span> static int stage() { return <span class="keyword">threadIdx.x</span> &gt;&gt; 2; }</code></pre>
+                    <ul>
+                        <li>Each warp loads 8 features for 4 windows. Each feature consists of 4 pixels. Total warp transactions:
+                        8x4 of 16 bytes (instead of 32x4 of 4 byte).</li>
+                        <li>Warp is active while at least one of window positions is active.</li>
+                    </ul>
+                    <pre style="width:100%"><code class="cpp">uint desision = (confidence + impact > trace[t]);
+uint mask = __ballot(desision);
+uint pattern   = 0x11111111 << pixel;
+
+if ( active && (__popc(mask & pattern) != 8)) active = 0;
+if (__all(!active)) break;</code></pre>
+                </section>
+                <section>
+                    <h3>Results</h3>
+                    <table class="tbl1" style="width:100%;">
+                        <colgroup>
+                            <col></col>
+                            <col></col>
+                            <col></col>
+                            <col></col>
+                            <col></col>
+                            <col></col>
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>video sequence</th>
+                                <th>thread /window, ms</th>
+                                <th>warp /window, ms</th>
+                                <th>warp /4 windows, ms</th>
+                                <th>speedup w/w, X</th>
+                                <th>speedup w/4w, X</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>seq06</th><td>169.13</td><td>98.29</td><td>27.13</td><td>1.72</td><td>6.23</td>
+                            </tr>
+                            <tr>
+                                <th>seq07</th><td>166.92</td><td>100.12</td><td>36.52</td><td>1.66</td><td>4.57</td>
+                            </tr>
+                            <tr>
+                                <th>seq08</th><td>172.89</td><td>98.12</td><td>38.87</td><td>1.76</td><td>4.44</td>
+                            </tr>
+                            <tr>
+                                <th>seq09</th><td>175.82</td><td>102.54</td><td>34.18</td><td>1.76</td><td>4.45</td>
+                            </tr>
+                            <tr>
+                                <th>seq10</th><td>144.13</td><td>96.87</td><td>32.40</td><td>1.71</td><td>5.14</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </section>
+              </section>
+
         <section id="sec_2">
           <h1>Profiling</h1>
         </section>
