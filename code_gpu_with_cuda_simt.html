@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Code GPU with CUDA</title>
+    <meta name="description" content="Code GPU with CUDA - NVIDIA GPU Architecture">
+    <meta name="author" content="Marina Kolpakova (cuda.geek)">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
+    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
+    <link rel="stylesheet" href="stylesheets/cuda.css">
+    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <script>
+      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
+        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="3dparty/reveal/lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h1>Code GPU with CUDA</h1>
+          <h2>NVIDIA GPU Architecture</h2>
+          <h3>SIMT</h3>
+          <br>
+          <br>
+          <br>
+          <small>Created by Marina Kolpakova (
+            <a href="http://github.com/cuda-geek">cuda.geek</a>
+            ) for
+            <a href="http://itseez.com">Itseez</a>
+          </small>
+        </section>
+
+        <section>
+          <section>
+            <h2>Outline</h2>
+            <ul>
+              <li><a href="#/sec_0">SIMT Architecture</a></li>
+              <li><a href="#/sec_1">Warp scheduling</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2>Out of scope</h2>
+            <ul>
+              <li>Teraflops and all that stuff</li>
+              <li>Computer graphics capabilities</li>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h2>Hardware revisions</h2>
+          <p class="left"><b>SM</b> (shading model) &ndash; particular hardware implementation.</p>
+          <table class="tbl1">
+            <colgroup>
+              <col></col>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Generation</th>
+                <th>SM</th>
+                <th>GPU models</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="background-color:rgba(100,100,100,0.5);" rowspan="4">Tesla</td>
+                <td>sm_10</td>
+                <td><abbr title="The first CUDA capable GPU"><b>G80</b></abbr> G92(b) G94(b)</td>
+              </tr>
+              <tr>
+                <td>sm_11</td>
+                <td>G86 G84 G98 G96(b) G94(b) G92(b)</td>
+              </tr>
+              <tr>
+                <td>sm_12</td>
+                <td>GT218 GT216 GT215</td>
+              </tr>
+              <tr>
+                <td>sm_13</td>
+                <td><abbr title="Hardware support for double presision arifmetic"><b>GT200</b></abbr> GT200b</td>
+              </tr>
+              <tr>
+                <td rowspan="2">Fermi</td>
+                <td>sm_20</td>
+                <td><abbr title="ABI; dunamic sheduling; ECC; cache subsistem"><b>GF100</b></abbr> GF110</td>
+              </tr>
+              <tr>
+                <td>sm_21</td>
+                <td><abbr title="dual-issue"><b>GF104</b></abbr> GF114 GF116 GF108 GF106</td>
+              </tr>
+              <tr>
+                <td style="background-color:rgba(100,100,100,0.5);" rowspan="4">Kepler</td>
+                <td>sm_30</td>
+                <td><abbr title="bindless textures; warp shaffle; static sheduling"><b>GK104</b></abbr> GK106 GK107</td>
+              </tr>
+              <tr>
+                <td>sm_32</td>
+                <td><abbr title="enabled L1 for global loads"><b>GK20A</b></abbr></td>
+              </tr>
+              <tr>
+                <td>sm_35</td>
+                <td><abbr title="enabled Texture L1 for global loads"><b>GK110</b></abbr> GK208</td>
+              </tr>
+              <tr>
+                <td>sm_37</td>
+                <td>GK210</td>
+              </tr>
+              <tr>
+                <td rowspan="2">Maxwell</td>
+                <td>sm_50</td>
+                <td><abbr title="hardware support for smem atomics"><b>GM107</b></abbr> GM108</td>
+              </tr>
+              <tr>
+                <td>sm_52</td>
+                <td>GM204</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="sec_0">
+          <h1>SIMT Architecture</h1>
+        </section>
+
+        <section>
+          <h2 >Latency <small>vs</small> Throughput architectures</h2>
+          <div class="left">
+          <p>Modern CPUs and GPUs are both multi-core systems.</p>
+            <ul class="none">
+              <li>CPUs are <b>latency</b> oriented:
+                <ul>
+                  <li>Pipelining, out-of-order, superscalar</li>
+                  <li>Caching, on-die memory controllers</li>
+                  <li>Speculative execution, branch prediction</li>
+                  <li><b>Compute cores occupy only a small part of die</b></li>
+                </ul>
+              </li>
+              <li>GPUs are <b>throughput</b> oriented:
+                <ul>
+                  <li>100s simple compute cores</li>
+                  <li>Zero cost scheduling of 1000s or threads</li>
+                  <li><b>Compute cores occupy most part of die</b></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h2>SIMD <small>v.s.</small> SIMT <small>v.s.</small> SMT</h2>
+          <p><b>S</b>ingle <b>I</b>nstruction <b>M</b>ultiple <b>T</b>hread</p>
+          <div class="left">
+              <ul>
+                <li><b>SIMD</b>: elements of short vectors are processed in parallel.
+                      Represents problem as short vectors and processes it vector by vector.
+                </li>
+                <li><b>SMT</b>: instructions of several threads are run in parallel.
+                      Represents problem as scope of separate tasks and assigns them to different threads.
+                      Hardware multi-threading support.
+                </li>
+                <li><b>SIMT</b> vector processing + hardware threading.
+                  <ul>
+                    <li>threads grouped in <b>warps</b>; Warp executes the same instruction each cycle.</li>
+                    <li>thread scheduling and fast context switching between different warps to minimize stalls.</li>
+                  </ul>
+                </li>
+              </ul>
+          </div>
+        </section>
+
+        <section>
+          <h2>SIMT</h2>
+          <h3>depth of Multi-threading &times; width of SIMD</h3>
+          <ol>
+            <li>
+              <b>SIMT is abstraction over vector hardware:</b>
+              <ul>
+                <li>Threads grouped into <b>warps</b> (32 for NVIDIA)</li>
+                <li>A thread in a warp usually called <b>lane</b></li>
+                <li>Vector register file. Registers accessed line by line. A lane loads laneId's element from register</li>
+                <li>Single instruction counter for whole warp</li>
+                <li>A couple of special registers, like PC (can be scalar)</li>
+              </ul>
+            </li>
+              <li>
+                <b>SIMT HW responsible for warp scheduling:</b>
+                <ul>
+                  <li>Dynamic or static scheduling</li>
+                  <li>Zero overhead on context switching</li>
+                  <li>Long latency operation score-boarding</li>
+                </ul>
+              </li>
+          </ol>
+          <small>Depth of multi-threading == number of resident warps</small>
+        </section>
+
+        <section>
+          <h2>SASS ISA</h2>
+          <p><b>SIMT</b> is like <b>RISC</b>: different instructions for memory operations and arithmetic instructions.
+          Arithmetic performed only on registers (except immediates).</p>
+          <img src="images/c1/sass_isa.svg" alt="sass">
+          <small><b>S</b>treaming <b>ASS</b>embler.</small>
+        </section>
+
+        <section>
+          <h2>SIMT: Instruction pipeline</h2>
+          <div class="left">
+            <p>Shared fetch/decode, load-store units. Separated compute cores. Area-/power-efficiency thanks to regularity.</p>
+          </div>
+          <ol>
+            <li>(IF) Select/Fetch one instruction per warp.</li>
+            <li>(ID) Decode one instruction per warp.</li>
+            <li>(EX) Issue on block of compute cores.</li>
+            <li>(WB) Store results to register line.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>SIMT: pipeline</h2>
+          <ul class="none">
+            <li><b>Warp scheduler</b>  manages warps, selects &amp; decodes instructions.</li>
+            <li><b>Execution units</b> are SC, SFU, LD/ST, DP</li>
+          </ul>
+          <img class="simple" src="images/c1/simt.svg">
+        </section>
+
+        <section>
+          <h2>Vector register file</h2>
+          <div class="left">
+            <p><b>~Zero warp switching requires a big register file</b> because each warp has its own space in it.
+              While warp is resident on SM(X) it occupies a portion of register file. GPU's register file is 32-bit. 64-bit
+              values are stored in register pair (even registers).</p>
+          </div>
+          <img class="simple" src="images/c1/simt-regs.svg">
+          <ul>
+            <li>The cost is register wastage on duplicate items.</li>
+            <li>Narrow data types are as costly as wide data types.</li>
+          </ul>
+          <p>Size of register file<!--, # of banks--> depends on architecture. Fermi: 128&thinsp;KB, Kepler: 256&thinsp;KB.</p>
+        </section>
+
+        <section id="sec_1">
+          <h1>WArp Scheduling</h1>
+        </section>
+
+        <section>
+          <h2>Dynamic <small>vs</small> static scheduling</h2>
+          <ul style="list-style-type: none;">
+            <li><b>Static scheduling</b>
+              <ul style="margin-left: 65px;">
+                <li>instructions are fetched, executed &amp; completed in compiler-generated order. <b>In-order</b> execution</li>
+                <li>in case one instruction stalls, all following stall too</li>
+              </ul>
+            </li>
+            <li class="space-before"><b>Dynamic scheduling</b>
+              <ul style="margin-left: 65px;">
+                <li>instructions are fetched in compiler-generated order</li>
+                <li>instructions are executed <b>Out-of-order</b></li>
+                <li>Special unit to track dependencies and reorder instructions</li>
+                <li>independent instructions behind a stalled instruction can pass it</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Warp scheduling</h2>
+          <ul>
+            <li>GigaThread assign work on <b>S</b>tream <b>M</b>ultiprocessor (ne<b>X</b>t).</b></li>
+            <li>... Actually to one of <b>Warp Schedulers</b></li>
+            <li>So, warp <b>can not migrate</b> between schedulers. </li>
+            <li>Depending on generation scheduling is dynamic (Fermi) or static (Kepler)
+              <img src="images/c1/scheduler.png" class="simple" width="80%">
+            </li>
+            <li>Anyway register scoreboarding for long lasting operations.</li>
+            <li><b>Warp has own lines in register file, PC, activity mask</b></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Warp scheduling (cont)</h2>
+          <div class="left">
+            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%" class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+). They decode 2
+            instructions per warp per clock. Kepler relies on ILP.</p>
+            <p>The number of warp schedulers is 2 to 4 and depends on arch.</p>
+            <p>Warps belong to <b>blocks</b>. Hardware tracks this as well.</p>
+          </div>
+        </section>
+
+        <section>
+          <h2>Divergence &amp; (re)convergence</h2>
+          <div  class="left">
+            <p><b>Divergence</b>: not all lanes in a warp take the same code path</p>
+            <p>Convergence handled via <b>convergence stack</b>. For NVIDIA GPUs <b>SSY</b> instruction pushes
+              convergence stack (occurs before potentially divergent instructions); <b>&lt;INSTR&gt;.S</b> indicates
+            <b>convergence point</b> (instruction after which all lanes in a warp take the same code path).</p>
+            <p>Convergence stack entry includes: convergence PC, next-path PC, and thread mask indicating threads
+              that will be active on that path.</p>
+            <small>Instruction replay.</small>
+          </div>
+        </section>
+
+        <section>
+          <h2>Divergent code example</h2>
+          <pre><code class="cpp"> (void) atomicAdd( &smem[0], src[threadIdx.x] );</code></pre>
+          <pre><code class="avrasm">    /*0050*/        <b>SSY</b> 0x80;
+    /*0058*/        <span class="keyword">LDSLK</span> P0, R3, [RZ];
+    /*0060*/    @P0 <span class="keyword">IADD</span> R3, R3, R0;
+    /*0068*/    @P0 <span class="keyword">STSUL</span> [RZ], R3;
+    /*0070*/   @!P0 <span class="keyword">BRA</span> 0x58;
+    /*0078*/        NOP.<b>S</b>;</code></pre>
+          <p>Assume warp size == 4</p>
+          <img class="simple" src="images/c1/covergence.svg">
+        </section>
+
+        <section>
+          <h2>Predicated &amp; Conditional execution</h2>
+          <ul style="list-style-type: none;">
+            <li><b>Predicated execution</b>
+              <ul style="margin-left: 65px;">
+                <li>Frequently used for if-then statements (rarely for if-then-else). Decision by compiler heuristic.</li>
+                <li>Optimize divergence overhead.</li>
+              </ul>
+            </li>
+            <li class="space-before"><b>Conditional execution</b>
+              <ul style="margin-left: 65px;">
+                <li>Compare instruction set condition code (CC) registers.</li>
+                <li>CC is 4-bit state vector (sign, carry, zero, overflow)
+                  <pre><code class="avrasm"><span class="keyword">IMAD</span> R8.<b>CC</b>, R0, 0x4, R3;</code></pre>
+                </li>
+                <li>No WB stage for CC-marked registers.</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section id="end1">
+          <h1>THE END</h1>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013&ndash;2015</h3>
+          <h4><a href="code_gpu_with_cuda_memory_subsystem.html">next</a></h4>
+        </section>
+      </div>
+    </div>
+    <script src="3dparty/reveal/lib/js/head.min.js"></script>
+    <script src="3dparty/reveal/js/reveal.min.js"></script>
+    <script>
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: false,
+                rollingLinks: false,
+
+                theme: Reveal.getQueryHash().theme,
+                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+                dependencies: [
+                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+    </script>
+  </body>
+</html>
