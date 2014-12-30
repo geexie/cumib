@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>cumib by cuda-geek</title>
+    <meta name="description" content="cuda.geek's personal blog about architectures and optimization them.">
+    <meta name="author" content="Marina Kolpakova (cuda.geek)">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="stylesheets/normalize.css">
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="3dparty/reveal/lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div id="header">
+      <div id="title">
+        <h1>cumib</h1>
+        <p>The CUDA microbenchmarks</p>
+      </div>
+    </div>
+
+    <div class="wrapper">
+      <section>
+      <h1>Microbenchmarking</h1>
+      <p>My CUDA programming started at the time when Kepler generation was introduced. NVIDIA has a funny tendency to
+      completely rework GPU hardware form one generation to another. I really love it. It makes CUDA programming
+      interesting even more. So, I started to learn CUDA programming. I started with reading official NVIDIA documentation.
+      I noticed that CUDA programming guide quite well describe ideology of streaming programming, high-level concepts
+      and common principals of CUDA programming. As a matter of fact, it is intended to be useful for people who just started
+      to learn CUDA. As for me, I noticed that documentation just mark approaches as good and bad without any explanation.
+      For example, a term non coalesced load. Every time when this term appear in documentation it says that non coalesced
+      transactions is a root if evil. Yep, it is not free because such load need more than one cache line. But the
+      question is in cost itself. Assume latency of L1 cache is 50 cycles. Memory access pattern require 4 cache lines
+      per warp request. Will it cost 50*4 or 50+3 cycles or something else. Programmer could decide how much effort to
+      make depending on that cost. Another interesting questing is a balance between arithmetic and memory latencies.
+      I mean, How many operation should be done per byte </p>
+      <p>At some point I decided to code a small set of microbenchmark programs for </p>
+      <h2>Why?</h2>
+      <p>Microbecnmark is a small program that tests some specific hardware property.</p>
+      <h2>What?</h2>
+      <h2>How?</h2>
+<!--         <section>
+Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. <img width="100px" src="images/21_16.png" alt="l1_16kb"> Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC.
+<pre><code class="cpp">
+  int main(int argc, char** argv)
+  {
+    return 0;
+  }
+</code></pre>
+<hr style="background:none;"/>
+<blockquote>
+This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
+</blockquote>
+<hr style="background:none;"/>
+<ul>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+</ul>
+<ol>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
+</ol>
+<strong>The standard chunk</strong> of Lorem Ipsum <b>used</b> since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.
+<a href="index.html">Link</a>
+
+<dl>
+  <dt>Coffee</dt>
+  <dd>Black hot drink</dd>
+  <dt>Milk</dt>
+  <dd>White cold drink</dd>
+</dl>
+        </section> -->
+<!--         <section>
+          <table>
+            <thead>
+              <tr>
+                <th>ompanied by English versions from the 1</th>
+                <th>ompanied by English versions from the 1</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ompanied by English versions from the 1</td>
+                <td>ompanied by English versions from the 1</td>
+              </tr>
+              <tr>
+                <td>ompanied by English versions from the 1</td>
+                <td>ompanied by English versions from the 1</td>
+              </tr>
+            </tbody>
+          </table>
+          <h1>Benchmarking cache behavior</h1>
+          <h2>Benchmarking cache behavior</h2>
+          <h3>Evaluation methodology</h3>
+          <h4>Profiling for cache</h4>
+          <h5>Results</h5>
+          <h6>Results</h6>
+          <img src="images/21_16.png" alt="l1_16kb">
+        </section> -->
+        <hr>
+        <span class="credits left">Project maintained by <a href="https://github.com/cuda-geek">cuda-geek</a></span>
+        <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+      </section>
+
+    </div>
+  </body>
+</html>
