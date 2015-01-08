@@ -31,28 +31,10 @@
 
     <div class="wrapper">
       <section>
-      <h1>Microbenchmarking</h1>
-      <p>My CUDA programming started at the time when Kepler generation was introduced. NVIDIA has a funny habit to
-      completely rework GPU hardware form one generation to another. I really love it. It makes CUDA programming
-      interesting even more. So, I started to learn CUDA programming. I started with reading official NVIDIA documentation.
-      I noticed that CUDA programming guide quite well describe ideology of streaming programming, high-level concepts
-      and common principals of CUDA programming. As a matter of fact, it is intended to be useful for people who just started
-      to learn CUDA. As for me, I noticed that documentation just mark approaches as good and bad without any explanation.
-      For example, a term non coalesced load. Every time when this term appear in documentation it says that non coalesced
-      transactions is a root if evil. Yep, it is not free because such load need more than one cache line. But the
-      question is in cost itself. Assume latency of L1 cache is 50 cycles. Memory access pattern require 4 cache lines
-      per warp request. Will it cost 50*4 or 50+3 cycles or something else. Programmer could decide how much effort to
-      make depending on that cost. Another interesting questing is a balance between arithmetic and memory latencies.
-      I mean, How many operation should be done per byte </p>
-      <p>At some point I decided to code a small set of microbenchmark programs for </p>
-      <h2>Motivations</h2>
-      <p>Microbecnmark is a small program that tests some specific hardware property.</p>
-      <h2>Common principals</h2>
-      <h2>Benchmark for instruction latency</h2>
-      <h2>Benchmark for memory latency</h2>
-      <h2>Benchmark for architecture properties</h2>
-      <h3>Size of write buffer</h3>
-      <h3>Coalescing overhead</h3>
+      <h1>Optimization notes</h1>
+      <h2>Profiling</h2>
+      <h2>SASS inspection</h2>
+      <h2>nvdisasm</h2>
 <!--         <section>
 Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. <img width="100px" src="images/21_16.png" alt="l1_16kb"> Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC.
 <pre><code class="cpp">
