@@ -35,14 +35,17 @@
       <h2>Profiling</h2>
       <h2>SASS inspection</h2>
       <h2>nvdisasm</h2>
+<pre><code>
+ --generate-line-info --keep --keep-dir=/tmp</code></pre>
+<pre><code>
+ nvdisasm  --print-line-info --print-code /tmp/<file_name>.compute_<sm>.cubin > dump.log</code></pre>
+<pre><code>
+ nvdisasm  --print-line-info --cuda-function-index=&lt;N&gt; --print-code /tmp/<file_name>.compute_<sm>.cubin > dump.log</code></pre>
+<pre><code>
+ nvdisasm  --print-line-info --print-life-ranges --cuda-function-index=&lt;N&gt; --print-code /tmp/<file_name>.compute_<sm>.cubin > dump.log</code></pre>
+
 <!--         <section>
 Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. <img width="100px" src="images/21_16.png" alt="l1_16kb"> Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC.
-<pre><code class="cpp">
-  int main(int argc, char** argv)
-  {
-    return 0;
-  }
-</code></pre>
 <hr style="background:none;"/>
 <blockquote>
 This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
