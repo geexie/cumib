@@ -16,10 +16,9 @@
 }
 
 body {
-	font-size: 18pt;
-	width: 297mm;
-	height: 229mm;
-	margin: 0 auto !important;
+	/*font-size: 18pt;*/
+	width: auto;
+	height: auto;
 	border: 0;
 	padding: 0;
 	float: none !important;
@@ -52,11 +51,11 @@ html {
 /* SECTION 3: Set body font face, size, and color.
    Consider using a serif font for readability. */
 body, p, td, li, div {
-	font-size: 18pt;
+	/*font-size: 18pt;*/
 }
 
 /* SECTION 4: Set heading font face, sizes, and color.
-   Differentiate your headings from your body text.
+   Diffrentiate your headings from your body text.
    Perhaps use a large sans-serif for distinction. */
 h1,h2,h3,h4,h5,h6 {
 	text-shadow: 0 0 0 #000 !important;
@@ -67,13 +66,8 @@ h1,h2,h3,h4,h5,h6 {
    the URL to the end of the link for usability. */
 a:link,
 a:visited {
-	font-weight: normal;
+	font-weight: bold;
 	text-decoration: underline;
-}
-
-.reveal pre code {
-	overflow: hidden !important;
-	font-family: monospace !important;
 }
 
 
@@ -87,11 +81,6 @@ ul, ol, div, p {
 	overflow: visible;
 	margin: auto;
 }
-.reveal {
-	width: auto !important;
-	height: auto !important;
-	overflow: hidden !important;
-}
 .reveal .slides {
 	position: static;
 	width: 100%;
@@ -99,8 +88,10 @@ ul, ol, div, p {
 
 	left: auto;
 	top: auto;
-	margin: 0 !important;
-	padding: 0 !important;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: auto;
+	padding: auto;
 
 	overflow: visible;
 	display: block;
@@ -122,18 +113,18 @@ ul, ol, div, p {
 	page-break-after: always !important;
 
 	visibility: visible !important;
-	position: relative !important;
+	position: static !important;
 	width: 100% !important;
-	height: 229mm !important;
-	min-height: 229mm !important;
+	height: auto !important;
+	min-height: initial !important;
 	display: block !important;
-	overflow: hidden !important;
+	overflow: visible !important;
 
 	left: 0 !important;
 	top: 0 !important;
-	margin: 0 !important;
-	padding: 2cm 2cm 0 2cm !important;
-	box-sizing: border-box !important;
+	margin-left: 0px !important;
+	margin-top: 50px !important;
+	padding: 20px 0px !important;
 
 	opacity: 1 !important;
 
@@ -148,15 +139,9 @@ ul, ol, div, p {
 	        transform: none !important;
 }
 .reveal section.stack {
-	margin: 0 !important;
-	padding: 0 !important;
+	margin: 0px !important;
+	padding: 0px !important;
 	page-break-after: avoid !important;
-	height: auto !important;
-	min-height: auto !important;
-}
-.reveal .absolute-element {
-	margin-left: 2.2cm;
-	margin-top: 1.8cm;
 }
 .reveal section .fragment {
 	opacity: 1 !important;
@@ -167,17 +152,6 @@ ul, ol, div, p {
 	    -ms-transform: none !important;
 	        transform: none !important;
 }
-.reveal section .slide-background {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	z-index: 0;
-}
-.reveal section>* {
-	position: relative;
-	z-index: 1;
-}
 .reveal img {
 	box-shadow: none;
 }
@@ -186,5 +160,13 @@ ul, ol, div, p {
 	line-height: 1em;
 }
 .reveal small a {
-	font-size: 16pt !important;
+	/*font-size: 16pt !important;*/
+}
+
+.reveal .slides > section > section {
+    margin-top: 0px !important;
+}
+
+.reveal .slides > section.stack {
+    padding: 20px 0 !important;
 }
