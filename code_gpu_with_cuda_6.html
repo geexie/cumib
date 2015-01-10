@@ -69,6 +69,42 @@
         </section>
 
         <section>
+          <h2>How to identify performance limiters</h2>
+          <ul class="none">
+            <li>
+              <b>Time</b>
+              <ul>
+                <li>Subsample when measuring performance.</li>
+                <li>Determine your code wall time. You'll optimize it.</li>
+              </ul>
+            </li>
+            <li>
+              <b>Profile</b>
+              <ul>
+                <li>Collect metrics and events.</li>
+                <li>Determine limiting factors (e.c. memory, divergence).</li>
+              </ul>
+            </li>
+            <li>
+              <b>Prototype</b>
+              <ul>
+                <li>Prototype kernel parts separately and time them.</li>
+                <li>Determine memory access or data dependency patterns.</li>
+              </ul>
+            </li>
+            <li>
+              <b>(Micro)benchmark</b>
+              <ul>
+                <li>Determine hardware characteristics.</li>
+                <li>Tune for particular architecture, GPU class.</li>
+              </ul>
+            </li>
+            <li><b>Look into SASS</b>
+            </li>
+          </ul>
+        </section>
+
+        <section>
           <h2>What to measure?</h2>
           <ul>
             <li><b>Wall time</b>: user will see this time.</li>

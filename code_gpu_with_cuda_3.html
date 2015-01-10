@@ -30,8 +30,8 @@
 
         <section>
           <h1>Code GPU with CUDA</h1>
-          <h2>Common optimization techniques</h2>
-          <h3>Device code optimization</h3>
+          <h2>Device code optimization principle</h2>
+          <h3></h3>
           <br>
           <br>
           <br>
@@ -40,87 +40,50 @@
             ) for
             <a href="http://itseez.com">Itseez</a>
           </small>
-          <h4><a href="code_gpu_with_cuda_memory_subsystem.html#/end1">previous</a></h4>
+          <h4><a href="code_gpu_with_cuda_2.html#/end1">previous</a></h4>
         </section>
 
         <section>
           <section>
             <h2>Outline</h2>
             <ul>
-              <li><a href="#/sec_0">Introduction to CUDA</a></li>
-              <li><a href="#/sec_1">Device code optimization</a>
-                <ul>
-                  <li><a href="#/sec_0_0">Improve parallelism</a></li>
-                  <li><a href="#/sec_0_1">Improve memory accesses</a></li>
-                  <li><a href="#/sec_0_2">Improve control flow</a></li>
-                </ul>
-              </li>
-              <li><a href="#/sec_2">General principles</a></li>
+              <li>Optimization principle</li>
+              <li>Performance limiters</li>
+              <li>Little&#8217;s law</li>
+              <li>TLP &amp; ILP</li>
             </ul>
           </section>
           <section>
             <h2>Out of scope</h2>
             <ul>
-              <li>CUDA API</li>
-              <li>Dynamic parallelism (sm_35)</li>
-              <li>Surfaces and layered textures</li>
-              <li>OpenGL interoperability</li>
+              <li>Obsolete sm_1x architectures</li>
             </ul>
           </section>
         </section>
 
-        <section id="sec_1">
-          <h1>Device code<br/>optimization</h1>
+        <section id="sec_0_0">
+          <h2>Device code optimization principle</h2>
+          <p>Specific of SIMT architecture makes GPU to be latent at all, so </p>
+          <blockquote style="width:100%" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+          Hiding latency is the only GPU-specific optimization principle
+          </blockquote>
+          <br>
+          <ul class="none">
+            <li>Typical latencies for Kepler generation
+              <ul>
+                <li>register writeback: ~10 cycles</li>
+                <li>L1: ~34 cycles</li>
+                <li>Texture L1: ~96 cycles</li>
+                <li>L2: ~160 cycles</li>
+                <li>Global memory: ~350 cycles</li>
+              </ul>
+            </li>
+          </ul>
         </section>
 
         <section>
-          <h2>How to identify performance limiters</h2>
-          <ul class="none">
-            <li>
-              <b>Time</b>
-              <ul>
-                <li>Subsample when measuring performance.</li>
-                <li>Determine your code wall time. You'll optimize it.</li>
-              </ul>
-            </li>
-            <li>
-              <b>Profile</b>
-              <ul>
-                <li>Collect metrics and events.</li>
-                <li>Determine limiting factors (e.c. memory, divergence).</li>
-              </ul>
-            </li>
-            <li>
-              <b>Prototype</b>
-              <ul>
-                <li>Prototype kernel parts separately and time them.</li>
-                <li>Determine memory access or data dependency patterns.</li>
-              </ul>
-            </li>
-            <li>
-              <b>(Micro)benchmark</b>
-              <ul>
-                <li>Determine hardware characteristics.</li>
-                <li>Tune for particular architecture, GPU class.</li>
-              </ul>
-            </li>
-            <li><b>Look into SASS</b>
-            </li>
-          </ul>
-        </section>
-
-        <section id="sec_0_0">
-          <h2>Factors that limit performance</h2>
-          <p>Optimize for GPU <b><mrow><mo>&#x2243;</mo></mrow></b> Optimize for <b>latency</b>.<br/>
-          SIMT architecture makes GPU to be latent at all:</p>
-          <ul>
-            <li>gmem (~350 cycles)</li>
-            <li>caches (L1: ~56 , L2: ~160)</li>
-            <li>registers (~10 cycles for FADD)</li>
-          </ul>
-          <blockquote style="width:100%" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-          Hiding latency is the only GPU-specific optimization principle.
-          </blockquote>
+          <h2>Performance limiters</h2>
+          <p>Optimize for GPU <b><mrow><mo>&#x2243;</mo></mrow></b> Optimize for <b>latency</b><br/>
           <p>Factors that pervert latency hiding:</p>
           <ul>
             <li>Insufficient parallelism</li>
@@ -130,22 +93,31 @@
         </section>
 
         <section>
+          <h2>Throughput &amp; Latency</h2>
+          <dl>
+            <dt style="text-align:left;"><b>Throughput</b></dt>
+            <dd style="text-align:left; margin-left: 4em;">is how many operations are performed in one cycle</dd>
+            <dt style="text-align:left;"><b>Latency</b></dt>
+            <dd style="text-align:left; margin-left: 4em;">is how many cycles pipeline stalls before another dependent operation</dd>
+            <dt style="text-align:left;"><b>Inventory</b></dt>
+            <dd style="text-align:left; margin-left: 4em;">is a number of warps on fly (currently in execution)</dd>
+          </dl>
+        </section>
+
+        <section>
           <h2>Little's law</h2>
-          <ul class="none">
-            <li><b>Throughput</b> is how many operations are performed in one cycle.</li>
-            <li><b>Latency</b> is how many cycles pipeline stalls before another dependent operation. </li>
-          </ul>
           <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
             <b>
               <mrow>
                 <mo>L</mo>
                 <mo>=</mo>
                 <mi>&#x3bb;<!--GREEK SMALL LETTER LAMDA--></mi>
+                &times;
                 <mo>W</mo>
               </mrow>
             </b>
             <br/>
-            <p>Warps on fly (L) = Throughput (<mrow><mi>&#x3bb;<!--GREEK SMALL LETTER LAMDA--></mi></mrow>) x Latency (W)</p>
+            <p>Inventory (L) = Throughput (<mrow><mi>&#x3bb;<!--GREEK SMALL LETTER LAMDA--></mi></mrow>) &times; Latency (W)</p>
           </blockquote>
           <img src="images/c2/little.svg" width="50%" class="simple">
           <small>Example: GPU with 8 operations per clock and 18 clock latency </small>
@@ -156,18 +128,18 @@
           <ul class="none">
             <li><b>Fermi</b> GF100
               <ul>
-                <li>throughput: 32 operations per clock (1 warp)</li>
-                <li>latency: ~18 clocks</li>
-                <li>max resident warps per SM: 24</li>
-                <li>inventory: 1 * 18 = <b>18 warps</b> on fly i.e. ready to execute.</li>
+                <li>Throughput: 32 operations per clock (1 warp)</li>
+                <li>Latency: ~18 clocks</li>
+                <li>Maximum resident warps per SM: 24</li>
+                <li>Inventory: 1 * 18 = <b>18 warps</b> on fly i.e. ready to execute.</li>
               </ul>
             </li>
             <li><b>Kepler</b> GK110
               <ul>
-                  <li>throughput: 128 (if no ILP) operations per clock (4 warps)</li>
-                  <li>latency: ~10 clocks</li>
-                  <li>max resident warps per SM: 64</li>
-                  <li>inventory: 4 * 10 = <b>40 warps</b> on fly i.e. ready to execute.</li>
+                  <li>Throughput: 128 (if no ILP) operations per clock (4 warps)</li>
+                  <li>Latency: ~10 clocks</li>
+                  <li>Maximum resident warps per SM: 64</li>
+                  <li>Inventory: 4 * 10 = <b>40 warps</b> on fly i.e. ready to execute.</li>
               </ul>
             </li>
           </ul>
@@ -196,7 +168,7 @@
             <li><b>I</b>nstruction <b>L</b>evel <b>P</b>arallelism
               <ul>
                 <li>instruction dual issue</li>
-                <li>limiting factors are pipeline hazards
+                <li>limiting Factors
                   <ul>
                     <li>structural hazards</li>
                     <li>data hazards</li>
@@ -212,11 +184,11 @@
           <h2>Improve TLP</h2>
           <ul>
             <li><b>Occupancy</b> is actual number of warps running concurrently on a multiprocessor divided by maximum number
-            of warps that can be run concurrently by hardware.</li>
-            <li>Kepler can keep up to 64 resident warps belonging to 16 blocks BUT you need recourses for them: registers, smem.</li>
+            of warps that can be run concurrently by hardware </li>
+            <li>Kepler can keep up to 64 resident warps belonging to 16 blocks BUT you need recourses for them: registers, smem</li>
             <li>Kepler has 64&thinsp;K x 32-bit registers or <br/>65536<small style="vertical-align:bottom;">registers</small>
           / 64 <small style="vertical-align:bottom;">warps</small> /
-          32 <small style="vertical-align:bottom;">warp_size</small> = <b>32 x  32 bit registers / thread</b>.</li>
+          32 <small style="vertical-align:bottom;">warp_size</small> or <b>32 of 32 bit registers / thread</b>.</li>
           </ul>
           <b><br/>Improve occupancy to achieve better TLP</b>
           <!-- <p>Think about work repartitioning, if your kernel is to heavy</p> -->
@@ -267,10 +239,13 @@ for( int i = 0; i < N_ITERATIONS; i++ )
           </ul>
         </section>
 
-        <section>
+        <section id="end1">
           <h1>THE END</h1>
-          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013 &ndash; 2015</h3>
-          <h4><a href="cuda22.html">next</a></h4>
+          <h6><a href="code_gpu_with_cuda_4.html">next</a></h6>
+          <br>
+          <br>
+          <br>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013&ndash;2015</h3>
         </section>
 
       </div>
