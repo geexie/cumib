@@ -40,37 +40,27 @@
             ) for
             <a href="http://itseez.com">Itseez</a>
           </small>
-          <h4><a href="code_gpu_with_cuda_memory_subsystem.html#/end1">previous</a></h4>
+          <h4><a href="code_gpu_with_cuda_1.html#/end1">previous</a></h4>
         </section>
 
         <section>
           <section>
             <h2>Outline</h2>
             <ul>
-              <li><a href="#/sec_0">Introduction to CUDA</a></li>
-              <li><a href="#/sec_1">Device code optimization</a>
-                <ul>
-                  <li><a href="#/sec_0_0">Improve parallelism</a></li>
-                  <li><a href="#/sec_0_1">Improve memory accesses</a></li>
-                  <li><a href="#/sec_0_2">Improve control flow</a></li>
-                </ul>
-              </li>
-              <li><a href="#/sec_2">General principles</a></li>
+              <li>Terminology</li>
+              <li>Definition</li>
+              <li>Programming model</li>
+              <li>Execution model</li>
+              <li>Memory models</li>
+              <li>CUDA kernel</li>
             </ul>
           </section>
           <section>
             <h2>Out of scope</h2>
             <ul>
-              <li>CUDA API</li>
-              <li>Dynamic parallelism (sm_35)</li>
-              <li>Surfaces and layered textures</li>
-              <li>OpenGL interoperability</li>
+              <li>CUDA API overview</li>
             </ul>
           </section>
-        </section>
-
-        <section id="sec_0">
-          <h1>Introduction to CUDA</h1>
         </section>
 
         <section>
@@ -80,37 +70,35 @@
             <li><b>Device code</b> &ndash; code executed on the device.</li>
             <li><b>Host</b> &ndash; x86/x64/arm CPU.</li>
             <li><b>Host code</b> &ndash; code executed on the host.</li>
+            <li><b>Kernel</b> &ndash; entry point into device code.</li>
           </ul>
         </section>
 
         <section>
           <h2>CUDA</h2>
-          <p> <b>CUDA</b> is a <b>C</b>ompute <b>U</b>nified <b>D</b>evice <b>A</b>rhitecture.</p>
-          <ol>
-            <li>Capable Hardware</li>
-            <li>Device ISA</li>
-            <li>Compiler, GPU assembler</li>
-            <li>NVIDIA driver</li>
-            <li>C++ based HL language, CUDA Runtime</li>
-          </ol>
-          <p>CUDA defines <b>programming</b>, <b>execution</b> and <b>memory</b> models</p>
+          <strong><b>CUDA</b> is a <b>C</b>ompute <b>U</b>nified <b>D</b>evice <b>A</b>rhitecture.</strong>
+          <div class="left">
+            <ul class="none">
+              <li>CUDA includes:
+                <ol style="margin-left:3em;">
+                  <li>Capable GPU hardware and driver</li>
+                  <li>Device ISA, GPU assembler, Compiler</li>
+                  <li>C++ based HL language, CUDA Runtime</li>
+                </ol>
+              </li>
+              <li>CUDA defines:
+                <ul style="margin-left:3em;">
+                  <li><b>programming</b> model</li>
+                  <li><b>execution</b> model</li>
+                  <li><b>memory</b> model</li>
+                </ul>
+              </li>
+          </ul>
+          </div>
         </section>
 
         <section>
           <h2>Programming model</h2>
-          <section>
-            <p>Work for GPU threads represented as <b>kernel</b> (function with <span style="color:rgb(227, 206, 171);"> __global__</span> keyword)</p>
-              <pre><code class="cpp"><span class="keyword">  __global__</span> void kernel()
-  {
-    //
-  }</code></pre>
-            <ul>
-              <li>kernel is an entry point into device code</li>
-              <li>kernel represents a task for <b>single</b> thread (<b>scalar notation</b>)</li>
-              <li>Every thread in a particular grid executes the same kernel</li>
-              <li>Threads use their <b>threadIdx</b> and <b>blockIdx</b> to dispatch work</li>
-            </ul>
-          </section>
           <section>
             <p>Kernel is executed by many threads</p>
             <img class="simple" src="images/c2/threads.svg" alt="0">
@@ -136,20 +124,22 @@
             <img class="simple" width="60%" src="images/c2/thread_core.svg" alt="0">
           </section>
           <section>
-            <p class="left"> Each block is executed by one SM and does not migrate.</br> Number of concurrent blocks that
-            can reside on SM depends on available resources. Warps from thread block can be in one of the following states:
-            <b>Executed</b>, <b>Ready</b>, <b>Wait</b>, <b>Resident</b></p>
-            <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
-          </section>
-          <section>
-            <ul class="left">
-              <li>Threads in a block can cooperate via <b>shared memory</b> and <b>synchronization</b>.</li>
-              <li>It's impossible to cooperate between threads from different blocks.</li>
+            <ul class="none">
+              <li>Each block is executed by one SM and does not migrate</li>
+              <li>Number of concurrent blocks that
+            can reside on SM depends on available resources</li>
             </ul>
             <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
           </section>
           <section>
-            <p>One or multiple (sm_20+) kernels are executed on the device.</p>
+            <ul class="none">
+              <li>Threads in a block can cooperate via <b>shared memory</b> and <b>synchronization</b></li>
+              <li>There is no hardware support for cooperation between threads from different blocks</li>
+            </ul>
+            <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
+          </section>
+          <section>
+            <p>One or multiple (sm_20+) kernels are executed on the device</p>
             <img class="simple" src="images/c2/grid_gpu.svg" alt="gid on GPU">
             </section>
         </section>
@@ -161,63 +151,85 @@
             <img class="simple" width="30%" src="images/c2/reg.svg" alt="0">
           </section>
           <section>
-            <p>Thread has its own local memory (like stack)</p>
+            <p>Thread has its own local memory</p>
             <img class="simple" width="30%" src="images/c2/local.svg" alt="0">
           </section>
           <section>
-            <p>Block has shared memory.<br/>Pointer to shared memory is valid while block is resident.</p>
+            <ul class="none">
+              <li>Block has shared memory</li>
+              <li>Pointer to shared memory is valid while block is resident</li>
+            </ul>
             <img class="simple" width="45%" src="images/c2/shared.svg" alt="0">
             <pre><code class="cpp">
-              <span class="keyword">__shared__</span> float buffer[CTA_SIZE];
+  <span class="keyword">__shared__</span> float buffer[CTA_SIZE];
             </code></pre>
           </section>
           <section>
-            <p>Grid able to access global and constant memory</p>
+            <p>Grid is able to access global and constant memory</p>
             <img class="simple" width="50%" src="images/c2/global.svg" alt="0">
           </section>
         </section>
 
         <section>
           <h2>Basic CUDA kernel</h2>
-          <pre><code class="cpp"><span class="keyword">__global__</span> void kernel(float *in, float *out)
-{
-  int tid = <b>blockIdx.x</b> * <b>blockDim.x</b> + <b>threadIdx.x</b>;
-  out[tid] = in[tid];
-}</code></pre>
-          <ol>
-            <li>retrieve position in grid (widely named <b>tid</b>)</li>
-            <li>load data</li>
-            <li>compute</li>
-            <li>write back the result</li>
-          </ol>
+          <ul>
+            <li>Work for GPU threads represented as <b>kernel</b></li>
+            <li>kernel represents a task for <b>single</b> thread (<b>scalar notation</b>)</li>
+            <li>Every thread in a particular grid executes the same kernel</li>
+            <li>Threads use their <b>threadIdx</b> and <b>blockIdx</b> to dispatch work</li>
+            <li>
+              Kernel function is marked with <span style="color:rgb(227, 206, 171);"> __global__</span> keyword
+              <pre><code class="cpp" style="margin-left:-2.2em;"><span class="keyword">  __global__</span> void kernel(float *in, float *out)
+  {
+      int tid = <b>blockIdx.x</b> * <b>blockDim.x</b> + <b>threadIdx.x</b>;
+      out[tid] = in[tid];
+  }</code></pre>
+            </li>
+            <li>Common kernel structure:
+              <ol>
+                <li>Retrieving position in grid (widely named <b>tid</b>)</li>
+                <li>Loading data form GPU&#8217;s memory</li>
+                <li>Performing compute work</li>
+                <li>Writing back the result into GPU&#8217;s memory</li>
+              </ol>
+
+            </li>
+          </ul>
         </section>
 
         <section>
-          <h2>CUDA usage flow</h2>
-          <pre><code class="cpp">void execute_kernel(const* float host_in, float* host_out, int size)
+          <h2>Kernel execution</h2>
+          <pre><code class="cpp" style="max-height: 500px !important;">void execute_kernel(const* float host_in, float* host_out, int size)
 {
   float* device_in, * device_out;
-  // allocate memory
+  cudaMalloc((void**)&device_in,  size*sizeof(float));
+  cudaMalloc((void**)&device_out, size*sizeof(float));
+
+  // 1. Upload data into device memory
   cudaMemcpy(device_in, host_in, cudaMemcpyHostToDevice);
+
+  // 2. <b>Configure kernel launch</b>
   dim3 block(256);
   dim3 grid(size / 256);
-  <b>kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;</b>(device_in, device_out);
+
+  // 3. <b>Execute kernel</b>
+  kernel<b>&lt;&lt;&lt;</b>grid, block<b>&gt;&gt;&gt;</b>(device_in, device_out);
+
+  // 4. Wait till completion
   cudaThreadSynchronize();
+
+  // 5. Download results into host memory
   cudaMemcpy(host_out, device_out, cudaMemcpyDeviceToHost);
 }</code></pre>
-          <ol>
-            <li>Upload data to GPU memory</li>
-            <li><b>Configure kernel launch</b></li>
-            <li><b>Execute kernel</b></li>
-            <li>Wait till completion</li>
-            <li>Download results to CPU memory</li>
-          </ol>
         </section>
 
-        <section>
+        <section id="end1">
           <h1>THE END</h1>
-          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013 &ndash; 2015</h3>
-          <h4><a href="cuda22.html">next</a></h4>
+          <h6><a href="code_gpu_with_cuda_3.html">next</a></h6>
+          <br>
+          <br>
+          <br>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013&ndash;2015</h3>
         </section>
 
       </div>
