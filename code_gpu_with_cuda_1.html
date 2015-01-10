@@ -38,71 +38,83 @@
             ) for
             <a href="http://itseez.com">Itseez</a>
           </small>
-          <h4><a href="code_gpu_with_cuda_simt.html#/end1">previous</a></h4>
+          <h6><small><a href="code_gpu_with_cuda_0.html#/end1">previous</a></small></h6>
         </section>
 
         <section>
           <section>
             <h2>Outline</h2>
             <ul>
-              <li><a href="#/sec_2">Memory subsystem</a></li>
+              <li>GPU memory types</li>
+              <li>Vector transaction</li>
+              <li>Coalesced memory access</li>
+              <li>Memory hierarchy &amp; request trajectory</li>
+              <li>Hardware atomics</li>
+              <li>Texture, constant, shared memory</li>
+              <li>Register spilling</li>
             </ul>
           </section>
           <section>
             <h2>Out of scope</h2>
             <ul>
-              <li>Surfaces and layered textures</li>
-              <li>Texture interpolation HW</li>
+              <li>Computer graphics capabilities</li>
+              <li>Organization of texture interpolation HW</li>
             </ul>
           </section>
-        </section>
-
-        <section id="sec_2">
-          <h1>Memory subsystem</h1>
         </section>
 
         <section>
           <h2>GPU memory types</h2>
           <ul class="none">
-            <li>On-chip
+            <li><strong><b>On-chip</b> is placed on SM</strong>
               <ul>
-                <li>Register file</li>
-                <li>Shared (smem)</li>
+                <li>Register file (RF)</li>
+                <li>Shared (SMEM)</li>
               </ul>
             </li>
-            <li>Off-chip
+            <li><strong><b>Off-chip</b> is placed in GPU&#8217;s RAM</strong>
               <ul>
-                <li>Global (gmem)</li>
-                <li>Constant (cmem)</li>
-                <li>Texture (tex)</li>
-                <li>... well, we have Local (lmem) too</li>
+                <li>Global (GMEM)</li>
+                <li>Constant (CMEM)</li>
+                <li>Texture (TEX)</li>
+                <li>Local (LMEM)</li>
               </ul>
             </li>
           </ul>
         </section>
 
         <section>
-          <h2>GMEM: Vector transactions</h2>
+          <h2>Vector transaction</h2>
           <ul>
-            <li>Global memory accessed on warp basis.
-              <img src="images/c1/coalesced.svg" width="100%" class="simple">
-              <small>Affine request example</small>
-            </li>
-            <li>SM(X) has load/store units able to handle global access.</li>
-            <li><b>Coalesced memory transaction == warp loads only elements that it needs</b>. sm_1x has very strict
-            coalescing rules (even affine access pattern is restricted to 128 byte line for sm_11).</li>
+            <li>SM has dedicated LD/ST units to handle memory access</li>
+            <li>Global memory accesses are serviced on warp basis</li>
           </ul>
         </section>
 
         <section>
           <h2>Coalesced memory access</h2>
-          <div class="left">
-            <p>Modern GPUs have relaxed requirements. Fermi and Kepler GPUs define coalesced transaction as
-            transaction that <b>fits cache line</b>. The less cache lines we need the more coalesced access we have.</p>
-          </div>
-          <img src="images/c1/still_coalesced.svg" class="simple">
-          <p>Address alignment by cache line size is preferred</p>
-          <img src="images/c1/unaligned.svg" class="simple">
+          <ul>
+            <li>Fist sm_10 defines coalesced access as an affine access aligned to 128 byte line
+              <img src="images/c1/coalesced.svg" width="100%" class="simple">
+            </li>
+            <li>Other obsolete sm_1x has strict coalescing rules, too.
+            </li>
+            <li>Modern GPUs have more relaxed requirements and define coalesced transaction as
+            transaction that <b>fits cache line</b>
+              <img src="images/c1/still_coalesced.svg" class="simple">
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Coalesced memory access (cont)</h2>
+          <ul>
+            <li><b>Request is coalesced if warp loads only bytes it needs</b></li>
+            <li>The less cache lines it needs the more coalesced access it has</li>
+            <li>Address alignment by cache line size is still preferred
+              <img src="images/c1/unaligned.svg" class="simple">
+            </li>
+          </ul>
         </section>
 
         <section>
@@ -192,7 +204,7 @@
             </li>
             <li class="space-before"><b>Kepler</b>
               <ul style="margin-left: 65px;">
-                <li>discrete GPUs: like Fermi by bypass L1</li>
+                <li>discrete GPUs: like Fermi but bypass L1</li>
                 <li>integrated GPUs: the same as Fermi</li>
               </ul>
             </li>
@@ -466,8 +478,11 @@ unsigned char y;
 
         <section id="end1">
           <h1>THE END</h1>
+          <h6><a href="code_gpu_with_cuda_2.html">next</a></h6>
+          <br>
+          <br>
+          <br>
           <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013&ndash;2015</h3>
-          <h4><a href="common_optimization_techniques_device_code.html">next</a></h4>
         </section>
       </div>
     </div>
