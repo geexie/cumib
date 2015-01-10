@@ -32,16 +32,12 @@ div.centered table {
     display: inline-block;
 }
 
-.reveal b {
-    color: #66FF33;
+.reveal section h2 small {
+    vertical-align:bottom;
 }
 
-.reveal h1, .reveal h2 {
+.reveal b {
     color: #66FF33;
-    text-shadow:none;
-    /*font-family: 'OpenSansLight',"Helvetica Neue",Helvetica,Arial,sans-serif;*/
-    /*font-weight: normal;*/
-    /*text-align: center;*/
 }
 
 .reveal section img {

@@ -38,20 +38,23 @@
             ) for
             <a href="http://itseez.com">Itseez</a>
           </small>
+          <h6><small><a href="index.html">Back to contents</a></small></h6>
         </section>
 
         <section>
           <section>
             <h2>Outline</h2>
             <ul>
-              <li><a href="#/sec_0">SIMT Architecture</a></li>
-              <li><a href="#/sec_1">Warp scheduling</a></li>
+              <li>Hardware revisions</li>
+              <li>SIMT architecture</li>
+              <li>Warp scheduling</li>
+              <li>Divergence &amp; convergence</li>
+              <li>Predicated &amp; conditional execution</li>
             </ul>
           </section>
           <section>
             <h2>Out of scope</h2>
             <ul>
-              <li>Teraflops and all that stuff</li>
               <li>Computer graphics capabilities</li>
             </ul>
           </section>
@@ -130,28 +133,24 @@
           </table>
         </section>
 
-        <section id="sec_0">
-          <h1>SIMT Architecture</h1>
-        </section>
-
         <section>
-          <h2 >Latency <small>vs</small> Throughput architectures</h2>
+          <h2>Latency <small>vs</small> Throughput architectures</h2>
           <div class="left">
           <p>Modern CPUs and GPUs are both multi-core systems.</p>
             <ul class="none">
-              <li>CPUs are <b>latency</b> oriented:
+              <li><strong>CPUs are <b>latency</b> oriented</strong>:
                 <ul>
                   <li>Pipelining, out-of-order, superscalar</li>
                   <li>Caching, on-die memory controllers</li>
                   <li>Speculative execution, branch prediction</li>
-                  <li><b>Compute cores occupy only a small part of die</b></li>
+                  <li><b>Compute cores occupy only a small part of a die</b></li>
                 </ul>
               </li>
-              <li>GPUs are <b>throughput</b> oriented:
+              <li><br><strong>GPUs are <b>throughput</b> oriented</strong>:
                 <ul>
                   <li>100s simple compute cores</li>
                   <li>Zero cost scheduling of 1000s or threads</li>
-                  <li><b>Compute cores occupy most part of die</b></li>
+                  <li><b>Compute cores occupy most part of a die</b></li>
                 </ul>
               </li>
             </ul>
@@ -159,59 +158,62 @@
         </section>
 
         <section>
-          <h2>SIMD <small>v.s.</small> SIMT <small>v.s.</small> SMT</h2>
+          <h2>SIMD <small>vs</small> SIMT <small>vs</small> SMT</h2>
           <p><b>S</b>ingle <b>I</b>nstruction <b>M</b>ultiple <b>T</b>hread</p>
           <div class="left">
-              <ul>
-                <li><b>SIMD</b>: elements of short vectors are processed in parallel.
-                      Represents problem as short vectors and processes it vector by vector.
-                </li>
-                <li><b>SMT</b>: instructions of several threads are run in parallel.
-                      Represents problem as scope of separate tasks and assigns them to different threads.
-                      Hardware multi-threading support.
-                </li>
-                <li><b>SIMT</b> vector processing + hardware threading.
-                  <ul>
-                    <li>threads grouped in <b>warps</b>; Warp executes the same instruction each cycle.</li>
-                    <li>thread scheduling and fast context switching between different warps to minimize stalls.</li>
-                  </ul>
-                </li>
-              </ul>
+            <ul>
+              <li style="text-align: justify;"><b>SIMD</b>: elements of short vectors are processed in parallel.
+                    Represents problem as short vectors and processes it vector by vector.
+                    Hardware support for wide arithmetic.
+              </li>
+              <li style="text-align: justify;"><b>SMT</b>: instructions from several threads are run in parallel.
+                    Represents problem as scope of independent tasks and assigns them to different threads.
+                    Hardware support for multi-threading.
+              </li>
+              <li><b>SIMT</b> vector processing &#43; light-weight threading:
+                <ul>
+                  <li>threads grouped in <b>warps</b>; Warp executes the same instruction each cycle</li>
+                  <li>thread scheduling and fast context switching between different warps to minimize stalls</li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </section>
 
         <section>
           <h2>SIMT</h2>
-          <h3>depth of Multi-threading &times; width of SIMD</h3>
+          <h3><abbr title="Number of resident warps">depth of Multi-threading</abbr> &times; <abbr title="Number of lanes in a warps">width of SIMD</abbr></h3>
           <ol>
             <li>
               <b>SIMT is abstraction over vector hardware:</b>
               <ul>
-                <li>Threads grouped into <b>warps</b> (32 for NVIDIA)</li>
+                <li>Threads are grouped into <b>warps</b> (32 for NVIDIA)</li>
                 <li>A thread in a warp usually called <b>lane</b></li>
-                <li>Vector register file. Registers accessed line by line. A lane loads laneId's element from register</li>
-                <li>Single instruction counter for whole warp</li>
-                <li>A couple of special registers, like PC (can be scalar)</li>
+                <li>Vector register file. Registers accessed line by line. A lane loads laneId&#8217;s element from register</li>
+                <li>Single program counter (PC) for whole warp</li>
+                <li>Only a couple of special registers, like PC, can be scalar</li>
               </ul>
             </li>
               <li>
-                <b>SIMT HW responsible for warp scheduling:</b>
+                <b>SIMT HW is responsible for warp scheduling:</b>
                 <ul>
-                  <li>Dynamic or static scheduling</li>
+                  <li>Static for all latest hardware revisions</li>
                   <li>Zero overhead on context switching</li>
                   <li>Long latency operation score-boarding</li>
                 </ul>
               </li>
           </ol>
-          <small>Depth of multi-threading == number of resident warps</small>
         </section>
 
         <section>
-          <h2>SASS ISA</h2>
-          <p><b>SIMT</b> is like <b>RISC</b>: different instructions for memory operations and arithmetic instructions.
-          Arithmetic performed only on registers (except immediates).</p>
+          <h2><abbr title="Streaming ASSembler">SASS</abbr> ISA</h2>
+          <p><b>SIMT</b> is like <b>RISC</b></p>
+          <ul>
+            <li>Memory instructions are separated from arithmetic</li>
+            <li>Arithmetic performed only on registers and immediates</li>
+          </ul>
           <img src="images/c1/sass_isa.svg" alt="sass">
-          <small><b>S</b>treaming <b>ASS</b>embler.</small>
+          <!-- <small><b>S</b>treaming <b>ASS</b>embler.</small> -->
         </section>
 
         <section>
@@ -238,21 +240,15 @@
 
         <section>
           <h2>Vector register file</h2>
-          <div class="left">
-            <p><b>~Zero warp switching requires a big register file</b> because each warp has its own space in it.
-              While warp is resident on SM(X) it occupies a portion of register file. GPU's register file is 32-bit. 64-bit
-              values are stored in register pair (even registers).</p>
-          </div>
+          <b>~Zero warp switching requires a big vector register file (RF)</b>
           <img class="simple" src="images/c1/simt-regs.svg">
           <ul>
-            <li>The cost is register wastage on duplicate items.</li>
+            <li>While warp is resident on SM it occupies a portion of RF</li>
+            <li>GPU's RF is 32-bit. 64-bit values are stored in register pair</li>
+            <li>Fast switching costs register wastage on duplicated items</li>
             <li>Narrow data types are as costly as wide data types.</li>
           </ul>
-          <p>Size of register file<!--, # of banks--> depends on architecture. Fermi: 128&thinsp;KB, Kepler: 256&thinsp;KB.</p>
-        </section>
-
-        <section id="sec_1">
-          <h1>WArp Scheduling</h1>
+          <p><br>Size of RF depends on architecture. Fermi: 128&thinsp;KB per SM, Kepler: 256&thinsp;KB per SM, Maxwell: 64&thinsp;KB per scheduler.</p>
         </section>
 
         <section>
@@ -267,7 +263,7 @@
             <li class="space-before"><b>Dynamic scheduling</b>
               <ul style="margin-left: 65px;">
                 <li>instructions are fetched in compiler-generated order</li>
-                <li>instructions are executed <b>Out-of-order</b></li>
+                <li>instructions are executed <b>out-of-order</b></li>
                 <li>Special unit to track dependencies and reorder instructions</li>
                 <li>independent instructions behind a stalled instruction can pass it</li>
               </ul>
@@ -301,15 +297,20 @@
 
         <section>
           <h2>Divergence &amp; (re)convergence</h2>
-          <div  class="left">
-            <p><b>Divergence</b>: not all lanes in a warp take the same code path</p>
-            <p>Convergence handled via <b>convergence stack</b>. For NVIDIA GPUs <b>SSY</b> instruction pushes
-              convergence stack (occurs before potentially divergent instructions); <b>&lt;INSTR&gt;.S</b> indicates
-            <b>convergence point</b> (instruction after which all lanes in a warp take the same code path).</p>
-            <p>Convergence stack entry includes: convergence PC, next-path PC, and thread mask indicating threads
-              that will be active on that path.</p>
-            <small>Instruction replay.</small>
-          </div>
+          <p><b>Divergence</b>: not all lanes in a warp take the same code path</p>
+          <ul>
+            <li>Convergence handled via <b>convergence stack</b></li>
+            <li>Convergence stack entry includes
+              <ul>
+                <li>convergence PC</li>
+                <li>next-path PC</li>
+                <li>lane mask (mark active lanes on that path)</li>
+              </ul>
+            </li>
+            <li><b>SSY</b> instruction pushes convergence stack. It occurs before potentially divergent instructions</li>
+            <li><b>&lt;INSTR&gt;.S</b> indicates
+              <b>convergence point</b> &ndash; instruction after which all lanes in a warp take the same code path</li>
+          </ul>
         </section>
 
         <section>
@@ -330,17 +331,17 @@
           <ul style="list-style-type: none;">
             <li><b>Predicated execution</b>
               <ul style="margin-left: 65px;">
-                <li>Frequently used for if-then statements (rarely for if-then-else). Decision by compiler heuristic.</li>
-                <li>Optimize divergence overhead.</li>
+                <li>Frequently used for if-then statements, rarely for if-then-else. Decision is made by compiler heuristic.</li>
+                <li>Optimizes divergence overhead.</li>
               </ul>
             </li>
             <li class="space-before"><b>Conditional execution</b>
               <ul style="margin-left: 65px;">
-                <li>Compare instruction set condition code (CC) registers.</li>
+                <li>Compare instruction sets condition code (CC) registers.</li>
                 <li>CC is 4-bit state vector (sign, carry, zero, overflow)
                   <pre><code class="avrasm"><span class="keyword">IMAD</span> R8.<b>CC</b>, R0, 0x4, R3;</code></pre>
                 </li>
-                <li>No WB stage for CC-marked registers.</li>
+                <li>No WB stage for CC-marked registers</li>
               </ul>
             </li>
           </ul>
@@ -348,8 +349,11 @@
 
         <section id="end1">
           <h1>THE END</h1>
+          <h6><a href="code_gpu_with_cuda_1.html">next</a></h6>
+          <br>
+          <br>
+          <br>
           <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013&ndash;2015</h3>
-          <h4><a href="code_gpu_with_cuda_memory_subsystem.html">next</a></h4>
         </section>
       </div>
     </div>
