@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Code GPU with CUDA</title>
+
+    <meta name="description" content="CUDA cource: Code GPU with CUDA">
+    <meta name="author" content="cuda.geek">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
+    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
+    <link rel="stylesheet" href="stylesheets/cuda.css">
+    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <script>
+      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
+        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h1>Code GPU with CUDA</h1>
+          <h3>Profiling</h3>
+          <small>Created by Marina Kolpakova (<a href="http://github.com/cuda-geek">cuda.geek</a>) for <a href="http://itseez.com">Itseez</a></small>
+        </section>
+
+        <section>
+          <section>
+            <h2>Outline</h2>
+            <ul>
+              <li><a href="#/sec_0">Streaming kernels</a>
+                <ul>
+                  <li>Threshold</li>
+                  <li>Transpose</li>
+                </ul>
+              </li>
+              <!-- <li>Stencil kernel</li> -->
+              <li><a href="#/sec_1">Reduction</a></li>
+              <!-- <li>Scan</li> -->
+              <li><a href="#/sec_2">Profiling</a>
+                <ul>
+                    <li>What and how to measure?</li>
+                    <li>Case study: transpose</li>
+                    <li>Code paths and patters analysis</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h2>Out of scope</h2>
+            <ul>
+              <li>Visual profiler opportunities</li>
+            </ul>
+          </section>
+        </section>
+
+        <section id="sec_2">
+          <h1>Profiling</h1>
+        </section>
+
+        <section>
+          <h2>What to measure?</h2>
+          <ul>
+            <li><b>Wall time</b>: user will see this time.</li>
+            <li><b>GPU time</b>: specific kernel time.</li>
+            <li><b>CPU <-> GPU memory transfers time</b>:
+              <ul>
+                <li>not considered for GPU time analysis</li>
+                <li>impact wall time</li>
+              </ul>
+            </li>
+            <li>Data dependent cases timing:
+              <ul>
+                <li>worst case time</li>
+                <li>time of single iteration</li>
+                <li>consider probability</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How to measure?</h2>
+          <section>
+            <h3>system timer (Unix example)</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">#include &lt;time.h&gt;
+double runKernel(const <span class="keyword">dim3</span> grid, const <span class="keyword">dim3</span> block)
+{
+    struct timespec startTime, endTime;
+    clock_gettime(CLOCK_MONOTONIC, &startTime);
+    kernel<span class="keyword">&lt;&lt;&lt;grid, block&gt;&gt;&gt;</span>();
+    <b>cudaDeviceSynchronize();</b>
+    clock_gettime(CLOCK_MONOTONIC, &endTime);
+    int64 startNs = (int64)startTime.tv_sec * 1000000000 + startTime.tv_nsec;
+    int64 endNs   = (int64)endTime.tv_sec   * 1000000000 + endTime.tv_nsec;
+
+    return (endNs - startNs) / 10000000.; // get ms
+}</code></pre>
+            <p>preferred for wall time measurement</p>
+          </section>
+
+          <section>
+            <h3>Timing with CUDA events</h3>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">double runKernel(const <span class="keyword">dim3</span> grid, const <span class="keyword">dim3</span> block)
+{
+    <span class="keyword">cudaEvent_t</span> start, stop;
+    cudaEventCreate(&start); cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+    kernel<span class="keyword">&lt;&lt;&lt;grid, block&gt;&gt;&gt;</span>();
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float ms;
+    cudaEventElapsedTime(&ms, start, stop);
+    cudaEventDestroy(start); cudaEventDestroy(stop);
+    return ms;
+}</code></pre>
+            <ul>
+              <li>can be used with CUDA streams without synchronization</li>
+              <!-- <li>implemented over check points for CUDA driver managed operations</li> -->
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h2>Why to profile?</h2>
+          <p><b>Profiler will not do your work for you</b>, but profiler helps</p>
+          <ul>
+            <li>to identify bottlenecks (this way is more reliable than device-side timing)</li>
+            <li>to check your hypothesis</li>
+            <li>to verify memory access patterns</li>
+            <li>to understand how hardware behaves</li>
+            <li>to collect statistic in data dependent workloads.</li>
+          </ul>
+          <p><br/><b>Think profiling and benchmarking as scientific experiments.</b></p>
+        </section>
+
+        <section>
+          <h2>Notes about profiler</h2>
+          <ul>
+            <li><b>events</b> are hardware counters, usually reported per SM
+              <ul>
+                <li>SM id selected by profiler (assuming that SMs do approximately the same amount of work)</li>
+                <li>Exceptions: L2 and DRAM counters</li>
+              </ul>
+            </li>
+            <li><b>metrics</b> computed from number of events and hardware specific properties (e.c. number of SM)</li>
+            <li>Single run can collect only a few counters
+              <ul>
+                <li>Profiler repeats kernel launches to collect all counters</li>
+              </ul>
+            </li>
+            <li>Results may vary for repeated runs</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Notes on profiler (Cont.)</h2>
+          <ul>
+            <li>Memory metrics
+              <ul>
+                <li>load/store counts from software perspective (requests)
+                  <ul><li><code>local_store_transactions</code></li></ul>
+                </li>
+                <li>read/write counts from hardware perspective (bytes transfered)
+                  <ul><li><code>l2_subp0_read_sector_misses</code></li></ul>
+                </li>
+              </ul>
+            </li>
+            <li>Counters incremented
+              <ul>
+                <li>per warp</li>
+                <li>per cache line/transaction size</li>
+                <li>per request/instruction</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>instructions/bytes ratio</h2>
+          <ul>
+            <li>Profiler counters:
+              <ul>
+                <li><b><code>instructions_issued, instructions_executed</code></b></li>
+                <li>incremented by warp, but “issued” includes replays</li>
+              </ul>
+              <ul>
+                <li><b><code>global_store_transaction, uncached_global_load_transaction</code></b></li>
+                <li>transaction can be 32,64,128 byte. Requires additional analysis to determine average.</li>
+              </ul>
+            </li>
+            <li>Compute ratio:
+              <ul><b>(warpSize X instructions_issued)</b> v.s. <b>(global_store_transaction + l1_global_load_miss) * avgTransactionSize</b></ul>
+            </li>
+          </ul>
+        </section>
+
+          <section>
+            <h2>List of events</h2>
+            <section>
+              <table class="tbl1" style="width:100%;">
+                <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>domain</th>
+                  <th>event</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th rowspan="3">texture (a)</th><td>tex{0,1,2,3}_cache_sector_{queries,misses}</td>
+                </tr>
+                <tr><td>rocache_subp{0,1,2,3}_gld_warp_count_{32,64,128}b</td></tr>
+                <tr><td>rocache_subp{0,1,2,3}_gld_thread_count_{32,64,128}b</td></tr>
+                <tr>
+                  <th rowspan="6">L2 (b)</th><td>fb_subp{0,1}_{read,write}_sectors</td>
+                </tr>
+                <tr><td>l2_subp{0,1,2,3}_total_{read,write}_sector_queries</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_{read,write}_{l1,system}_sector_queries</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_{read,write}_sector_misses</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_read_tex_sector_queries</td></tr>
+                <tr><td>l2_subp{0,1,2,3}_read_{l1,tex}_hit_sectors</td></tr>
+
+                <tr>
+                  <th rowspan="2">LD/ST (c)</th><td>g{ld,st}_inst_{8,16,32,64,128}bit</td>
+                </tr>
+                <tr><td>rocache_gld_inst_{8,16,32,64,128}bit</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>domain</th>
+                  <th>event</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th rowspan="10">sm (d)</th><td>prof_trigger_0{0-7}</td>
+                </tr>
+                <tr><td>{shared,local}_{load,store}</td></tr>
+                <tr><td>g{ld,st}_request</td></tr>
+                <tr><td>{local,l1_shared,__l1_global}_{load,store}_transactions</td></tr>
+                <tr><td>l1_local_{load,store}_{hit,miss}</td></tr>
+                <tr><td>l1_global_load_{hit,miss}</td></tr>
+                <tr><td>uncached_global_load_transaction</td></tr>
+                <tr><td>global_store_transaction</td></tr>
+                <tr><td>shared_{load,store}_replay</td></tr>
+                <tr><td>global_{ld,st}_mem_divergence_replays</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>domain</th>
+                <th>event</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th rowspan="5">sm (d)</th><td>{threads,warps,sm_cta}_launched</td></tr>
+              <tr><td>inst_issued{1,2}</td></tr>
+              <tr><td>[thread_,not_predicated_off_thread_]inst_executed</td></tr>
+              <tr><td>{atom,gred}_count</td></tr>
+              <tr><td>active_{cycles,warps}</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section>
+        <h2>List of metrics</h2>
+        <section>
+          <table class="tbl1" style="width:100%;">
+            <colgroup>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>metric</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>g{ld,st}_requested_throughput</td></tr>
+              <tr><td>tex_cache_{hit_rate,throughput}</td></tr>
+              <tr><td>dram_{read,write}_throughput</td></tr>
+              <tr><td>nc_gld_requested_throughput</td></tr>
+              <tr><td>{local,shared}_{load,store}_throughput</td></tr>
+              <tr><td>{l2,system}_{read,write}_throughput</td></tr>
+              <tr><td>g{st,ld}_{throughput,efficiency}</td></tr>
+              <tr><td>l2_{l1,texture}_read_{hit_rate,throughput}</td></tr>
+              <tr><td>l1_cache_{global,local}_hit_rate</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <table class="tbl1" style="width:100%;">
+            <colgroup>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>metric</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>{local,shared}_{load,store}_transactions[_per_request]</td></tr>
+              <tr><td>gl{d,st}_transactions[_per_request]</td></tr>
+              <tr><td>{sysmem,dram,l2}_{read,write}_transactions</td></tr>
+              <tr><td>tex_cache_transactions</td></tr>
+              <tr><td>{inst,shared,global,global_cache,local}_replay_overhead</td></tr>
+              <tr><td>local_memory_overhead</td></tr>
+              <tr><td>shared_efficiency</td></tr>
+
+              <tr><td>achieved_occupancy</td></tr>
+              <tr><td>sm_efficiency[_instance]</td></tr>
+              <tr><td>ipc[_instance]</td></tr>
+              <tr><td>issued_ipc</td></tr>
+              <tr><td>inst_per_warp</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <table class="tbl1" style="width:100%;">
+            <colgroup>
+              <col></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>metric</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>flops_{sp,dp}[_add,mul,fma]</td></tr>
+              <tr><td>warp_execution_efficiency</td></tr>
+
+              <tr><td>warp_nonpred_execution_efficiency</td></tr>
+              <tr><td>flops_sp_special</td></tr>
+              <tr><td>stall_{inst_fetch,exec_dependency,data_request,texture,sync,other}</td></tr>
+
+              <tr><td>{l1_shared,l2,tex,dram,system}_utilization</td></tr>
+              <tr><td>{cf,ldst}_{issued,executed}</td></tr>
+              <tr><td>{ldst,alu,cf,tex}_fu_utilization</td></tr>
+              <tr><td>issue_slot_utilization</td></tr>
+              <tr><td>inst_{issued,executed}</td></tr>
+              <tr><td>issue_slots</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+        <section>
+          <h2>ROI profiling</h2>
+          <pre style="width:100%;"><code style="padding: 10px;" class="cpp">#include &lt;cuda_profiler_api.h&gt;
+
+// algorithm setup code
+udaProfilerStart();
+perf_test_cuda_accelerated_code();
+cudaProfilerStop();
+</code></pre>
+          <ul>
+            <li>profile only part that you are optimizing now</li>
+            <li>shorter profiler log</li>
+            <li>do not significantly overhead your code runtime</li>
+            <li>used with <b><code>--profile-from-start off</code></b> nvprof option</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Profile for memory</h2>
+          <ul>
+            <li><b>Throughput</b>
+              <ol>
+                <li>count bytes requested by the threads / application code</li>
+                <li>count bytes moved by the hardware (L2/DRAM)</li>
+              </ol>
+            </li>
+            <li>Access pattern analysis
+              <ul>
+                <li><code><b>g{ld,st}_transactions_per_request</b></code></li>
+              </ul>
+            </li>
+            <li>Throughput analysis
+              <ul>
+                <li>compare application HW throughput to specified for your GPU</li>
+                <li><code><b>g{ld,st}_requested_throughput</b></code></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Case study: Matrix transpose</h2>
+          <section>
+            <pre><code class="bash">& nvprof --devices 2 ./bin/demo_bench</code></pre>
+            <img src="images/c3/cs1.png" class="simple" style="padding:10px; background-color:#000;">
+          </section>
+          <section>
+            <pre><code class="bash">& nvprof --devices 2 \
+--metrics gld_transactions_per_request,gst_transactions_per_request \
+./bin/demo_bench</code></pre>
+            <img src="images/c3/cs2.png" class="simple" style="padding:10px; background-color:#000;">
+          </section>
+          <section>
+            <pre><code class="bash">& nvprof --devices 2 --metrics shared_replay_overhead ./bin/demo_bench</code></pre>
+            <img src="images/c3/cs3.png" class="simple" style="padding:10px; background-color:#000;">
+            <img src="images/c3/cs4.png" class="simple" style="padding:10px; background-color:#000;">
+          </section>
+        </section>
+
+        <section>
+          <h2>Code paths analysis</h2>
+          <ul>
+            <li>The main idea: determine performance limiters through measuring different parts independently</li>
+            <li>Simple case: time memory-only and math-only versions of the kernel</li>
+            <li>Shows how well memory operations are overlapped with arithmetic: compare the sum of mem-only and math-only times to full-kernel time</li>
+        </ul>
+        <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template&lt;typename T&gt;
+<span class="keyword">__global__</span> void
+benchmark_contiguous_direct_load(T* s, typename T::value_type* r, bool doStore)
+{
+   int global_index = threadIdx.x + blockDim.x * blockIdx.x;
+   T data = s[global_index];
+   asm (""::: "memory");
+   if (s && doStore)
+       r[global_index] = sum(data);
+}</code></pre>
+        </section>
+        <section>
+          <h2>device side timing</h2>
+          <ul>
+            <li>Device timer located on ROP/SM depending on hardware revision.</li>
+            <li>It's relatively easy to compute per thread values but hard to analyze kernel performance
+            due to grid serialization</li>
+            <li>sometimes is suitable for benchmarking</li>
+          </ul>
+          <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template&lt;typename T, typename D, typename L&gt;<span class="keyword">__global__</span>
+void latency_kernel(T** a, int len, int stride, int inner_its, D* latency, L func)
+{
+    D start_time, end_time;
+    volatile D sum_time = 0;
+    for (int k = 0; k < inner_its; ++k)
+    {
+        T *j = ((T*) a) + threadIdx.y * len + threadIdx.x;
+        start_time = clock64();
+        for (int curr = 0; curr < len / stride; ++curr) j = func(j);
+        end_time = clock64(); sum_time += (end_time - start_time);
+    }
+    if (!threadIdx.x) atomicAdd(latency, sum_time);
+}</code></pre>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013</h3>
+        </section>
+      </div>
+    </div>
+    <script src="3dparty/reveal/lib/js/head.min.js"></script>
+    <script src="3dparty/reveal/js/reveal.min.js"></script>
+    <script>
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: false,
+                rollingLinks: false,
+
+                theme: Reveal.getQueryHash().theme,
+                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+                dependencies: [
+                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+    </script>
+  </body>
+</html>

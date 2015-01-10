@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Code GPU with CUDA</title>
+
+    <meta name="description" content="CUDA cource: Code GPU with CUDA">
+    <meta name="author" content="cuda.geek">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
+    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
+    <link rel="stylesheet" href="stylesheets/cuda.css">
+    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <script>
+      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
+        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+    <!--[if lt IE 9]>
+      <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h1>Code GPU with CUDA</h1>
+          <h2>Common optimization techniques</h2>
+          <h3>Device code optimization</h3>
+          <br>
+          <br>
+          <br>
+          <small>Created by Marina Kolpakova (
+            <a href="http://github.com/cuda-geek">cuda.geek</a>
+            ) for
+            <a href="http://itseez.com">Itseez</a>
+          </small>
+          <h4><a href="code_gpu_with_cuda_memory_subsystem.html#/end1">previous</a></h4>
+        </section>
+
+        <section>
+          <section>
+            <h2>Outline</h2>
+            <ul>
+              <li><a href="#/sec_0">Introduction to CUDA</a></li>
+              <li><a href="#/sec_1">Device code optimization</a>
+                <ul>
+                  <li><a href="#/sec_0_0">Improve parallelism</a></li>
+                  <li><a href="#/sec_0_1">Improve memory accesses</a></li>
+                  <li><a href="#/sec_0_2">Improve control flow</a></li>
+                </ul>
+              </li>
+              <li><a href="#/sec_2">General principles</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2>Out of scope</h2>
+            <ul>
+              <li>CUDA API</li>
+              <li>Dynamic parallelism (sm_35)</li>
+              <li>Surfaces and layered textures</li>
+              <li>OpenGL interoperability</li>
+            </ul>
+          </section>
+        </section>
+
+        <section id="sec_1">
+          <h1>Device code<br/>optimization</h1>
+        </section>
+
+        <section>
+          <h2>How to identify performance limiters</h2>
+          <ul class="none">
+            <li>
+              <b>Time</b>
+              <ul>
+                <li>Subsample when measuring performance.</li>
+                <li>Determine your code wall time. You'll optimize it.</li>
+              </ul>
+            </li>
+            <li>
+              <b>Profile</b>
+              <ul>
+                <li>Collect metrics and events.</li>
+                <li>Determine limiting factors (e.c. memory, divergence).</li>
+              </ul>
+            </li>
+            <li>
+              <b>Prototype</b>
+              <ul>
+                <li>Prototype kernel parts separately and time them.</li>
+                <li>Determine memory access or data dependency patterns.</li>
+              </ul>
+            </li>
+            <li>
+              <b>(Micro)benchmark</b>
+              <ul>
+                <li>Determine hardware characteristics.</li>
+                <li>Tune for particular architecture, GPU class.</li>
+              </ul>
+            </li>
+            <li><b>Look into SASS</b>
+            </li>
+          </ul>
+        </section>
+
+        <section id="sec_0_0">
+          <h2>Factors that limit performance</h2>
+          <p>Optimize for GPU <b><mrow><mo>&#x2243;</mo></mrow></b> Optimize for <b>latency</b>.<br/>
+          SIMT architecture makes GPU to be latent at all:</p>
+          <ul>
+            <li>gmem (~350 cycles)</li>
+            <li>caches (L1: ~56 , L2: ~160)</li>
+            <li>registers (~10 cycles for FADD)</li>
+          </ul>
+          <blockquote style="width:100%" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+          Hiding latency is the only GPU-specific optimization principle.
+          </blockquote>
+          <p>Factors that pervert latency hiding:</p>
+          <ul>
+            <li>Insufficient parallelism</li>
+            <li>Inefficient memory accesses</li>
+            <li>Inefficient control flow</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Little's law</h2>
+          <ul class="none">
+            <li><b>Throughput</b> is how many operations are performed in one cycle.</li>
+            <li><b>Latency</b> is how many cycles pipeline stalls before another dependent operation. </li>
+          </ul>
+          <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+            <b>
+              <mrow>
+                <mo>L</mo>
+                <mo>=</mo>
+                <mi>&#x3bb;<!--GREEK SMALL LETTER LAMDA--></mi>
+                <mo>W</mo>
+              </mrow>
+            </b>
+            <br/>
+            <p>Warps on fly (L) = Throughput (<mrow><mi>&#x3bb;<!--GREEK SMALL LETTER LAMDA--></mi></mrow>) x Latency (W)</p>
+          </blockquote>
+          <img src="images/c2/little.svg" width="50%" class="simple">
+          <small>Example: GPU with 8 operations per clock and 18 clock latency </small>
+        </section>
+
+        <section>
+          <h2>Little's law: FFMA example</h2>
+          <ul class="none">
+            <li><b>Fermi</b> GF100
+              <ul>
+                <li>throughput: 32 operations per clock (1 warp)</li>
+                <li>latency: ~18 clocks</li>
+                <li>max resident warps per SM: 24</li>
+                <li>inventory: 1 * 18 = <b>18 warps</b> on fly i.e. ready to execute.</li>
+              </ul>
+            </li>
+            <li><b>Kepler</b> GK110
+              <ul>
+                  <li>throughput: 128 (if no ILP) operations per clock (4 warps)</li>
+                  <li>latency: ~10 clocks</li>
+                  <li>max resident warps per SM: 64</li>
+                  <li>inventory: 4 * 10 = <b>40 warps</b> on fly i.e. ready to execute.</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Concurrent warp execution</h2>
+          <img src="images/c2/scheduling.png" width="60%">
+        </section>
+
+        <section>
+          <h2>TLP &amp; ILP</h2>
+          <ul class="none">
+            <li><b>T</b>hread <b>L</b>evel <b>P</b>arallelism
+              <ul>
+                <li>run more warps per SM</li>
+                <li>limiting factors:
+                  <ul>
+                    <li>bad launch configuration</li>
+                    <li>resource consuming kernels</li>
+                    <li>poorly parallelized code</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><b>I</b>nstruction <b>L</b>evel <b>P</b>arallelism
+              <ul>
+                <li>instruction dual issue</li>
+                <li>limiting factors are pipeline hazards
+                  <ul>
+                    <li>structural hazards</li>
+                    <li>data hazards</li>
+                  </ul>
+                </li>
+              </ul>
+
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Improve TLP</h2>
+          <ul>
+            <li><b>Occupancy</b> is actual number of warps running concurrently on a multiprocessor divided by maximum number
+            of warps that can be run concurrently by hardware.</li>
+            <li>Kepler can keep up to 64 resident warps belonging to 16 blocks BUT you need recourses for them: registers, smem.</li>
+            <li>Kepler has 64&thinsp;K x 32-bit registers or <br/>65536<small style="vertical-align:bottom;">registers</small>
+          / 64 <small style="vertical-align:bottom;">warps</small> /
+          32 <small style="vertical-align:bottom;">warp_size</small> = <b>32 x  32 bit registers / thread</b>.</li>
+          </ul>
+          <b><br/>Improve occupancy to achieve better TLP</b>
+          <!-- <p>Think about work repartitioning, if your kernel is to heavy</p> -->
+        </section>
+
+        <section>
+          <h2>Adjust configuration</h2>
+          <b>Block configuration itself can affect occupancy.</b>
+          <img class="simple" src="images/c2/block_conf.svg" width="80%">
+          <ul>
+            <li>Number of threads per threadblock</li>
+            <li>Number of threadblocks</li>
+            <li>Amount of work per threadblock</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Improve ILP</h2>
+          <ul>
+            <li>Kernel unrolling: process more elements by thread
+            <pre width="100%"><code class="cpp"><span class="keyword">__global__</span> void unrolled(const float* in, float* out )
+{
+  const int tid = blockDim.x * blockIdx.x + threadIdx.x;
+  const int totalThrads = blockDim.x * gridDim.x;
+  const float tmp1 = f(in[tid]);
+  const float tmp2 = f(in[tid +totalThrads]);
+  out[tid] = tmp1;
+  out[tid + totalThrads] = tmp2;
+}
+</code></pre>
+            </li>
+            <li>Loop unrolling in device code (<b>#pragma unroll CONST_EXPR</b>): improve number of independent operations.
+            <pre width="100%"><code class="cpp"><span class="keyword">#pragma unroll 2
+for( int i = 0; i < N_ITERATIONS; i++ )
+</code></pre></li>
+            <li>Techniques used for increasing ILP on CPU are suitable</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>ILP required for modern GPU<small>s</small></h2>
+          <p>sm_21+ can not achieve peak utilization without ILP.</p>
+          <ul>
+            <li>Kepler: 4 warp schedulers, dual-issue each. 192 compute cores process up to 6 warps each clock.
+            If there is no ILP only 128 of 192 cores are used. Compute cores utilization: <b>0.6(6)</b></li>
+            <li>Fermi (sm_21): 2 warp schedulers, dual-issue each. 48 compute cores process 3 warps each 2 clock.
+            If there is no ILP only 32 of 48 cores are used. Compute cores  utilization: <b>0.6(6)</b></li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013 &ndash; 2015</h3>
+          <h4><a href="cuda22.html">next</a></h4>
+        </section>
+
+      </div>
+    </div>
+    <script src="3dparty/reveal/lib/js/head.min.js"></script>
+    <script src="3dparty/reveal/js/reveal.min.js"></script>
+    <script>
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: false,
+                rollingLinks: false,
+
+                theme: Reveal.getQueryHash().theme,
+                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+                dependencies: [
+                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+    </script>
+  </body>
+</html>
