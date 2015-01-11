@@ -1,5 +1,5 @@
-#ifndef __CUMIB_TIMER_CUH__
-#define __CUMIB_TIMER_CUH__
+#ifndef __CUMIB_PERF_TEST_CUH__
+#define __CUMIB_PERF_TEST_CUH__
 
 #include <string>
 #include <stdint.h>
@@ -152,4 +152,4 @@ for (int i = 0; i < TEST_SYCLES; ++i)   \
 }                                       \
 }while(0)
 
-#endif // __CUMIB_TIMER_CUH__
+#endif // __CUMIB_PERF_TEST_CUH__

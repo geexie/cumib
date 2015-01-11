@@ -1,6 +1,5 @@
-#include "cuda_assert.cuh"
-#include "timer.cuh"
-#include "dptr.cuh"
+#include "cudassert.cuh"
+#include "perf_test.cuh"
 #include "mat.cuh"
 
 __device__ __forceinline__ unsigned int lane()
