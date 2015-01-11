@@ -124,7 +124,19 @@ streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keywor
                 </mstyle>
               </math>
             </blockquote>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> threshold_bw(const <span class="cls">DPtrb</span> src, <span class="cls">DPtrb</span> dst, <span class="cls">int32s</span> cols, <span class="cls">int32s</span> rows, <span class="cls">int8u</span> thr)
+{
+     const int x = <span class="keyword">blockDim.x</span> * <span class="keyword">blockIdx.x</span> + <span class="keyword">threadIdx.x</span>;
+     const int y = <span class="keyword">blockDim.y</span> * <span class="keyword">blockIdx.y</span> + <span class="keyword">threadIdx.y</span>;
+
+     if (x < cols && y < rows)
+         dst.row(y)[x] = max(thr, src.row(y)[x]);
+}</code></pre>
+            <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L24">The code is available in cumib microbenchmars library</a></small>
             <p>Adjusting launch parameters for specific hardware</p>
+          </section>
+          <section>
+            <h3>Pixel per thread: results</h3>
             <table class="tbl1" style="width:100%;">
               <colgroup>
                 <col></col>
@@ -164,16 +176,16 @@ streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keywor
 
           <section>
             <h3>Kernel unrolling: image row per warp</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void threshold_ww(const <span <span class="cls">DPtr</span>&lt;unsigned char&gt; src, <span class="cls">DPtr</span>&lt;unsigned char&gt; dst,
-    int cols, int rows, unsigned char threshold)
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> threshold_bw(const <span class="cls">DPtrb</span> src, <span class="cls">DPtrb</span> dst, <span class="cls">int32s</span> cols, <span class="cls">int32s</span> rows, <span class="cls">int8u</span> thr)
 {
     int block_id = (<span class="keyword">blockIdx.y</span> * <span class="keyword">gridDim.x</span> + <span class="keyword">blockIdx.x</span>) * (<span class="keyword">blockDim.x</span> / <span class="keyword">warpSize</span>);
     int y = (<span class="keyword">threadIdx.y</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>) / <span class="keyword">warpSize</span> + block_id;
 
     if (y < rows)
         for (int x = lane(); x < cols; x += <span class="keyword">warpSize</span>)
-            dst.row(y)[x] = max(threshold, src.row(y)[x]);
+            dst.row(y)[x] = max(thr, src.row(y)[x]);
 }</code></pre>
+            <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L43">The code is available in cumib microbenchmars library</a></small>
             <table class="tbl1" style="width:100%;">
               <colgroup>
                 <col></col>
@@ -219,6 +231,7 @@ if (y * 2 < rows - 2)
         dst.row(y * 2 + 1)[x] = tmp[1];
     }
 else {/*compute tail*/ }</code></pre>
+            <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L61">The code is available in cumib microbenchmars library</a></small>
             <table class="tbl1" style="width:100%;">
               <colgroup>
                   <col></col>
@@ -250,21 +263,26 @@ else {/*compute tail*/ }</code></pre>
           <section>
             <h3>Kernel unrolling: use wider transactions</h3>
             <p>unsigned char -&gt; unsigned integer</p>
-            <pre style="width:100%"><code class="cpp">unsigned int tmp = src.row&lt;unsigned int&gt;(y)[x];
-unsigned int res = vmin_u8(tmp, mask);
-dst.row&lt;unsigned int&gt;(y)[x] = res;</code></pre>
-                        <pre style="width:100%"><code class="cpp">template&lt;typename T&gt; <span class="keyword">__device__ __forceinline__</span> T vmin_u8(T,T);
+            <pre style="width:100%"><code class="cpp" style="padding: 10px;">template&lt;typename T&gt; <span class="keyword">__device__ __forceinline__</span> T vmin_u8(T,T);
 template&lt;&gt; <span class="keyword">__device__ __forceinline__</span> unsigned int vmin_u8(unsigned v, unsigned m)
 {
     unsigned int res = 0;
-    asm("vmax4.u32.u32.u32 %0.b3210, %1.b3210, %2.b7654, %3;"
-    : "=r"(res) : "r"(v), "r"(m), "r"(0));
+    asm("vmax4.u32.u32.u32 %0, %1, %2, %3;" : "=r"(res) : "r"(v), "r"(m), "r"(0));
     return res;
 }</code></pre>
+            <pre style="width:100%"><code class="cpp" style="padding: 10px;">// same as previous
+if (y < rows)
+    for (int x = lane(); x < cols / sizeof(int8u); x += warpSize)
+    {
+        int32u tmp = src.row&lt;unsigned int&gt;(y)[x];
+        int32u res = vmin_u8(tmp, mask);
+        dst.row&lt;unsigned int&gt;(y)[x] = res;
+    }</code></pre>
+          <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L114">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
-            <h3>Results</h3>
+            <h3>Wider transactions : results</h3>
             <table class="tbl1" style="width:100%;">
               <colgroup>
                 <col></col>
@@ -336,6 +354,7 @@ void transposeNaive(const <span class="cls">DPtr</span>&lt;T&gt; idata, <span cl
 
     odata.row(xIndex)[yIndex] = idata.row(yIndex)[xIndex];
 }</code></pre>
+            <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L124">The code is available in cumib microbenchmars library</a></small>
             <img src="images/c3/tr_mat.svg" width="60%" class="simple">
           </section>
 
@@ -367,6 +386,7 @@ void transposeCoalesced(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
         odata.row(yIndex + i)[xIndex] = tile[<span class="keyword">threadIdx.x</span>][<span class="keyword">threadIdx.y</span> + i];
 }</code></pre>
+          <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L167">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
@@ -388,6 +408,7 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
         odata.row(yIndex + i)[xIndex] = tile[<span class="keyword">threadIdx.x</span>][<span class="keyword">threadIdx.y</span> + i];
 }</code></pre>
+            <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L202">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
@@ -440,6 +461,7 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
     odata(oIndexY + 0, oIndexX, reg0);
     odata(oIndexY + 1, oIndexX, reg1);
 }</code></pre>
+            <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L245">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
