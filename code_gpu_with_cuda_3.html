@@ -94,18 +94,18 @@
 
         <section>
           <h2>Throughput &amp; Latency</h2>
-          <dl>
-            <dt style="text-align:left;"><b>Throughput</b></dt>
-            <dd style="text-align:left; margin-left: 4em;">is how many operations are performed in one cycle</dd>
-            <dt style="text-align:left;"><b>Latency</b></dt>
-            <dd style="text-align:left; margin-left: 4em;">is how many cycles pipeline stalls before another dependent operation</dd>
-            <dt style="text-align:left;"><b>Inventory</b></dt>
-            <dd style="text-align:left; margin-left: 4em;">is a number of warps on fly (currently in execution)</dd>
+          <dl style="text-align:left;">
+            <dt ><b>Throughput</b></dt>
+            <dd style="margin-left: 4em;">is how many operations are performed in one cycle</dd>
+            <dt><b>Latency</b></dt>
+            <dd style="margin-left: 4em;">is how many cycles pipeline stalls before another dependent operation</dd>
+            <dt><b>Inventory</b></dt>
+            <dd style="margin-left: 4em;">is a number of warps on fly i.e. in execution stage of the pipeline</dd>
           </dl>
         </section>
 
         <section>
-          <h2>Little's law</h2>
+          <h2>Little&#8217;s law</h2>
           <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
             <b>
               <mrow>
@@ -124,14 +124,14 @@
         </section>
 
         <section>
-          <h2>Little's law: FFMA example</h2>
+          <h2>Little&#8217;s law: FFMA example</h2>
           <ul class="none">
             <li><b>Fermi</b> GF100
               <ul>
                 <li>Throughput: 32 operations per clock (1 warp)</li>
                 <li>Latency: ~18 clocks</li>
                 <li>Maximum resident warps per SM: 24</li>
-                <li>Inventory: 1 * 18 = <b>18 warps</b> on fly i.e. ready to execute.</li>
+                <li>Inventory: 1 * 18 = <b>18 warps</b> on fly</li>
               </ul>
             </li>
             <li><b>Kepler</b> GK110
@@ -139,7 +139,7 @@
                   <li>Throughput: 128 (if no ILP) operations per clock (4 warps)</li>
                   <li>Latency: ~10 clocks</li>
                   <li>Maximum resident warps per SM: 64</li>
-                  <li>Inventory: 4 * 10 = <b>40 warps</b> on fly i.e. ready to execute.</li>
+                  <li>Inventory: 4 * 10 = <b>40 warps</b> on fly</li>
               </ul>
             </li>
           </ul>
@@ -155,7 +155,11 @@
           <ul class="none">
             <li><b>T</b>hread <b>L</b>evel <b>P</b>arallelism
               <ul>
-                <li>run more warps per SM</li>
+                <li>enabling factors:
+                  <ul>
+                    <li>sufficient number of warps per SM on fly</li>
+                  </ul>
+                </li>
                 <li>limiting factors:
                   <ul>
                     <li>bad launch configuration</li>
@@ -167,8 +171,13 @@
             </li>
             <li><b>I</b>nstruction <b>L</b>evel <b>P</b>arallelism
               <ul>
-                <li>instruction dual issue</li>
-                <li>limiting Factors
+                <li>enabling factors:
+                  <ul>
+                    <li>independent instructions per warp</li>
+                    <li>dual issue capabilities</li>
+                  </ul>
+                </li>
+                <li>limiting Factors:
                   <ul>
                     <li>structural hazards</li>
                     <li>data hazards</li>
@@ -181,20 +190,34 @@
         </section>
 
         <section>
-          <h2>Improve TLP</h2>
+          <h2>Improving TLP</h2>
+          <dl style="text-align:left;">
+            <dt ><b>Occupancy</b></dt>
+            <dd style="margin-left: 4em; text-align:justify;">is actual number of warps running concurrently on a multiprocessor divided by maximum number
+            of warps that can be run concurrently by hardware</dd>
+            <dt><b>Improve occupancy to achieve better TLP</b></dt>
+          </dl>
+          <br/>
           <ul>
-            <li><b>Occupancy</b> is actual number of warps running concurrently on a multiprocessor divided by maximum number
-            of warps that can be run concurrently by hardware </li>
             <li>Kepler can keep up to 64 resident warps belonging to 16 blocks BUT you need recourses for them: registers, smem</li>
-            <li>Kepler has 64&thinsp;K x 32-bit registers or <br/>65536<small style="vertical-align:bottom;">registers</small>
-          / 64 <small style="vertical-align:bottom;">warps</small> /
-          32 <small style="vertical-align:bottom;">warp_size</small> or <b>32 of 32 bit registers / thread</b>.</li>
+            <li>Kepler has 64&thinsp;K. &times; 32-bit registers and 32-lane wide warp</li>
           </ul>
-          <b><br/>Improve occupancy to achieve better TLP</b>
-          <!-- <p>Think about work repartitioning, if your kernel is to heavy</p> -->
+          <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations" style="width:100%; margin-top:1em;">
+            <p>65536
+              <small style="vertical-align:bottom;">registers</small>
+               / 64
+              <small style="vertical-align:bottom;">warps</small>
+               / 32
+              <small style="vertical-align:bottom;">warp_size</small>
+               =
+              <b>32
+                <small style="vertical-align:bottom;">registers / thread</small>
+              </b>
+            </p>
+          </blockquote>
         </section>
 
-        <section>
+<!--         <section>
           <h2>Adjust configuration</h2>
           <b>Block configuration itself can affect occupancy.</b>
           <img class="simple" src="images/c2/block_conf.svg" width="80%">
@@ -203,28 +226,27 @@
             <li>Number of threadblocks</li>
             <li>Amount of work per threadblock</li>
           </ul>
-        </section>
+        </section> -->
 
         <section>
-          <h2>Improve ILP</h2>
+          <h2>Improving ILP</h2>
           <ul>
-            <li>Kernel unrolling: process more elements by thread
+            <li><b>Kernel unrolling</b>: process more elements by thread, because operations on different elements are independent
             <pre width="100%"><code class="cpp"><span class="keyword">__global__</span> void unrolled(const float* in, float* out )
 {
   const int tid = blockDim.x * blockIdx.x + threadIdx.x;
   const int totalThrads = blockDim.x * gridDim.x;
-  const float tmp1 = f(in[tid]);
-  const float tmp2 = f(in[tid +totalThrads]);
-  out[tid] = tmp1;
-  out[tid + totalThrads] = tmp2;
+  out[tid]               = process(in[tid]);
+  out[tid + totalThrads] = process(in[tid + totalThrads]);
 }
 </code></pre>
             </li>
-            <li>Loop unrolling in device code (<b>#pragma unroll CONST_EXPR</b>): improve number of independent operations.
-            <pre width="100%"><code class="cpp"><span class="keyword">#pragma unroll 2
-for( int i = 0; i < N_ITERATIONS; i++ )
+            <li>Device code compiler is not bad in instruction reordering</li>
+            <li><b>Loop unrolling</b> in device code to increase number of independent operations
+            <pre width="100%"><code class="cpp">#pragma unroll CONST_EXPRESSION
+for( int i = 0; i < N_ITERATIONS; i++ ) { /* ... */ }
 </code></pre></li>
-            <li>Techniques used for increasing ILP on CPU are suitable</li>
+            <li>Other techniques used for increasing ILP on CPU are suitable</li>
           </ul>
         </section>
 
