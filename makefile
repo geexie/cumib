@@ -109,11 +109,11 @@ operations.dev.o: operations.o print_device_info.o
 laneid-$(TARGET_ARCH): laneid.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) laneid.cu -o $@
 
-transpose-$(TARGET_ARCH): transpose.o
-	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) transpose.cu -o $@
+transpose-$(TARGET_ARCH): transpose.o print_device_info.o
+	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR)  $^  -o $@
 
-threshold-$(TARGET_ARCH): threshold.o
-	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) threshold.cu -o $@
+threshold-$(TARGET_ARCH): threshold.o print_device_info.o
+	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR)  $^  -o $@
 
 %.o: %.cu device_flags
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dc -o $@ $<

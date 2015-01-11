@@ -334,10 +334,14 @@ void benchmark(const M1& src, M2& dst, M3& dst1)
 
 int main(int argc, char** argv)
 {
+    int deviceId = 0;
     if (argc > 1)
     {
-        cuda_assert(cudaSetDevice(atoi(argv[1])));
+        deviceId = atoi(argv[1]);
     }
+
+    cuda_assert(cudaSetDevice(deviceId));
+    printCudaDeviceInfo(deviceId);
 
     const int32s iw = 1920;
     const int32s ih = 1080;
