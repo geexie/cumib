@@ -476,6 +476,20 @@ unsigned char y;
           </ul>
         </section>
 
+        <section>
+          <h2>Final words</h2>
+          <ul>
+            <li>SM has dedicated LD/ST units to handle memory access</li>
+            <li>Global memory accesses are serviced on warp basis</li>
+            <li>Coalesced transaction is a transaction that fits cache line</li>
+            <li>GPU memory has 2 levels of caches</li>
+            <li>One L1 cache line consists of 4 L2-lines. Coalescing unit manages number of L2 lines that is actually required</li>
+            <li>64-bit and 128-bit memory transactions are natively supported</li>
+            <li>Atomic operations on global memory is done in L2</li>
+            <li>Register spilling is fully cached for both reads and writes</li>
+          </ul>
+        </section>
+
         <section id="end1">
           <h1>THE END</h1>
           <h6><a href="code_gpu_with_cuda_2.html">next</a></h6>
