@@ -1,22 +1,2 @@
 # Compiled Object files
-*.slo
-*.lo
-*.o
-*.d
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-
-# executable names
-global-*
-laneid-*
-mapped-*
-
-# device flags beckup file
-device_flags
+build

@@ -76,59 +76,64 @@ ifeq ($(CUDA_GENERATION), 21)
 virtual_arch = compute_20
 endif
 
-SRCS = laneid.cu mapped.cu global_load.cu print_device_info.cu
+SRCS = global_load.cu laneid.cu mapped.cu operations.cu print_device_info.cu threshold.cu transpose.cu
+
+BUILD_DIR := build
 
 CACHE_STRATEGY ?= cg
 NVCC_FLAGS += -gencode arch=$(virtual_arch),code=$(binary_arch) -Xptxas -dlcm=$(CACHE_STRATEGY)
 # --verbose
 
-all_targets = laneid-$(TARGET_ARCH) global-$(TARGET_ARCH) mapped-$(TARGET_ARCH)
+all_targets = $(BUILD_DIR)/laneid-$(TARGET_ARCH) $(BUILD_DIR)/global-$(TARGET_ARCH) $(BUILD_DIR)/mapped-$(TARGET_ARCH)
 
 ################################################################################
 # Targets
 ################################################################################
 
-global-$(TARGET_ARCH): global_load.dev.o print_device_info.o global_load.o
+$(BUILD_DIR)/global-$(TARGET_ARCH): $(BUILD_DIR)/global_load.dev.o $(BUILD_DIR)/print_device_info.o $(BUILD_DIR)/global_load.o
 	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $^ -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
-mapped-$(TARGET_ARCH): mapped.o print_device_info.o mapped.dev.o
+$(BUILD_DIR)/mapped-$(TARGET_ARCH): $(BUILD_DIR)/mapped.o $(BUILD_DIR)/print_device_info.o $(BUILD_DIR)/mapped.dev.o
 	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $^ -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
-operations-$(TARGET_ARCH): operations.o print_device_info.o operations.dev.o
+$(BUILD_DIR)/operations-$(TARGET_ARCH): $(BUILD_DIR)/operations.o $(BUILD_DIR)/print_device_info.o $(BUILD_DIR)/operations.dev.o
 	$(HOST_CC) $(CXXFLAGS) $(LDFLAGS) $^ -L $(CUDA_LIB_DIR) -l$(CUDA_RT) -o $@
 
-global_load.dev.o: global_load.o print_device_info.o
+$(BUILD_DIR)/global_load.dev.o: $(BUILD_DIR)/global_load.o $(BUILD_DIR)/print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
-mapped.dev.o: mapped.o print_device_info.o
+$(BUILD_DIR)/mapped.dev.o: $(BUILD_DIR)/mapped.o $(BUILD_DIR)/print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
-operations.dev.o: operations.o print_device_info.o
+$(BUILD_DIR)/operations.dev.o: $(BUILD_DIR)/operations.o $(BUILD_DIR)/print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dlink -o $@ $+
 
-laneid-$(TARGET_ARCH): laneid.o
+$(BUILD_DIR)/laneid-$(TARGET_ARCH): $(BUILD_DIR)/laneid.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR) laneid.cu -o $@
 
-transpose-$(TARGET_ARCH): transpose.o print_device_info.o
+$(BUILD_DIR)/transpose-$(TARGET_ARCH): $(BUILD_DIR)/transpose.o $(BUILD_DIR)/print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR)  $^  -o $@
 
-threshold-$(TARGET_ARCH): threshold.o print_device_info.o
+$(BUILD_DIR)/threshold-$(TARGET_ARCH): $(BUILD_DIR)/threshold.o $(BUILD_DIR)/print_device_info.o
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -L $(CUDA_LIB_DIR)  $^  -o $@
 
-%.o: %.cu device_flags
+$(BUILD_DIR)/%.o: %.cu $(BUILD_DIR)/device_flags
+	@mkdir -p $(@D)
 	$(DEVICE_CC) $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) -dc -o $@ $<
 
-%.cu.d: %.cu
+$(BUILD_DIR)/%.cu.d: %.cu
+	@mkdir -p $(@D)
 	$(SHELL) -ec '$(DEVICE_CC) -M $(NVCC_FLAGS) $(CXXFLAGS) $(LDFLAGS) $< |  sed -n "H;$$ {g;s@.*:\(.*\)@$< := \$$\(wildcard\1\)\n$*.o $@: $$\($<\)@;p}" > $@'
 
 all: $(all_targets)
 
-include $(SRCS:.cu=.cu.d)
+include $($(BUILD_DIR)/SRCS:.cu=.cu.d)
 
 .PHONY: clean force
 
-device_flags: force
+$(BUILD_DIR)/device_flags: force
+	@mkdir -p $(@D)
 	echo '$(NVCC_FLAGS)' | cmp -s - $@ || echo '$(NVCC_FLAGS)' > $@
 
 clean:
-	$(RM) *.o *.cu.d $(all_targets)
+	$(RM) -rf $(BUILD_DIR)
