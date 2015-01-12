@@ -156,22 +156,22 @@ streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keywor
               </thead>
               <tbody>
                 <tr>
-                  <th>32x16</th><td>456.49</td><td>1.00</td><td>418.29</td><td>1.00</td>
+                  <th>32x16</th><td>456.49</td><td>1.00</td><td>214.94</td><td>1.00</td>
                 </tr>
                 <tr>
-                  <th>32x8</th><td>431.42</td><td>1.06</td><td>412.95</td><td>1.01</td>
+                  <th>32x8</th><td>431.42</td><td>1.06</td><td>210.39</td><td>1.02</td>
                 </tr>
                 <tr>
-                  <th>32x6</th><td>435.87</td><td>1.05</td><td>382.83</td><td>1.09</td>
+                  <th>32x6</th><td>435.87</td><td>1.05</td><td>226.02</td><td>0.95</td>
                 </tr>
                 <tr>
-                  <th>32x4</th><td>412.01</td><td>1.11</td><td>381.35</td><td>1.10</td>
+                  <th>32x4</th><td>412.01</td><td>1.11</td><td>222.11</td><td>0.98</td>
                 </tr>
                 <tr>
-                  <th>32x2</th><td>785.36</td><td>0.58</td><td>425.75</td><td>0.98</td>
+                  <th>32x2</th><td>785.36</td><td>0.58</td><td>228.28</td><td>0.94</td>
                 </tr>
                 <tr>
-                  <th>32x1</th><td>1516.19</td><td>0.30</td><td>803.37</td><td>0.52</td>
+                  <th>32x1</th><td>1516.19</td><td>0.30</td><td>419.94</td><td>0.51</td>
                 </tr>
               </tbody>
             </table>
@@ -210,16 +210,16 @@ streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keywor
               </thead>
               <tbody>
                 <tr>
-                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td><td>381.35</td><td>1.10</td>
+                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td><td>226.02</td><td>1.00</td>
                 </tr>
                 <tr>
-                  <th>warpwise 8</th><td>223.01</td><td>1.85</td><td>305.05</td><td>1.25</td>
+                  <th>warpwise 8</th><td>223.01</td><td>1.85</td><td>265.13</td><td>0.85</td>
                 </tr>
                 <tr>
-                  <th>warpwise 4</th><td>222.53</td><td>1.85</td><td>303.95</td><td>1.25</td>
+                  <th>warpwise 4</th><td>222.53</td><td>1.85</td><td>248.04</td><td>0.91</td>
                 </tr>
                 <tr>
-                  <th>warpwise 2</th><td>374.47</td><td>1.10</td><td>266.57</td><td>1.43</td>
+                  <th>warpwise 2</th><td>374.47</td><td>1.10</td><td>246.83</td><td>1.92</td>
                 </tr>
               </tbody>
             </table>
@@ -261,13 +261,13 @@ else {/*compute tail*/ }</code></pre>
               </thead>
               <tbody>
                 <tr>
-                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td><td>381.35</td><td>1.10</td>
+                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td><td>226.02</td><td>1.10</td>
                 </tr>
                 <tr>
-                  <th>warpwise 4</th><td>222.53</td><td>1.85</td><td>303.95</td><td>1.25</td>
+                  <th>warpwise 4</th><td>222.53</td><td>1.85</td><td>248.04</td><td>0.91</td>
                 </tr>
                 <tr>
-                  <th>warpwise 4 U2</th><td>185.28</td><td>2.22</td><td>352.20</td><td>1.08</td>
+                  <th>warpwise 4 U2</th><td>185.28</td><td>2.22</td><td>269.75</td><td>0.83</td>
                 </tr>
             </tbody>
             </table>
@@ -317,25 +317,25 @@ if (y < rows)
               </thead>
               <tbody>
                 <tr>
-                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td><td>381.35</td><td>1.10</td>
+                  <th>blockwise 32x4</th><td>412.01</td><td>1.0</td><td>226.02</td><td>1.10</td>
                 </tr>
                 <tr>
-                  <th>warpwise 4</th><td>222.53</td><td>1.85</td><td>303.95</td><td>1.25</td>
+                  <th>warpwise 4</th><td>222.53</td><td>1.85</td><td>248.04</td><td>0.91</td>
                 </tr>
                 <tr>
-                  <th>warpwise 4 U2</th><td>185.28</td><td>2.22</td><td>352.20</td><td>1.08</td>
+                  <th>warpwise 4 U2</th><td>185.28</td><td>2.22</td><td>269.75</td><td>0.83</td>
                 </tr>
                 <tr>
-                  <th>warpwise 2W </th><td>126.01</td><td>3.27</td><td>292.87</td><td>1.30</td>
+                  <th>warpwise 2W </th><td>126.01</td><td>3.27</td><td>245.21</td><td>0.92</td>
                 </tr>
                 <tr>
-                  <th>warpwise 2WU2</th><td>96.71</td><td>4.26</td><td>352.20</td><td>1.08</td>
+                  <th>warpwise 2WU2</th><td>96.71</td><td>4.26</td><td>162.83</td><td>1.39</td>
                 </tr>
                 <tr>
-                  <th>warpwise 4W </th><td>85.22</td><td>4.83</td><td>200.14</td><td>1.90</td>
+                  <th>warpwise 4W </th><td>85.22</td><td>4.83</td><td>257.69</td><td>0.88</td>
                 </tr>
                 <tr>
-                  <th>warpwise 4WU2</th><td>83.42</td><td>4.93</td><td>167.82</td><td>2.27</td>
+                  <th>warpwise 4WU2</th><td>83.42</td><td>4.93</td><td>161.18</td><td>1.40</td>
                 </tr>
               </tbody>
             </table>
