@@ -59,12 +59,6 @@
               <li>Optimizing control flow</li>
             </ul>
           </section>
-          <section>
-            <h2>Out of scope</h2>
-            <ul>
-              <li>Obsolete sm_1x hardware</li>
-            </ul>
-          </section>
         </section>
 
         <section id="sec_0">
@@ -985,6 +979,17 @@ if (__all(!active)) break;</code></pre>
 
                 </section>
               </section>
+
+        <section>
+          <h2>Final words</h2>
+          <ul>
+            <li>Use warp-wise approaches for memory bound kernels</li>
+            <li>Minimize transactions with global memory</li>
+            <li>Load only bytes needed</li>
+            <li>Use hierarchical approaches for non parallelizeble codes</li>
+            <li>Consider data dependency while optimizing complicated algorithms</li>
+          </ul>
+        </section>
 
         <section id="end1">
           <h1>THE END</h1>

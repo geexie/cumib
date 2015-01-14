@@ -65,13 +65,18 @@
 
         <section>
           <h2>Terminology</h2>
-          <ul class="none">
-            <li><b>Device</b> &ndash; CUDA-capable NVIDIA GPU.</li>
-            <li><b>Device code</b> &ndash; code executed on the device.</li>
-            <li><b>Host</b> &ndash; x86/x64/arm CPU.</li>
-            <li><b>Host code</b> &ndash; code executed on the host.</li>
-            <li><b>Kernel</b> &ndash; entry point into device code.</li>
-          </ul>
+          <dl style="text-align:left;">
+            <dt ><b>Device</b></dt>
+            <dd style="margin-left: 5em;">CUDA-capable NVIDIA GPU</dd>
+            <dt><b>Device code</b></dt>
+            <dd style="margin-left: 5em;">code executed on the device</dd>
+            <dt><b>Host</b></dt>
+            <dd style="margin-left: 5em;">x86/x64/arm CPU</dd>
+            <dt><b>Host code</b></dt>
+            <dd style="margin-left: 5em;">code executed on the host</dd>
+            <dt><b>Kernel</b></dt>
+            <dd style="margin-left: 5em;">concrete device function</dd>
+          </dl>
         </section>
 
         <section>
@@ -221,6 +226,18 @@
   // 5. Download results into host memory
   cudaMemcpy(host_out, device_out, cudaMemcpyDeviceToHost);
 }</code></pre>
+        </section>
+
+          <section>
+          <h2>Final words</h2>
+          <ul>
+            <li>CUDA is a set of capable GPU hardware, driver, GPU ISA, GPU assembler, compiler, C++ based HL language
+            and runtime which enables programming of NVIDIA GPU</li>
+            <li>CUDA function (kernel) is called on a grid of blocks</li>
+            <li>Kernel runs on unified programmable cores</li>
+            <li>Kernel is able to access registers and local memory, share memory inside a block of threads and access
+            RAM through global, texture and constant memories</li>
+          </ul>
         </section>
 
         <section id="end1">
