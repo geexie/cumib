@@ -31,117 +31,59 @@
 
     <div class="wrapper">
       <section>
-      <h1>Essential Optimization Rules</h1>
-      <p>What does it mean to be pragmatic optimizer? Here is a simple, but essential set of rules that are aimed to help
-      you to do your optimization work optimally. </p>
-      <h2>1. Say NO to premature optimization</h2>
-      <p>I know, this rule is rather well known. Many books about programming subject explains this aspect. However,
-      I feel I need to cover it here from pragmatic point of view.</p>
-      <p>Imagine, you develop some cutting age algorithm which
-      is not well defined and requires some experimental work to be done. During all development process you thinking
-      about doing it optimal and truing to do you best to ensure good performance. There are several concerns about
-      this approach</p>
-      <ul>
-        <li>Most part of your code would be done to be thrown into trash bin. As I mentioned the algorithm is experimental so
-        nobody guarantees that the approach and consequently code will not be completely reworked after several experiments.
-        You would be disappointed, if all your good works was thrown out together with the failed approach. Are not you?</li>
-        <li>You would not see the complete picture of the algorithm. For example, If you done some data restructuring
-        to optimize one piece of code It could add significant overhead to other part of the pipeline in future because
-        it was not considered during the optimization</li>
-      </ul>
-      <p>This is only some items from a long list of problems stemming from premature optimization. So be careful with it.</p>
-      <h2>2. Time and profile, then optimize</h2>
-      <p>Be aware of current function runtime. Newer start optimization before timings are done. Do not start optimization
-      from function that you suspect to be a bottleneck. You always need a proof.</p>
-      <h2>3. Optimize the most consuming function first</h2>
-      <p>Be objective. Do not choose the easiest, the funniest, the first called and so on. Keep in mind that 80% of time
-      is spend in 20% of code. </p>
-      <h2>4. Identify performance limiters</h2>
-      <p>What limits performance of optimizing function? Is it a number of memory transactions? Is it a critical path is
-      arithmetic? Is it Lack of computational resources of particular type? Depending on kind of limiters your optimization
-      strategy will vary. If you do not do this you will spend ages overcoming problem that is not present.</p>
-      <h2>5. Compute only what is necessary</h2>
-      <p>Empty function body is extremely fast, but does nothing useful. First off all understand the optimizing function
-      and define the set of required operations. Get rid of everything except this set.</p>
-      <h2>6. Load only what is necessary</h2>
-      <p>It is well known that most codes are memory bound. Many thins done to improve memory performance like multilevel
-      cache hierarchies, white back and everything. But processor performance is still be a bit ahead. You should be
-      aware about memory organization of the system you currently targeting. In more important, you should well understand
-      function you currently optimize to minimize its memory footprint there it is possible. If so you would not spend time
-      to transfer useless bytes through whole memory subsystem.</p>
-      <h2>7. Understand the reason of speedup</h2>
-      <p>It is cool that you got some speed up. Ask yourself: Are you sure about its reasons? Have you eliminated pipeline
-      stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful to generalize
-      your knowledge and reuse approaches in future. This function is not going to be last code you optimize, right? </p>
-      <h2>8. Keep it simple</h2>
-      <p>Optimization is always a tread off between code simplicity and peak performance. You always should consider that
-      fact while submitting new optimizations. To be honest, I love all this geeky stuff very much. I mean writing assembly,
-      peephole optimization. last 10% of runtime are cut out from that kind of thing in most cases.</p>
-      <p>And finally, just think think about the guy who will own your code after you.</p>
-      <h2>9. Check one approach in time</h2>
-      <p>Do not try to apply all you ideas in once.</p>
-
-<!--         <section>
-Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. <img width="100px" src="images/21_16.png" alt="l1_16kb"> Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC.
-<hr style="background:none;"/>
-<blockquote>
-This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
-</blockquote>
-<hr style="background:none;"/>
-<ul>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-</ul>
-<ol>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-  <li>accompanied by English versions from the 1914 translation by H. Rackham.</li>
-</ol>
-<strong>The standard chunk</strong> of Lorem Ipsum <b>used</b> since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.
-<a href="index.html">Link</a>
-
-<dl>
-  <dt>Coffee</dt>
-  <dd>Black hot drink</dd>
-  <dt>Milk</dt>
-  <dd>White cold drink</dd>
-</dl>
-        </section> -->
-<!--         <section>
-          <table>
-            <thead>
-              <tr>
-                <th>ompanied by English versions from the 1</th>
-                <th>ompanied by English versions from the 1</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>ompanied by English versions from the 1</td>
-                <td>ompanied by English versions from the 1</td>
-              </tr>
-              <tr>
-                <td>ompanied by English versions from the 1</td>
-                <td>ompanied by English versions from the 1</td>
-              </tr>
-            </tbody>
-          </table>
-          <h1>Benchmarking cache behavior</h1>
-          <h2>Benchmarking cache behavior</h2>
-          <h3>Evaluation methodology</h3>
-          <h4>Profiling for cache</h4>
-          <h5>Results</h5>
-          <h6>Results</h6>
-          <img src="images/21_16.png" alt="l1_16kb">
-        </section> -->
+        <h1>Essential Optimization Rules</h1>
+        <p>What does it mean to be pragmatic optimizer? Here is a simple, but essential set of rules that are aimed to help
+        you to do your optimization work optimally. </p>
+        <h2>1. Say NO to premature optimization</h2>
+        <p>I know, this rule is rather well known. Many books about programming subject explains this aspect. However,
+        I feel I need to cover it here from pragmatic point of view.</p>
+        <p>Imagine, you develop some cutting age algorithm which
+        is not well defined and requires some experimental work to be done. During all development process you thinking
+        about doing it optimal and truing to do you best to ensure good performance. There are several concerns about
+        this approach</p>
+        <ul>
+          <li>Most part of your code would be done to be thrown into trash bin. As I mentioned the algorithm is experimental so
+          nobody guarantees that the approach and consequently code will not be completely reworked after several experiments.
+          You would be disappointed, if all your good works was thrown out together with the failed approach. Are not you?</li>
+          <li>You would not see the complete picture of the algorithm. For example, If you done some data restructuring
+          to optimize one piece of code It could add significant overhead to other part of the pipeline in future because
+          it was not considered during the optimization</li>
+        </ul>
+        <p>This is only some items from a long list of problems stemming from premature optimization. So be careful with it.</p>
+        <h2>2. Time and profile, then optimize</h2>
+        <p>Be aware of current function runtime. Newer start optimization before timings are done. Do not start optimization
+        from function that you suspect to be a bottleneck. You always need a proof.</p>
+        <h2>3. Optimize the most consuming function first</h2>
+        <p>Be objective. Do not choose the easiest, the funniest, the first called and so on. Keep in mind that 80% of time
+        is spend in 20% of code. </p>
+        <h2>4. Identify performance limiters</h2>
+        <p>What limits performance of optimizing function? Is it a number of memory transactions? Is it a critical path is
+        arithmetic? Is it Lack of computational resources of particular type? Depending on kind of limiters your optimization
+        strategy will vary. If you do not do this you will spend ages overcoming problem that is not present.</p>
+        <h2>5. Compute only what is necessary</h2>
+        <p>Empty function body is extremely fast, but does nothing useful. First off all understand the optimizing function
+        and define the set of required operations. Get rid of everything except this set.</p>
+        <h2>6. Load only what is necessary</h2>
+        <p>It is well known that most codes are memory bound. Many thins done to improve memory performance like multilevel
+        cache hierarchies, white back and everything. But processor performance is still be a bit ahead. You should be
+        aware about memory organization of the system you currently targeting. In more important, you should well understand
+        function you currently optimize to minimize its memory footprint there it is possible. If so you would not spend time
+        to transfer useless bytes through whole memory subsystem.</p>
+        <h2>7. Understand the reason of speedup</h2>
+        <p>It is cool that you got some speed up. Ask yourself: Are you sure about its reasons? Have you eliminated pipeline
+        stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful to generalize
+        your knowledge and reuse approaches in future. This function is not going to be last code you optimize, right? </p>
+        <h2>8. Keep it simple</h2>
+        <p>Optimization is always a tread off between code simplicity and peak performance. You always should consider that
+        fact while submitting new optimizations. To be honest, I love all this geeky stuff very much. I mean writing assembly,
+        peephole optimization. last 10% of runtime are cut out from that kind of thing in most cases.</p>
+        <p>And finally, just think think about the guy who will own your code after you.</p>
+        <h2>9. Check one approach in time</h2>
+        <p>Do not try to apply all you ideas in once.</p>
         <hr>
         <span class="credits left">Project maintained by <a href="https://github.com/cuda-geek">cuda-geek</a></span>
         <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
       </section>
-
     </div>
   </body>
 </html>
