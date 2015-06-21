@@ -265,17 +265,30 @@
 
         <section>
           <h2>Warp scheduling</h2>
-          <ul>
-            <li><b>GigaThread</b> subdivide work between <b><abbr title="Streaming ASSembler">SM</abbr></b>s</li>
-            <li>Work for SM is sent to <b>Warp Scheduler</b></li>
-            <li>One assigned warp <b>can not migrate</b> between schedulers</li>
-            <li>Warp has own lines in register file, PC, activity mask</li>
-            <li>Depending on generation scheduling is dynamic (Fermi) or static (Kepler, Maxwell)
-              <img src="images/c1/scheduler.png" class="simple" width="80%">
-            </li>
-          </ul>
+          <section>
+            <ul>
+              <li><b>GigaThread</b> subdivide work between <b><abbr title="Streaming ASSembler">SM</abbr></b>s</li>
+              <li>Work for SM is sent to <b>Warp Scheduler</b></li>
+              <li>One assigned warp <b>can not migrate</b> between schedulers</li>
+              <li>Warp has own lines in register file, PC, activity mask</li>
+              <li>Warp can be in one of the following states:
+                <ul>
+                  <li><b>Executed</b> - perform operation</li>
+                  <li><b>Ready</b> - wait to be executed</li>
+                  <li><b>Wait</b> - wait for resources</li>
+                  <li><b>Resident</b> - wait completion of other warps within the same block</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <ul>
+              <li>Depending on generation scheduling is dynamic (Fermi) or static (Kepler, Maxwell)
+                <img src="images/c1/scheduler.png" class="simple" width="80%">
+              </li>
+            </ul>
+          </section>
         </section>
-
         <section>
           <h2>Warp scheduling (cont)</h2>
           <div class="left">
