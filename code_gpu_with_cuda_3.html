@@ -251,7 +251,7 @@ for( int i = 0; i < N_ITERATIONS; i++ ) { /* ... */ }
           <h2>ILP on modern GPU<small>s</small></h2>
           <p>ILP is a mast-have for older architectures, but still help to hide pipeline latencies on modern GPUs</p>
           <ul>
-            <li>Maxwell: 4 warp schedule rs dual-issue each. 128 compute cores process up to 4 warps each clock. Compute utilization 1. </li>
+            <li>Maxwell: 4 warp schedulers dual-issue each. 128 compute cores process up to 4 warps each clock. Compute cores utilization: <b>1.0</b> </li>
             <li>Kepler: 4 warp schedulers, dual-issue each. 192 compute cores process up to 6 warps each clock.
             If there is no ILP only 128 of 192 cores are used. Compute cores utilization: <b>0.6(6)</b></li>
             <li>Fermi (sm_21): 2 warp schedulers, dual-issue each. 48 compute cores process 3 warps each 2 clock.
