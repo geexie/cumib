@@ -7,7 +7,7 @@
 
     <meta name="description" content="CUDA cource: Code GPU with CUDA">
     <meta name="author" content="cuda.geek">
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-appable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
@@ -136,12 +136,15 @@
                   <li>Inventory: 4 * 10 = <b>40 warps</b> on fly</li>
               </ul>
             </li>
+            <li><b>Maxwell</b> GM204
+              <ul>
+                <li>Throughput: 128 operations per clock (4 warps)</li>
+                <li>Latency: ~6 clocks</li>
+                <li>Maximum resident warps per SM: 64</li>
+                <li>Inventory: 4 * 6 = <b>24 warps</b> on fly</li>
+              </ul>
+            </li>
           </ul>
-        </section>
-
-        <section>
-          <h2>Concurrent warp execution</h2>
-          <img src="images/c2/scheduling.png" width="60%">
         </section>
 
         <section>
@@ -193,7 +196,7 @@
           </dl>
           <br/>
           <ul>
-            <li>Kepler can keep up to 64 resident warps belonging to 16 blocks BUT you need recourses for them: registers, smem</li>
+            <li>Modern GPUs can keep up to 64 resident warps belonging to 16(Kepler)/32(Maxwell) blocks BUT you need recourses for them: registers, smem</li>
             <li>Kepler has 64&thinsp;K. &times; 32-bit registers and 32-lane wide warp</li>
           </ul>
           <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations" style="width:100%; margin-top:1em;">
@@ -245,13 +248,14 @@ for( int i = 0; i < N_ITERATIONS; i++ ) { /* ... */ }
         </section>
 
         <section>
-          <h2>ILP required for modern GPU<small>s</small></h2>
-          <p>sm_21+ can not achieve peak utilization without ILP.</p>
+          <h2>ILP on modern GPU<small>s</small></h2>
+          <p>ILP is a mast-have for older architectures, but still help to hide pipeline latencies on modern GPUs</p>
           <ul>
+            <li>Maxwell: 4 warp schedule rs dual-issue each. 128 compute cores process up to 4 warps each clock. Compute utilization 1. </li>
             <li>Kepler: 4 warp schedulers, dual-issue each. 192 compute cores process up to 6 warps each clock.
             If there is no ILP only 128 of 192 cores are used. Compute cores utilization: <b>0.6(6)</b></li>
             <li>Fermi (sm_21): 2 warp schedulers, dual-issue each. 48 compute cores process 3 warps each 2 clock.
-            If there is no ILP only 32 of 48 cores are used. Compute cores  utilization: <b>0.6(6)</b></li>
+            If there is no ILP only 32 of 48 cores are used. Compute cores  utilization: <b>0.6(6)</b></li>         
           </ul>
         </section>
 
