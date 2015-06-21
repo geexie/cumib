@@ -49,7 +49,8 @@
               <li>SIMT architecture</li>
               <li>Warp scheduling</li>
               <li>Divergence &amp; convergence</li>
-              <li>Predicated &amp; conditional execution</li>
+              <li>Predicated execution</li>
+              <li>Conditional execution</li>
             </ul>
           </section>
           <section>
@@ -121,13 +122,16 @@
                 <td>GK210</td>
               </tr>
               <tr>
-                <td rowspan="2">Maxwell</td>
+                <td rowspan="3">Maxwell</td>
                 <td>sm_50</td>
                 <td><abbr title="hardware support for smem atomics"><b>GM107</b></abbr> GM108</td>
               </tr>
               <tr>
                 <td>sm_52</td>
                 <td>GM204</td>
+              </tr>
+              <tr>
+                <td>sm_53</td>
               </tr>
             </tbody>
           </table>
@@ -158,7 +162,7 @@
         </section>
 
         <section>
-          <h2>SIMD <small>vs</small> SIMT <small>vs</small> SMT</h2>
+          <h2>SIMD &ndash; SIMT  &ndash; SMT</h2>
           <p><b>S</b>ingle <b>I</b>nstruction <b>M</b>ultiple <b>T</b>hread</p>
           <div class="left">
             <ul>
@@ -215,27 +219,15 @@
           <img src="images/c1/sass_isa.svg" alt="sass">
           <!-- <small><b>S</b>treaming <b>ASS</b>embler.</small> -->
         </section>
-
         <section>
-          <h2>SIMT: Instruction pipeline</h2>
-          <div class="left">
-            <p>Shared fetch/decode, load-store units. Separated compute cores. Area-/power-efficiency thanks to regularity.</p>
-          </div>
-          <ol>
-            <li>(IF) Select/Fetch one instruction per warp.</li>
-            <li>(ID) Decode one instruction per warp.</li>
-            <li>(EX) Issue on block of compute cores.</li>
-            <li>(WB) Store results to register line.</li>
-          </ol>
-        </section>
-
-        <section>
-          <h2>SIMT: pipeline</h2>
+          <h2>SIMT pipeline</h2>
           <ul class="none">
-            <li><b>Warp scheduler</b>  manages warps, selects &amp; decodes instructions.</li>
-            <li><b>Execution units</b> are SC, SFU, LD/ST, DP</li>
+            <li><b>Warp scheduler</b> manages warps, selects ready to execute</li>
+            <li><b>Fetch/decode unit</b> is associated with warp scheduler</li>
+            <li><b>Execution units</b> are SC, SFU, LD/ST</li>
           </ul>
           <img class="simple" src="images/c1/simt.svg">
+          <p>Area-/power-efficiency thanks to regularityli.</p>
         </section>
 
         <section>
@@ -274,24 +266,23 @@
         <section>
           <h2>Warp scheduling</h2>
           <ul>
-            <li>GigaThread assign work on <b>S</b>tream <b>M</b>ultiprocessor (ne<b>X</b>t).</b></li>
-            <li>... Actually to one of <b>Warp Schedulers</b></li>
-            <li>So, warp <b>can not migrate</b> between schedulers. </li>
-            <li>Depending on generation scheduling is dynamic (Fermi) or static (Kepler)
+            <li><b>GigaThread</b> subdivide work between <b><abbr title="Streaming ASSembler">SM</abbr></b>s</li>
+            <li>Work for SM is sent to <b>Warp Scheduler</b></li>
+            <li>One assigned warp <b>can not migrate</b> between schedulers</li>
+            <li>Warp has own lines in register file, PC, activity mask</li>
+            <li>Depending on generation scheduling is dynamic (Fermi) or static (Kepler, Maxwell)
               <img src="images/c1/scheduler.png" class="simple" width="80%">
             </li>
-            <li>Anyway register scoreboarding for long lasting operations.</li>
-            <li><b>Warp has own lines in register file, PC, activity mask</b></li>
           </ul>
         </section>
 
         <section>
           <h2>Warp scheduling (cont)</h2>
           <div class="left">
-            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%" class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+). They decode 2
-            instructions per warp per clock. Kepler relies on ILP.</p>
-            <p>The number of warp schedulers is 2 to 4 and depends on arch.</p>
-            <p>Warps belong to <b>blocks</b>. Hardware tracks this as well.</p>
+            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%" class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+) to decode
+            instruction pair for active warp per clock</p>
+            <p>SM has 2 or 4 warp schedulers depending on the architecture</p>
+            <p>Warps belong to <b>blocks</b>. Hardware tracks this relations as well</p>
           </div>
         </section>
 
