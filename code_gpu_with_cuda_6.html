@@ -206,51 +206,45 @@ double runKernel(const <span class="keyword">dim3</span> grid, const <span class
         </section>
 
         <section>
-          <h2>Collecting memory metrics</h2>
-          <ul>
-            <li>Memory metrics
-              <ul>
-                <li>load/store counts from software perspective (requests)
-                  <ul><li><code>local_store_transactions</code></li></ul>
-                </li>
-                <li>read/write counts from hardware perspective (bytes transfered)
-                  <ul><li><code>l2_subp0_read_sector_misses</code></li></ul>
-                </li>
-              </ul>
-            </li>
-            <li>Counters incremented
-              <ul>
-                <li>per warp</li>
-                <li>per cache line/transaction size</li>
-                <li>per request/instruction</li>
-              </ul>
-            </li>
-          </ul>
+          <h2>Profiling for memory</h2>
+          <section>
+            <ul>
+              <li>Memory metrics
+                <ul>
+                  <li>which have load or store in name counts from software perspective (in terms of memory requests)
+                    <ul><li><code>local_store_transactions</code></li></ul>
+                  </li>
+                  <li>which have read or write in name counts from hardware perspective (in terms of bytes transfered)
+                    <ul><li><code>l2_subp0_read_sector_misses</code></li></ul>
+                  </li>
+                </ul>
+              </li>
+              <li>Counters are incremented
+                <ul>
+                  <li>per warp</li>
+                  <li>per cache line/transaction size</li>
+                  <li>per request/instruction</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <ul>
+              <li><b>Access pattern efficiency</b>
+                <ul>
+                  <li>check the ratio between bytes requested by the threads / application code and bytes moved by the hardware (L2/DRAM)</li>
+                  <li>use <code><b>g{ld,st}_transactions_per_request</b></code> metric</li>
+                </ul>
+              </li>
+              <li>Throughput analysis
+                <ul>
+                  <li>compare application HW throughput to possible for your GPU (can be found in documentation)</li>
+                  <li><code><b>g{ld,st}_requested_throughput</b></code></li>
+                </ul>
+              </li>
+            </ul>
+          </section>
         </section>
-
-        <section>
-          <h2>Profile for memory</h2>
-          <ul>
-            <li><b>Throughput</b>
-              <ol>
-                <li>count bytes requested by the threads / application code</li>
-                <li>count bytes moved by the hardware (L2/DRAM)</li>
-              </ol>
-            </li>
-            <li>Access pattern analysis
-              <ul>
-                <li><code><b>g{ld,st}_transactions_per_request</b></code></li>
-              </ul>
-            </li>
-            <li>Throughput analysis
-              <ul>
-                <li>compare application HW throughput to specified for your GPU</li>
-                <li><code><b>g{ld,st}_requested_throughput</b></code></li>
-              </ul>
-            </li>
-          </ul>
-        </section>
-
         <section>
           <h2>instructions/bytes ratio</h2>
           <ul>
