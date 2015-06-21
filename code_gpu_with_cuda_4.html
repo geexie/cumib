@@ -408,12 +408,16 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
         <section>
           <h2>Tuning block configuration</h2>
           <p>Finding optimal launch configuration is crucial to achieve best performance. Launch configuration affects occupancy</p>
-          <img class="simple" src="images/c2/block_conf.svg" width="80%">
-          <ul>
-            <li>low occupancy presents full hardware utilization and lowers possibility to hide patency</li>
-            <li>high occupancy for kernels with large memory demands results in over polluted read or write queues</li>
-          </ul>
-          <p>Experiment to find optimal configuration (block and grid resolutions, amount of work per thread) that is optimal for your kernel.</p>
+          <section>
+            <ul>
+              <li>low occupancy presents full hardware utilization and lowers possibility to hide patency</li>
+              <li>high occupancy for kernels with large memory demands results in over polluted read or write queues</li>
+            </ul>
+            <p>Experiment to find optimal configuration (block and grid resolutions, amount of work per thread) that is optimal for your kernel.</p>
+          </section>
+          <section>
+            <img class="simple" src="images/c2/block_conf.svg" width="80%">
+          </section>
         </section>
 
         <section id="sec_2">
