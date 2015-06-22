@@ -28,8 +28,8 @@
 
         <section>
           <h1>Code GPU with CUDA</h1>
-          <h2>NVIDIA GPU Architecture</h2>
-          <h3>SIMT</h3>
+          <h2>SIMT</h2>
+          <h3>NVIDIA GPU architecture</h3>
           <br>
           <br>
           <br>
@@ -187,14 +187,18 @@
 
         <section>
           <h2>SIMT</h2>
-          <h3><abbr title="Number of resident warps">depth of Multi-threading</abbr> &times; <abbr title="Number of lanes in a warps">width of SIMD</abbr></h3>
+          <h3>
+            <abbr title="Number of resident warps">depth of Multi-threading</abbr> &times;
+            <abbr title="Number of lanes in a warps">width of SIMD</abbr>
+          </h3>
           <ol>
             <li>
               <b>SIMT is abstraction over vector hardware:</b>
               <ul>
                 <li>Threads are grouped into <b>warps</b> (32 for NVIDIA)</li>
                 <li>A thread in a warp usually called <b>lane</b></li>
-                <li>Vector register file. Registers accessed line by line. A lane loads laneId&#8217;s element from register</li>
+                <li>Vector register file. Registers accessed line by line.
+                A lane loads laneId&#8217;s element from register</li>
                 <li>Single program counter (PC) for whole warp</li>
                 <li>Only a couple of special registers, like PC, can be scalar</li>
               </ul>
@@ -228,7 +232,7 @@
             <li><b>Execution units</b> are SC, SFU, LD/ST</li>
           </ul>
           <img class="simple" src="images/c1/simt.svg">
-          <p>Area-/power-efficiency thanks to regularityli.</p>
+          <p>Area-/power-efficiency thanks to regularity.</p>
         </section>
 
         <section>
@@ -241,7 +245,8 @@
             <li>Fast switching costs register wastage on duplicated items</li>
             <li>Narrow data types are as costly as wide data types.</li>
           </ul>
-          <p><br>Size of RF depends on architecture. Fermi: 128&thinsp;KB per SM, Kepler: 256&thinsp;KB per SM, Maxwell: 64&thinsp;KB per scheduler.</p>
+          <p><br>Size of RF depends on architecture.
+          Fermi: 128&thinsp;KB per SM, Kepler: 256&thinsp;KB per SM, Maxwell: 64&thinsp;KB per scheduler.</p>
         </section>
 
         <section>
@@ -249,7 +254,9 @@
           <ul style="list-style-type: none;">
             <li><b>Static scheduling</b>
               <ul style="margin-left: 65px;">
-                <li>instructions are fetched, executed &amp; completed in compiler-generated order. <b>In-order</b> execution</li>
+                <li>instructions are fetched, executed &amp; completed in compiler-generated order.
+                  <b>In-order</b>execution
+                </li>
                 <li>in case one instruction stalls, all following stall too</li>
               </ul>
             </li>
@@ -293,7 +300,8 @@
         <section>
           <h2>Warp scheduling (cont)</h2>
           <div class="left">
-            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%" class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+) to decode
+            <p> <img src="http://images.anandtech.com/reviews/video/NVIDIA/GTX460/GF140sm.png" width="50%"
+            class="simple" style="float:left;margin-right:30px;"> Modern warp schedulers support <b>dual issue</b> (sm_21+) to decode
             instruction pair for active warp per clock</p>
             <p>SM has 2 or 4 warp schedulers depending on the architecture</p>
             <p>Warps belong to <b>blocks</b>. Hardware tracks this relations as well</p>
@@ -347,7 +355,7 @@
                   <pre><code class="avrasm"><span class="keyword">IMAD</span> R8.<b>CC</b>, R0, 0x4, R3;</code></pre>
                 </li>
                 <li>No WB stage for CC-marked registers</li>
-                <li>Used in Maxwell to skip unneeded computations for arifmetic operations implemented in hardware with multiple instructions</li>
+                <li>Used in Maxwell to skip unneeded computations for arithmetic operations implemented in hardware with multiple instructions</li>
               </ul>
             </li>
           </ul>
@@ -366,7 +374,7 @@
 
         <section id="end1">
           <h1>THE END</h1>
-          <h6><a href="code_gpu_with_cuda_1.html">next</a></h6>
+          <h6><a href="code_gpu_with_cuda_2.html">next</a></h6>
           <br>
           <br>
           <br>
