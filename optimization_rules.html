@@ -32,15 +32,17 @@
     <div class="wrapper">
       <section>
         <h1>Essential Optimization Rules</h1>
-        <p><b>What does it mean "to be a pragmatic optimizer"?</b> Here is a simple, but essential set of rules
+        <p><b>What does it mean "to be a pragmatic optimizer"?</b> As for me, pragmatic optimizer is who is objective,
+        specific and certain about the things that he/she do to make software runs faster. I decided to express
+        the idea of pragmatic optimization in a set of pieces of advice. This is a simple, but essential set
         that are aimed to help you to do your optimization work <b>optimally</b>.</p>
-        
-        <h2>1. Say NO to premature optimization</h2>
-        <p>I know, this rule is rather well known. Many books about programming explains this aspect.
+  
+        <h2 style="color: #6F3;">1. Say NO to premature optimization</h2>
+        <p>Yes, I know, this rule is rather well known. Many books about programming explains this aspect.
         However, I feel, I need consider it from pragmatic point of view.</p>
         <pImagine, you develop some cutting edge algorithm. This algorithm is not well defined and requires
-        experimental work. During all development process you think about doing it optimally and trying to do
-        your best to ensure good performance. But look, there are several concerns about this approach:</p>
+        experimental work. You think about doing it optimally and trying to do your best to ensure good performance
+        during all development process. But look, there are several concerns about this approach:</p>
         <ul>
           <li><b>Most part of your optimal code would be done to be thrown out into trash bin.</b> As I mentioned,
           the algorithm is experimental so nobody can guarantee that the approach and consequently
@@ -50,17 +52,22 @@
           if you done some data restructuring which optimises one piece of code it could add significant overhead
           to other part of the pipeline in future because it was not considered during the optimization.</li>
         </ul>
-        <p>This is only some items from a long list of problems stemming from premature optimization. So be careful.</p>
+        <p>This is only some items from a long list of problems stemming from premature optimization. So be careful.
+        Get me, I'm not trying to dissuade you deal with your work, I urge you to choose the right moment for this.</p>
         
-        <h2>2. Time and profile, then optimize</h2>
+        <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
         <p>Be aware of pipeline runtime. Never start optimization if timings are not done. Do not start optimization
-        with function, that you suspect to be a bottleneck. You need a proof. Blind optimization is not better 
-        than premature. The problems are the same. If your guess is wrong, you spend time without any improvement.</p>
+        with function, that you suspect to be a bottleneck. You need a proof! Blind optimization is not better 
+        than premature. I general, this results in the same problems. If your guess is wrong, you spend time
+        without any improvement. If your guess is right you are lucky. it is pointless to rely just on luck
+        when it comes to the fate of your project. Are not it?</p>
         
-        <h2>3. Optimize the most consuming function first</h2>
+        <h2 style="color: #6F3;">3. Optimize the most consuming function first</h2>
         <p>This is closely coupled with the previous rule. Sometimes, even if someone have application profile,
         it is not considered. Be objective. Do not choose the easiest, the most funny,
         the first in profile list and so on. Keep in mind that 80% of time is spent in 20% of code.</p>
+        <p>In most cases, it is simple to follow this rule. Just collect your profile, find a bottleneck,
+        optimize it and shift to the the newly appeared.</p>
         
         <h2>4. Identify performance limiters</h2>
         <p>What limits performance of optimizing function? Is it a number of memory transactions? Is it a critical path is
