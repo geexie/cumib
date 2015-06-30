@@ -48,48 +48,50 @@
           the algorithm is experimental so nobody can guarantee that the approach and consequently
           code will not be completely reworked after several experiments. You will be disappointed,
           if all your work is thrown out together with the failed approach. Are not you?</li>
-          <li>You would not see the complete picture of the algorithm, if it is incomplete. For example,
+          <li><b>You would not see the complete picture of the algorithm, if it is incomplete.</b> For example,
           if you done some data restructuring which optimises one piece of code it could add significant overhead
           to other part of the pipeline in future because it was not considered during the optimization.</li>
         </ul>
         <p>This is only some items from a long list of problems stemming from premature optimization. So be careful.
         Get me, I'm not trying to dissuade you deal with your work, I urge you to choose the right moment for this.</p>
-        
+  
         <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
         <p>Be aware of pipeline runtime. Never start optimization if timings are not done. Do not start optimization
         with function, that you suspect to be a bottleneck. You need a proof! Blind optimization is not better 
         than premature. I general, this results in the same problems. If your guess is wrong, you spend time
         without any improvement. If your guess is right you are lucky. it is pointless to rely just on luck
         when it comes to the fate of your project. Are not it?</p>
-        
+  
         <h2 style="color: #6F3;">3. Optimize the most consuming function first</h2>
         <p>This is closely coupled with the previous rule. Sometimes, even if someone have application profile,
         it is not considered. Be objective. Do not choose the easiest, the most funny,
         the first in profile list and so on. Keep in mind that 80% of time is spent in 20% of code.</p>
         <p>In most cases, it is simple to follow this rule. Just collect your profile, find a bottleneck,
         optimize it and shift to the the newly appeared.</p>
-        
-        <h2>4. Identify performance limiters</h2>
-        <p>What limits performance of optimizing function? Is it a number of memory transactions? Is it a critical path is
-        arithmetic? Is it Lack of computational resources of particular type? Depending on kind of limiters your optimization
-        strategy will vary. If you do not do this you will spend ages overcoming problem that is not present.</p>
-        
-        <h2>5. Compute only what is necessary</h2>
-        <p>Empty function body is extremely fast, but does nothing useful. First off all understand the optimizing function
-        and define the set of required operations. Get rid of everything except this set.</p>
-        
+  
+        <h2 style="color: #6F3;">4. Identify performance limiters</h2>
+        <p>What limits performance of your function? Is it a number of memory transactions? Is it
+        a critical path in arithmetic? Is it a lack of computational resources of particular type? Depending on kind
+        of limiters your optimization strategy will vary. If you does not identify limiters, you spend eternity
+        on solving the problem that is not present.</p>
+  
+        <h2 style="color: #6F3;">5. Compute only what is necessary</h2>
+        <p>Obviously, empty function is extremely fast, but the problem is that it does nothing useful. First off all,
+        you should understand the function and define the set of required operations. Get rid of everything
+        except this set.</p>
+
         <h2>6. Load only what is necessary</h2>
         <p>It is well known that most codes are memory bound. Many thins done to improve memory performance like multilevel
         cache hierarchies, white back and everything. But processor performance is still be a bit ahead. You should be
         aware about memory organization of the system you currently targeting. In more important, you should well understand
         function you currently optimize to minimize its memory footprint there it is possible. If so you would not spend time
         to transfer useless bytes through whole memory subsystem.</p>
-        
+  
         <h2>7. Understand the reason of speedup</h2>
         <p>It is cool that you got some speed up. Ask yourself: Are you sure about its reasons? Have you eliminated pipeline
         stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful to generalize
         your knowledge and reuse approaches in future. This function is not going to be last code you optimize, right? </p>
-        
+  
         <h2>8. Keep it simple</h2>
         <p>Optimization is always a tread off between code simplicity and peak performance. You always should consider that
         fact while submitting new optimizations. To be honest, I love all this geeky stuff very much. I mean writing assembly,
@@ -97,7 +99,7 @@
         <p>And finally, just think think about the guy who will own your code after you.</p>
         <h2>9. Check one approach in time</h2>
         <p>Do not try to apply all you ideas in once.</p>
-        
+  
         <h2>10. Use santific approach</h2>
         <p>Think about profiling and optimization like about santific experiment. Setup </p>
         <hr>
