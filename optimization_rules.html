@@ -32,76 +32,82 @@
     <div class="wrapper">
       <section>
         <h1>Essential Optimization Rules</h1>
-        <p><b>What does it mean "to be a pragmatic optimizer"?</b> As for me, pragmatic optimizer is who is objective,
-        specific and certain about the things that he/she do to make software runs faster. I decided to express
-        the idea of pragmatic optimization in a set of pieces of advice. This is a simple, but essential set
-        that are aimed to help you to do your optimization work <b>optimally</b>.</p>
+        <p><b>What does it mean "to be a pragmatic optimizer"?</b> As for me, a pragmatic optimizer is someone
+        who is objective, specific and certain about the things that he/she does to make software run faster.
+        I decided to express the idea of pragmatic optimization in several pieces of advice. This is a simple,
+        but essential set that is aimed to help you to do your optimization work <b>optimally</b>.</p>
 
         <h2 style="color: #6F3;">1. Say NO to premature optimization</h2>
-        <p>Yes, I know, this rule is rather well known. Many books about programming explains this aspect.
-        However, I feel, I need consider it from pragmatic point of view.</p>
-        <pImagine, you develop some cutting edge algorithm. This algorithm is not well defined and requires
+        <p>Yes, I know, this rule is rather well known. Many books about programming explain this aspect.
+        However, I feel, I need to consider it from a pragmatic point of view.</p>
+        <p>Imagine, you develop some cutting edge algorithm. This algorithm is not well defined and requires
         experimental work. You think about doing it optimally and trying to do your best to ensure good performance
         during all development process. But look, there are several concerns about this approach:</p>
         <ul>
-          <li><b>Most part of your optimal code would be done to be thrown out into trash bin.</b> As I mentioned,
-          the algorithm is experimental so nobody can guarantee that the approach and consequently
-          code will not be completely reworked after several experiments. You will be disappointed,
-          if all your work is thrown out together with the failed approach. Are not you?</li>
-          <li><b>You would not see the complete picture of the algorithm, if it is incomplete.</b> For example,
-          if you done some data restructuring which optimises one piece of code it could add significant overhead
-          to other part of the pipeline in future because it was not considered during the optimization.</li>
+          <li><b>Most part of your optimal code would be done to be thrown out into a trash bin.</b> As I mentioned,
+          the algorithm is experimental so nobody can guarantee that the approach and code consequently
+          will not have to be completely rewritten after several experiments. You will be disappointed
+          if all your work is thrown out together with the failed approach. Won't you?</li>
+          <li><b>You won't see a full picture of the algorithm if it is incomplete.</b> For example,
+          if you have done some data restructuring which optimizes one piece of the code it could add
+          significant overhead to other parts of the pipeline in future because it was not considered
+          during the optimization.</li>
         </ul>
         <p>This is only some items from a long list of problems stemming from premature optimization. So be careful.
-        Get me, I'm not trying to dissuade you deal with your work, I urge you to choose the right moment for this.</p>
+        Don't get me wrong, but I'm not trying to dissuade you deal with your work.
+        I urge you to choose the right moment for this.</p>
 
         <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
-        <p>Be aware of pipeline runtime. Never start optimization if timings are not done. Do not start optimization
-        with function, that you suspect to be a bottleneck. You need a proof! Blind optimization is not better
-        than premature. I general, this results in the same problems. If your guess is wrong, you spend time
-        without any improvement. If your guess is right you are lucky. it is pointless to rely just on luck
-        when it comes to the fate of your project. Are not it?</p>
+        <p>Consider pipeline runtime. Never start optimization if timings are not done. Do not start optimization
+        with a function, that you suspect to be a bottleneck. You need a proof! Blind optimization is not better
+        than premature. In general, it results in the same problems. If your guess is wrong, you will spend time
+        without any improvement. If your guess is right, you are lucky. it is pointless to rely just on luck
+        when it comes to the fate of your project. Right?</p>
 
         <h2 style="color: #6F3;">3. Optimize the most consuming function first</h2>
-        <p>This is closely coupled with the previous rule. Sometimes, even if someone have application profile,
-        it is not considered. Be objective. Do not choose the easiest, the most funny,
-        the first in profile list and so on. Keep in mind that 80% of time is spent in 20% of code.</p>
+        <p>This is closely connected with the previous one. Sometimes, even if someone has an application profile,
+        it is not considered. Be objective. Do not choose the easiest, the funniest, or just the first thing
+        on the profile list and so on. Bear in mind that 80% of the time is spent on 20% of the code.</p>
         <p>In most cases, it is simple to follow this rule. Just collect your profile, find a bottleneck,
-        optimize it and shift to the the newly appeared.</p>
+        optimize it and move on to the the newly appeared.</p>
 
         <h2 style="color: #6F3;">4. Identify performance limiters</h2>
         <p>What limits performance of your function? Is it a number of memory transactions? Is it
-        a critical path in arithmetic? Is it a lack of computational resources of particular type? Depending on kind
-        of limiters your optimization strategy will vary. If you does not identify limiters, you spend eternity
-        on solving the problem that is not present.</p>
+        a critical path in arithmetic? Is it a lack of computational resources of a particular type? Depending
+        on a kind of limiters your optimization strategy will vary. If you don't identify limiters, you will spend
+        ages on a problem that does not exists.</p>
 
         <h2 style="color: #6F3;">5. Compute only what is necessary</h2>
-        <p>Obviously, empty function is extremely fast, but the problem is that it does nothing useful. First off all,
+        <p>Obviously, an empty function is extremely fast, but the problem is that it does nothing useful. First of all,
         you should understand the function and define the set of required operations. Get rid of everything
         except this set.</p>
 
         <h2>6. Load only what is necessary</h2>
-        <p>It is well known that most codes are memory bound. Many thins done to improve memory performance like multilevel
-        cache hierarchies, white back and everything. But processor performance is still be a bit ahead. You should be
-        aware about memory organization of the system you currently targeting. In more important, you should well understand
-        function you currently optimize to minimize its memory footprint there it is possible. If so you would not spend time
-        to transfer useless bytes through whole memory subsystem.</p>
+        <p>It is well known that most codes are memory bound. Many thins are done to improve memory performance
+        like multilevel cache hierarchies, white back and everything. But processor performance is still a bit ahead.
+        You should be aware of memory organization of the system you currently targeting. Moreover,
+        you should understand the function you are currently optimizing well to minimize its memory footprint
+        there it is possible. If so, you would not spend time to transfer useless bytes through the whole
+        memory subsystem.</p>
 
         <h2>7. Understand the reason of speedup</h2>
-        <p>It is cool that you got some speed up. Ask yourself: Are you sure about its reasons? Have you eliminated pipeline
-        stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful to generalize
-        your knowledge and reuse approaches in future. This function is not going to be last code you optimize, right? </p>
+        <p>It is cool that you got some speed up. Ask yourself: Are you sure about its reasons? Have you eliminated
+        pipeline stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful
+        to generalize your knowledge and reuse approaches in future. This function is not going to be the last code
+        you optimize, right?</p>
 
         <h2>8. Keep it simple</h2>
-        <p>Optimization is always a tread off between code simplicity and peak performance. You always should consider that
-        fact while submitting new optimizations. To be honest, I love all this geeky stuff very much. I mean writing assembly,
-        peephole optimization. last 10% of runtime are cut out from that kind of thing in most cases.</p>
-        <p>And finally, just think think about the guy who will own your code after you.</p>
-        <h2>9. Check one approach in time</h2>
-        <p>Do not try to apply all you ideas in once.</p>
+        <p>Optimization is always a tread off between code simplicity and peak performance. You always should consider
+        that fact while submitting new optimizations. To be honest, I love all this geeky stuff very much.
+        I mean, writing assembly, peephole optimization. Last 10% of runtime are cut out from that kind of thing
+        in most cases.</p>
+        <p>And finally, just think about a guy who will own your code after you.</p>
 
-        <h2>10. Use santific approach</h2>
-        <p>Think about profiling and optimization like about santific experiment. Setup </p>
+        <h2>9. Check one approach at a time</h2>
+        <p>Do not try to apply all your ideas in once.</p>
+
+        <h2>10. Use scientific approach</h2>
+         <p>Think about profiling and optimization like about scientific experiment. <!--Setup--> </p>
         <hr>
         <p>And the last thing, you will have lots of fun if you are a detective in this story of optimization.</p>
         <hr>
