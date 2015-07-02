@@ -59,15 +59,16 @@
 
         <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
         <p>Consider pipeline runtime. Never start optimization if timings are not done. Do not start optimization
-        with a function, that you suspect to be a bottleneck. You need a proof! Blind optimization is not better
+        with a function, that you suspect to be a bottleneck. You need a proof! <b>Blind</b> optimization is not better
         than premature. In general, it results in the same problems. If your guess is wrong, you will spend time
-        without any improvement. If your guess is right, you are lucky. it is pointless to rely just on luck
+        without any improvement. If your guess is right, you are lucky. It is pointless to rely just on luck
         when it comes to the fate of your project. Right?</p>
 
         <h2 style="color: #6F3;">3. Optimize the most consuming function first</h2>
         <p>This is closely connected with the previous one. Sometimes, even if someone has an application profile,
-        it is not considered. Be objective. Do not choose the easiest, the funniest, or just the first thing
-        on the profile list and so on. Bear in mind that 80% of the time is spent on 20% of the code.</p>
+        it is not considered. <b>Be objective.</b> Do not choose the easiest, the funniest, or just the first thing
+        on the profile list and so on. <b>Bear in mind that 80% of the time is spent on 20% of the code.</b>.
+        You ought to find these 20%.</p>
         <p>In most cases, it is simple to follow this rule. Just collect your profile, find a bottleneck,
         optimize it and move on to the the newly appeared.</p>
 
@@ -76,27 +77,36 @@
         a critical path in arithmetic? Is it a lack of computational resources of a particular type? Depending
         on a kind of limiters your optimization strategy will vary. If you don't identify limiters, you will spend
         ages on a problem that does not exists.</p>
+        <ul>
+          <li><b>Learn the architecture in a very detail.</b> Comprehensive knowledge will help you build a chain
+          of cause-effect relationships and be more precise about strengths as well as limits of the hardware
+          and compilers.</li>
+          <li><b>Demystify profiling tools and disassembly.</b> I am pretty sure that optimization without looking into
+          disassembly is impossible. Look into it to check that compiler did his job well. Look into it to check that
+          you did not get extra operations like spills on stack.</li>
+        </ul>
 
         <h2 style="color: #6F3;">5. Compute only what is necessary</h2>
         <p>Obviously, an empty function is extremely fast, but the problem is that it does nothing useful. First of all,
         you should understand the function and define the set of required operations. Get rid of everything
-        except this set.</p>
+        except this set. A large proportion of the acceleration is done exactly this way.</p>
 
-        <h2>6. Load only what is necessary</h2>
+        <h2 style="color: #6F3;">6. Load only what is necessary</h2>
         <p>It is well known that most codes are memory bound. Many thins are done to improve memory performance
         like multilevel cache hierarchies, white back and everything. But processor performance is still a bit ahead.
         You should be aware of memory organization of the system you currently targeting. Moreover,
         you should understand the function you are currently optimizing well to minimize its memory footprint
         there it is possible. If so, you would not spend time to transfer useless bytes through the whole
         memory subsystem.</p>
+        <p>Another aspect is choosing proper data types and data structures.</p>
 
-        <h2>7. Understand the reason of speedup</h2>
-        <p>It is cool that you got some speed up. Ask yourself: Are you sure about its reasons? Have you eliminated
+        <h2 style="color: #6F3;">7. Understand the reason of speedup</h2>
+        <p>It is cool that you got some speed up. Ask yourself: are you sure about its reasons? Have you eliminated
         pipeline stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful
         to generalize your knowledge and reuse approaches in future. This function is not going to be the last code
         you optimize, right?</p>
 
-        <h2>8. Keep it simple</h2>
+        <h2 style="color: #6F3;">8. Keep it simple</h2>
         <p>Optimization is always a tread off between code simplicity and peak performance. You always should consider
         that fact while submitting new optimizations. To be honest, I love all this geeky stuff very much.
         I mean, writing assembly, peephole optimization. Last 10% of runtime are cut out from that kind of thing
@@ -107,12 +117,17 @@
         <p>Do not try to apply all your ideas in once.</p>
 
         <h2>10. Use scientific approach</h2>
-         <p>Think about profiling and optimization like about scientific experiment. <!--Setup--> </p>
+        <p>Think about profiling and optimization like about scientific experiment. <!--Setup--> </p>
+
+        <h2>11. Avoid SIMDization</h2>
+        <p></p>
         <hr>
         <p>And the last thing, you will have lots of fun if you are a detective in this story of optimization.</p>
         <hr>
         <span class="credits left">Project maintained by <a href="https://github.com/cuda-geek">cuda-geek</a></span>
-        <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        <span class="credits right">Hosted on GitHub Pages &mdash; Theme by
+          <a href="https://twitter.com/michigangraham">mattgraham</a>
+        </span>
       </section>
     </div>
   </body>
