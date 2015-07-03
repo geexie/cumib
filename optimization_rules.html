@@ -60,7 +60,7 @@
         <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
         <p>Consider pipeline runtime. Never start optimization if timings are not done. Do not start optimization
         with a function, that you suspect to be a bottleneck. You need a proof! <b>Blind</b> optimization is not better
-        than premature. In general, it results in the same problems. If your guess is wrong, you will spend time
+        than premature one. In general, it results in the same problems. If your guess is wrong, you will spend time
         without any improvement. If your guess is right, you are lucky. It is pointless to rely just on luck
         when it comes to the fate of your project. Right?</p>
 
@@ -70,7 +70,7 @@
         on the profile list and so on. <b>Bear in mind that 80% of the time is spent on 20% of the code.</b>.
         You ought to find these 20%.</p>
         <p>In most cases, it is simple to follow this rule. Just collect your profile, find a bottleneck,
-        optimize it and move on to the the newly appeared.</p>
+        optimize it and move on to the the next one.</p>
 
         <h2 style="color: #6F3;">4. Identify performance limiters</h2>
         <p>What limits performance of your function? Is it a number of memory transactions? Is it
@@ -78,22 +78,22 @@
         on a kind of limiters your optimization strategy will vary. If you don't identify limiters, you will spend
         ages on a problem that does not exists.</p>
         <ul>
-          <li><b>Learn the architecture in a very detail.</b> Comprehensive knowledge will help you build a chain
-          of cause-effect relationships and be more precise about strengths as well as limits of the hardware
+          <li><b>Learn the architecture to the very detail.</b> Comprehensive knowledge will help you build a chain
+          of cause-effect relationships and be more precise about the strengths as well as the limits of a hardware
           and compilers.</li>
           <li><b>Demystify profiling tools and disassembly.</b> I am pretty sure that optimization without looking into
-          disassembly is impossible. Look into it to check that compiler did his job well. Look into it to check that
+          disassembly is impossible. Look into it to check that a compiler did his job well. Look into it to check that
           you did not get extra operations like spills on stack.</li>
         </ul>
 
         <h2 style="color: #6F3;">5. Compute only what is necessary</h2>
         <p>Obviously, an empty function is extremely fast, but the problem is that it does nothing useful. First of all,
         you should understand the function and define the set of required operations. Get rid of everything
-        except this set. A large proportion of the acceleration is done exactly this way.</p>
+        except this set. A huge portion of the acceleration is done exactly this way.</p>
 
         <h2 style="color: #6F3;">6. Load only what is necessary</h2>
         <p>It is well known that most codes are memory bound. Many thins are done to improve memory performance
-        like multilevel cache hierarchies, white back and everything. But processor performance is still a bit ahead.
+        like multilevel cache hierarchies, write back and everything. But processor performance is still a bit ahead.
         You should be aware of memory organization of the system you currently targeting. Moreover,
         you should understand the function you are currently optimizing well to minimize its memory footprint
         there it is possible. If so, you would not spend time to transfer useless bytes through the whole
@@ -101,7 +101,7 @@
         <p>Another aspect is choosing proper data types and data structures.</p>
 
         <h2 style="color: #6F3;">7. Understand the reason of speedup</h2>
-        <p>It is cool that you got some speed up. Ask yourself: are you sure about its reasons? Have you eliminated
+        <p>It is cool that you got some speed up. Ask yourself: am I sure about its reasons? Have you eliminated
         pipeline stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful
         to generalize your knowledge and reuse approaches in future. This function is not going to be the last code
         you optimize, right?</p>
@@ -111,20 +111,30 @@
         that fact while submitting new optimizations. To be honest, I love all this geeky stuff very much.
         I mean, writing assembly, peephole optimization. Last 10% of runtime are cut out from that kind of thing
         in most cases.</p>
-        <p>And finally, think about a guy who will own your code after you. If you does not want to be
-        that guy. Step back and try to express your idea in the code a bit more clearly while maintaining
-        the same performance level.</p>
+        <p>And finally, think about a guy who will own your code after you. If you don't want to be
+        that guy, step back and trying to maintain the same performance level express your idea in the code
+        a bit more clearly.</p>
 
         <h2>9. Check one approach at a time</h2>
         <p>Do not try to apply all your ideas in once.</p>
 
-        <h2>10. Use scientific approach</h2>
-        <p>Think about profiling and optimization like about scientific experiment. <!--Setup--> </p>
+        <h2 style="color: #6F3;">10. Use scientific approach</h2>
+        <p><b>Think about a profiling like about a scientific experiment.</b> Profilers are not going to do
+        your work for you. Nonetheless profiler helps you to get precise data to check your hypothesis. So, first of all,
+        set the hypothesis. Otherwise you will have plenty of data and you will have no idea what to look for.
+        Use profiler to identify the bottlenecks, to verify memory access patterns, to collect statistic
+        in data-dependent workloads or to highlight hardware properties.</p>
 
         <h2>11. Avoid SIMDization</h2>
-        <p></p>
+        <p>I mean, the process of replacing scalar code with just the same vector code. Come on! Everybody who can
+        write code and has list of supported instructions in front of the eyes able to do this. Furthermore,
+        most compilers can do this as well.</p>
+        <p>Look, speedup more than line of SIMD is theoretically impossible. If you code does not benefit
+        from something else like hardware support of same particular instruction you will be bounded with that limit.
+        Specific instructions can help. A couple of the examples hare are type conversion or some transcendental
+        instructions.</p>
         <hr>
-        <p>And the last thing, you will have lots of fun if you are a detective in this story of optimization.</p>
+        <p>And the last thing, you will have lots of fun if you are a detective in this story of optimization.
         <hr>
         <span class="credits left">Project maintained by <a href="https://github.com/cuda-geek">cuda-geek</a></span>
         <span class="credits right">Hosted on GitHub Pages &mdash; Theme by
