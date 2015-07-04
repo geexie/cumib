@@ -125,14 +125,22 @@
         Use profiler to identify the bottlenecks, to verify memory access patterns, to collect statistic
         in data-dependent workloads or to highlight hardware properties.</p>
 
-        <h2>11. Avoid SIMDization</h2>
-        <p>I mean, the process of replacing scalar code with just the same vector code. Come on! Everybody who can
-        write code and has list of supported instructions in front of the eyes able to do this. Furthermore,
-        most compilers can do this as well.</p>
-        <p>Look, speedup more than line of SIMD is theoretically impossible. If you code does not benefit
-        from something else like hardware support of same particular instruction you will be bounded with that limit.
-        Specific instructions can help. A couple of the examples hare are type conversion or some transcendental
-        instructions.</p>
+        <h2 style="color: #6F3;">11. Avoid SIMDization</h2>
+        <p>I mean, the process of replacing a scalar code with just the same vector code. Come on! Everybody who can
+        write code and has list of supported instructions in front of the eyes is able to do this. Furthermore,
+        most compilers can do this as well. You probably will be surprised how complex functions could
+        be auto-vectorized. Moreover, automatic vectorization is preferable than hand-written because it cost nothing
+        in terms of maintenance and future portability for new revisions of platform. Maintaining your optimizations
+        becomes a charge of compiler writers. I started to talk about auto-vectorization because it is good example
+        of SIMDization usage. Compiler knows nothing about the semantic of your code so everything that it can do is
+        replacing the scalar code with a vector to get exactly the same result. <b>Be more creative.</b> Use
+        your knowledge about the algorithm and hardware to perform more tricky optimizations. It is not uncommon
+        that optimal instruction chains as well as used data types for scalar and vector code are differ.</p>
+        <p>Lets look at it from a different angle, speedup more than number of lanes in SIMD is theoretically impossible.
+        If your code does not benefit from something special like hardware support of particular instruction
+        it will be bounded with that limit. Specific instructions can help. A couple of the examples here are
+        type conversion or native support of some transcendental instructions. In other cases you are responsible
+        for overcoming of such limit.</p>
         <hr>
         <p>And the last thing, you will have lots of fun if you are a detective in this story of optimization.
         <hr>
