@@ -35,32 +35,33 @@
         <p><b>What does it mean "to be a pragmatic optimizer"?</b> As for me, a pragmatic optimizer is someone
         who is objective, specific and certain about the things that he/she does to make software run faster.
         I decided to express the idea of pragmatic optimization in several pieces of advice or rules. This is a simple,
-        but essential set that is aimed to help you to do your optimization work <b>optimally</b>.</p>
+        but essential set that is aimed to help you do your optimization work <b>optimally</b>.</p>
 
         <h2 style="color: #6F3;">1. Say NO to premature optimization</h2>
-        <p>Yes, I know, this rule is rather well known. Many books about programming explain this aspect.
-        However, I feel, I need to consider it from a pragmatic point of view.</p>
-        <p>Imagine, you develop some cutting edge algorithm. This algorithm is not well defined and requires
-        experimental work. You think about doing it optimally and trying to do your best to ensure good performance
-        during all development process. But look, there are several concerns about this approach:</p>
+        <p>Yes, I know, this rule is rather well-known. Many books about programming explain this aspect.
+        However, I feel I need to consider it from a pragmatic point of view.</p>
+        <p>Imagine you develop a cutting edge algorithm. This algorithm is not well defined and requires
+        some experimental work. You think about doing it optimally and trying to do your best to ensure
+        good performance during a whole development process. But look, there are several concerns
+        about this approach:</p>
         <ul>
-          <li><b>Most part of your optimal code would be done to be thrown out into a trash bin.</b> As I mentioned,
-          the algorithm is experimental so nobody can guarantee that the approach and code consequently
+          <li><b>A significant part of your optimal code would be done to be thrown out into a trash bin.</b>
+          As I mentioned, the algorithm is experimental so nobody can guarantee that the approach and code consequently
           will not have to be completely rewritten after several experiments. You will be disappointed
           if all your work is thrown out together with the failed approach. Won't you?</li>
-          <li><b>You won't see a full picture of the algorithm if it is incomplete.</b> For example,
+          <li><b>You won't see a full picture of the algorithm until it is complete.</b> For example,
           if you have done some data restructuring which optimizes one piece of the code it could add
           significant overhead to other parts of the pipeline in future because it was not considered
           during the optimization.</li>
         </ul>
         <p>This is only some items from a long list of problems stemming from premature optimization. So be careful.
-        Don't get me wrong, but I'm not trying to dissuade you deal with your work.
-        I urge you to choose the right moment for this.</p>
+        Don't get me wrong, I'm not trying to dissuade you from dealing your work.
+        I urge you to choose the right moment for it.</p>
 
         <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
         <p>Consider pipeline runtime. Never start optimization if timings are not done. Do not start optimization
-        with a function, that you suspect to be a bottleneck. You need a proof! <b>Blind</b> optimization is not better
-        than premature one. In general, it results in the same problems. If your guess is wrong, you will spend time
+        with a function that you suspect to be a bottleneck. You need a proof! <b>Blind</b> optimization is not better
+        than premature one. In general, it results in the same problems. If your guess is wrong, you spend time
         without any improvement. If your guess is right, you are lucky. It is pointless to rely just on luck
         when it comes to the fate of your project. Right?</p>
 
@@ -76,10 +77,10 @@
         <p>What limits performance of your function? Is it a number of memory transactions? Is it
         a critical path in arithmetic? Is it a lack of computational resources of a particular type? Depending
         on a kind of limiters your optimization strategy will vary. If you don't identify limiters, you will spend
-        ages on a problem that does not exists.</p>
+        ages on a problem that does not exist.</p>
         <ul>
           <li><b>Learn the architecture to the very detail.</b> Comprehensive knowledge will help you build a chain
-          of cause-effect relationships and be more precise about the strengths as well as the limits of a hardware
+          of cause-effect relationships and be more precise about the strengths as well as the limits of hardware
           and compilers.</li>
           <li><b>Demystify profiling tools and disassembly.</b> I am pretty sure that optimization without looking into
           disassembly is impossible. Look into it to check that a compiler did his job well. Look into it to check that
@@ -89,26 +90,26 @@
         <h2 style="color: #6F3;">5. Compute only what is necessary</h2>
         <p>Obviously, an empty function is extremely fast, but the problem is that it does nothing useful. First of all,
         you should understand the function and define the set of required operations. Get rid of everything
-        except this set. A huge portion of the acceleration is done exactly this way.</p>
+        except this set. A surprisingly large portion of the acceleration is done exactly this way.</p>
 
         <h2 style="color: #6F3;">6. Load only what is necessary</h2>
         <p>It is well known that most codes are memory bound. Many thins are done to improve memory performance
         like multilevel cache hierarchies, write back and everything. But processor performance is still a bit ahead.
         You should be aware of memory organization of the system you currently targeting. Moreover,
         you should understand the function you are currently optimizing well to minimize its memory footprint
-        there it is possible. If so, you would not spend time to transfer useless bytes through the whole
+        where it is possible. If so, you would not spend time to transfer useless bytes through the whole
         memory subsystem.</p>
         <p>Another aspect is choosing proper data types and data structures.</p>
 
         <h2 style="color: #6F3;">7. Understand the reason of speedup</h2>
-        <p>It is cool that you got some speed up. Ask yourself: am I sure about its reasons? Have you eliminated
-        pipeline stalls? Have you reused data in caches more effectively? This understanding will be extremely helpful
+        <p>It is cool that you got some speedup. Ask yourself: am I sure about its reasons? Have I eliminated
+        pipeline stalls? Have I reused data in caches more effectively? This understanding will be extremely helpful
         to generalize your knowledge and reuse approaches in future. This function is not going to be the last code
         you optimize, right?</p>
 
         <h2 style="color: #6F3;">8. Keep it simple</h2>
-        <p>Optimization is always a tread off between code simplicity and peak performance. You always should consider
-        that fact while submitting new optimizations. To be honest, I love all this geeky stuff very much.
+        <p>Optimization is always a tread-off between code simplicity and peak performance. You should always consider
+        this fact while submitting new optimizations. To be honest, I love all this geeky stuff very much.
         I mean, writing assembly, peephole optimization. Last 10% of runtime are cut out from that kind of thing
         in most cases.</p>
         <p>And finally, think about a guy who will own your code after you. If you don't want to be
@@ -116,34 +117,34 @@
         a bit more clearly.</p>
 
         <h2 style="color: #6F3;">9. Check one approach at a time</h2>
-        <p>Do not try to apply all your ideas in once. If you do so, it would be hard to distinguish how much each one
-        contributes to achieve acceleration. Besides, some approaches conflict with each other and can not
+        <p>Do not try to apply all your ideas at once. If you do so, it would be hard to distinguish how much
+        does each one contribute. Besides, some approaches conflict with each other and can not
         be applied together. <b>Be consistent.</b> Apply one approach, check how it performs, select the next approach
         to apply. Do not forget to discard the approach that does not work.</p>
 
         <h2 style="color: #6F3;">10. Use scientific approach</h2>
-        <p><b>Think about a profiling like about a scientific experiment.</b> Profilers are not going to do
-        your work for you. Nonetheless profiler helps you to get precise data to check your hypothesis. So, first of all,
-        set the hypothesis. Otherwise you will have plenty of data and you will have no idea what to look for.
-        Use profiler to identify the bottlenecks, to verify memory access patterns, to collect statistic
+        <p><b>Think about profiling as a scientific experiment.</b> Profilers are not going to do your work for you.
+        Nonetheless a profiler helps you to get precise data to check your hypothesis. So, first of all,
+        set the hypothesis. Otherwise you will have plenty of data and have no idea what to look for.
+        Use a profiler to identify bottlenecks, to verify memory access patterns, to collect statistics
         in data-dependent workloads or to highlight hardware properties.</p>
 
         <h2 style="color: #6F3;">11. Avoid SIMDization</h2>
-        <p>I mean, the process of replacing a scalar code with just the same vector code. Come on! Everybody who can
+        <p>I mean, the process of replacing scalar code with just the same vector code. Come on! Everybody who can
         write code and has list of supported instructions in front of the eyes is able to do this. Furthermore,
         most compilers can do this as well. You probably will be surprised how complex functions could
-        be auto-vectorized. Moreover, automatic vectorization is preferable than hand-written because it cost nothing
+        be auto-vectorized. Moreover, automatic vectorization is preferable over hand-written because it costs nothing
         in terms of maintenance and future portability for new revisions of platform. Maintaining your optimizations
-        becomes a charge of compiler writers. I started to talk about auto-vectorization because it is good example
-        of SIMDization usage. Compiler knows nothing about the semantic of your code so everything that it can do is
-        replacing the scalar code with a vector to get exactly the same result. <b>Be more creative.</b> Use
+        becomes a charge of compiler writers. I started to talk about auto-vectorization because it is a good example
+        of SIMDization usage. Compiler knows nothing about the semantics of your code so all it can do is
+        replacing the scalar code with its vector analogue to get exactly the same result. <b>Be more creative.</b> Use
         your knowledge about the algorithm and hardware to perform more tricky optimizations. It is not uncommon
-        that optimal instruction chains as well as used data types for scalar and vector code are differ.</p>
-        <p>Lets look at it from a different angle, speedup more than number of lanes in SIMD is theoretically impossible.
-        If your code does not benefit from something special like hardware support of particular instruction
-        it will be bounded with that limit. Specific instructions can help. A couple of the examples here are
-        type conversion or native support of some transcendental instructions. In other cases you are responsible
-        for overcoming of such limit.</p>
+        that optimal instruction chains as well as used data types for scalar and vector code are different.</p>
+        <p>Let's look at it from a different angle, speedup exceeding the number of lanes in SIMD is
+        theoretically impossible. If your code does not benefit from something special like hardware support of
+        a particular instruction it will be bounded with that limit. Specific instructions can help.
+        A couple of the examples here are type conversion or native support of some transcendental instructions.
+        In other cases you are responsible for overcoming of this limit.</p>
         <hr>
         <p>And the last thing, you will have lots of fun if you are a detective in this story of optimization.
         <hr>
