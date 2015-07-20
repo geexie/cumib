@@ -32,14 +32,32 @@
     <div class="wrapper">
       <section>
         <h1>Essential Optimization Rules</h1>
-        <p><b>What does it mean "to be a pragmatic optimizer"?</b> As for me, a pragmatic optimizer is someone
+        <p>At some point I decided to switch my focus to optimization. Honestly, I was not passionate about
+        computers since the high school (but many good programmers were). I turned to be a geek later. (I think it was
+        at the middle of my university education.) I would knew much more things now, if I had started earlier. But,
+        anyway, my interest about computers was growing very quickly. I tried different languages and technologies and,
+        finally, I decided to focus on optimization as a whole without preferring a particular technology.
+        If you ask my why? I would say because optimization is in between algorithms and hardware. You need to know a
+        lot about this two worlds (software and hardware) to enable new technologies for people. Over and above,
+        optimization is probably the most geekiest thing that programmers can do in the epoch of high-level languages,
+        virtual machines and cloud computing. Abstraction is elsewhere but still not here.</p>
+        <p>Recently, I started to coach others on optimization. My role is to shrink the way from journeyman to master.
+        Interestingly enough, from my experience the most important thing is <b>pragmatism</b>.
+          <a href="http://dictionary.cambridge.org/dictionary/british/pragmatism">Cambridge Dictionary</a>
+        defines pragmatism is a quality of dealing with a problem in a sensible way that suits the conditions that
+        really exist, rather than following fixed theories, ideas, or rules.</p>
+        <p>If so, <b>what does it mean "to be a pragmatic optimizer"?</b> As for me, a pragmatic optimizer is someone
         who is objective, specific and certain about the things that he/she does to make software run faster.
-        I decided to express the idea of pragmatic optimization in several pieces of advice or rules. This is a simple,
-        but essential set that is aimed to help you do your optimization work <b>optimally</b>.</p>
+        Matter-of-fact way of solving problems is crucial. From the one hand, it eliminates "magic" that someone gets
+        in the result  of the lack of understanding causes. From the other, hand it rules out aimless digging into a
+        low-level code.</p>
+        <p>I decided to express the idea of pragmatic optimization in several pieces of advice. For me this is a set of
+        rules I follow while doing my work. This is a simple, but essential set that is aimed to help you do your
+        optimization work <b>optimally</b>.</p>
 
         <h2 style="color: #6F3;">1. Say NO to premature optimization</h2>
         <p>Yes, I know, this rule is rather well-known. Many books about programming explain this aspect.
-        However, I feel I need to consider it from a pragmatic point of view.</p>
+        However, I feel I also need to consider it from a pragmatic point of view.</p>
         <p>Imagine you develop a cutting edge algorithm. This algorithm is not well defined and requires
         some experimental work. You think about doing it optimally and trying to do your best to ensure
         good performance during a whole development process. But look, there are several concerns
@@ -54,8 +72,7 @@
           significant overhead to other parts of the pipeline in future because it was not considered
           during the optimization.</li>
         </ul>
-        <p>This is only some items from a long list of problems stemming from premature optimization. So be careful.
-        Don't get me wrong, I'm not trying to dissuade you from doing your work.
+        <p>Don't get me wrong, I'm not trying to dissuade you from doing your work.
         I urge you to choose the right moment for it.</p>
 
         <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
@@ -128,14 +145,14 @@
         Use a profiler to identify bottlenecks, to verify memory access patterns, to collect statistics
         in data-dependent workloads or to highlight hardware properties.</p>
 
-        <h2 style="color: #6F3;">11. Avoid SIMDization</h2>
-        <p>I mean, the process of replacing scalar code with just the same vector code. Come on! Everybody who can
-        write code and has list of supported instructions in front of the eyes is able to do this. Furthermore,
-        most compilers can do this as well. You probably will be surprised how complex functions could
+        <h2 style="color: #6F3;">11. Avoid blind SIMDization</h2>
+        <p>By "blind SIMDization" I mean, the process of replacing scalar code with just the same vector code. Come on!
+        Everybody who can write code and has list of supported instructions in front of the eyes is able to do this.
+        Furthermore, most compilers can do this as well. You probably will be surprised how complex functions could
         be auto-vectorized. Moreover, automatic vectorization is preferable over hand-written because it costs nothing
         in terms of maintenance and future portability for new revisions of platform. Maintaining your optimizations
         becomes a charge of compiler writers. I started to talk about auto-vectorization because it is a good example
-        of SIMDization usage. Compiler knows nothing about the semantics of your code so all it can do is
+        of blind SIMDization usage. Compiler knows nothing about the semantics of your code so all it can do is
         replacing the scalar code with its vector analogue to get exactly the same result. <b>Be more creative.</b> Use
         your knowledge about the algorithm and hardware to perform more tricky optimizations. It is not uncommon
         that optimal instruction chains as well as used data types for scalar and vector code are different.</p>
@@ -145,7 +162,8 @@
         A couple of the examples here are type conversion or native support of some transcendental instructions.
         In other cases you are responsible for overcoming of this limit.</p>
         <hr>
-        <p>And the last thing, you will have lots of fun if you are a detective in this story of optimization.
+        <p>And the last thing, pragmatism comes from experience. So, practice in order to find hardware limitations and
+        best winner solutions. I promise you, you will have lots of fun.
         <hr>
         <hr>
         <a class="credits left" href="index.html">&lt;&lt; go to the main page</a>
