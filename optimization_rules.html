@@ -108,6 +108,10 @@
         <p>Obviously, an empty function is extremely fast, but the problem is that it does nothing useful. First of all,
         you should understand the function and define the set of required operations. Get rid of everything
         except this set. A surprisingly large portion of the acceleration is done exactly this way.</p>
+        <p>As far as a single loop is concerned, you should get rid of all superfluous loads, math, type conversions and
+        etc. If we talking about full pipeline, it implies removal of redundant memory allocations and copying,
+        functional calls. It also implies data restructuring. You should keep up a required subset of operations
+        at each level of your code.</p>
 
         <h2 style="color: #6F3;">6. Load only what is necessary</h2>
         <p>It is well known that most codes are memory bound. Many thins are done to improve memory performance
