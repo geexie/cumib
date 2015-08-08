@@ -32,20 +32,70 @@
     <div class="wrapper">
       <section>
         <h1>Order matters</h1>
-        <p>So, we decided to be pragmatic. Where to start optimization? I know, we all like diving into assembly and do
-        all that geeky things, but before to start behaving in this way there are so many things to do.</p>
-        <h2>1. Use appropriate algorithm</h2>
-        <p></p>
-        <h2>2. Optimize memory access patterns</h2>
-        <p></p>
+        <p>Well, we decided to be pragmatic. <b>What to start optimization with?</b> I know, we all like diving into
+        assembly and do all these geeky things, but for sure there are so many things to do before.</p>
+        <p>I want to share steps that I pass through than do optimization.</p>
+        <h2 style="color: #6F3;">1. Use appropriate algorithm</h2>
+        <p>First of all, you should understand the code. That is an input? That is an output? That operation/operations
+        are performed. Most part of magic in programming stars with phrase: "Hm... This code works... somehow."
+        Keep calm and understand it. There is a time to think about algorithm itself. Is it optimal solution for
+        the problem that this code should solve. Check, whether more optimal algorithms with lower computational
+        complexity exist. You should consider many trade-off. For example, if there are more than one core available you
+        should consider parallelization possibility as well. Furthermore, if SIMD optimization is planed, ensure that
+        critical loops are scalarizable.</p>
+        <h2 style="color: #6F3;">2. Optimize memory access patterns</h2>
+        <p>It is everything about memory! Interesting enough, almost all algorithms are memory bound. If it comes to
+        function that is more complicated than streaming kernel we found that access pattern is not ideal. Other
+        algorithms just need huge amount of data to process.</p>
+        <p>I practice multiple technologies and one of them CUDA. GPUs have very interesting architecture. They are
+        absolutely unbalanced in terms of memory latency relative to arithmetic latency. You know that, I cannot stand
+        then people provide technical reports and parers that say phrase "almost theoretical throughput achieved" with
+        no single world about how many bytes from this amount of data they really need. Without such information
+        statement about throughput says to me only that application consumes power on byte walking through the bus.</p>
+        <p>You should beware your memory patterns. It is crucial to load only data that is really needed for
+        computations. Usually it means some data restructuring, loop reorganization and so on.</p>
         <h2>3. Minimize number of operations</h2>
-        <p></p>
+        <p>As a matter of fact, less operations mean less time to process.</p>
         <h2>4. Shrink critical path</h2>
         <p></p>
-        <h2>5. Perform hardware specific optimizations</h2>
-        <p></p>
-        <h2>6. Dive into assembly</h2>
-        <p></p>
+        <h2 style="color: #6F3;">5. Perform hardware specific optimizations</h2>
+        <p>This is not about usage of <code class="cpp" style="background-color:#3F3F3F;padding:0;"> x &gt;&gt; 1</code>
+        instead of <code class="cpp" style="background-color:#3F3F3F;padding:0;">x / 1</code>.
+        For sure, compiler can figure this out. I am talking about optimizations that require deep understanding of the
+        hardware.</p>
+        <p>One example here is again from CUDA. GPUs support atomic operations in hardware. They are performed in L2
+        cache that is shared between separate units as well as normal writes. One atomic operation per cycle is scheduled
+        for each unit (I do not go in CUDA terminology to make this example understandable to a wide audience).
+        Performance of atomics is data-Dependant. I mean, everything is fast while different cache lines
+        are accessed. To cut long story short, atomics are more optimal for operations like
+        <pre><code class="cpp">
+    ptr[index] += value;</code></pre></p>
+        <p>The reason is simple. This line of code contains three operations: load, addition and store. Each of them
+        depends on previous. Then we issue atomic we need data only in L2 not in registers. So path is shorter.
+        This trick added me 15% improvement relative to code in the listing on Kepler GPU for streaming kernel.</p>
+        <h2 style="color: #6F3;">6. Dive into assembly</h2>
+        <p>Yep, you've done everything you can to accelerate your code. Before enter into a contract with the devil lets
+        dive into assembly. As for me, I tend to use disasm during steps from 3 to 5. As for writing, the most common
+        scenarios there it is affordable are overcoming compiler bugs or usage of
+        instructions that are not present in higher level ISA.</p>
+        <p>For example, in NEON there is a 256-bit load instruction that is present only in raw assembly.
+        <code class="asm">vld1 {d0, d1, d2, d3}</code>. Usage of this instruction will not accelerate your code twice
+        (latency of this instruction higher as well), but it could help. Consecutively, if it helps, I use assembly.
+        I newer seen compiler generated this. Even for codes like the following.
+        <pre><code class="cpp">
+    uint8_t* ptr = /**/;
+    uint8x16_t val0 = vld1q(ptr+   0);
+    uint8x16_t val1 = vld1q(ptr + 16);</code></pre>It is clear that likelihood that pointers alias is equal to
+        zero but compiler do not merge this operations into one.</p>
+        <!-- add information about compiler bug overcoming -->
+        <p>Writing assembly you should always consider many tread-offs like code portability, readability, and so on. So,
+        think twice.</p>
+        <hr>
+        <hr>
+        <a class="credits left" href="optimization_rules.html">&lt;&lt; go to the previous page</a>
+        <a class="credits right" href="optimization_order.html">go to the next page&gt;&gt;</a>
+        <hr>
+        <hr>
         <hr>
         <span class="credits left">Project maintained by <a href="https://github.com/cuda-geek">cuda-geek</a></span>
         <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
