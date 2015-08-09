@@ -32,26 +32,27 @@
     <div class="wrapper">
       <section>
         <h1>Order matters</h1>
-        <p>Well, we decided to be pragmatic. <b>What to start optimization with?</b> I know, we all like diving into
-        assembly and do all these geeky things, but for sure there are so many things to do before.</p>
-        <p>I want to share steps that I pass through than do optimization.</p>
+        <p>Well, we've decided to be pragmatic. <b>What to begin optimization with?</b> I know, all of us like to dive
+        into assembly and do all these geeky things. However for sure there are so many things to do before it.</p>
+        <p>I want share the steps that I pass while doing optimization.</p>
         <h2 style="color: #6F3;">1. Use appropriate algorithm</h2>
-        <p>First of all, you should understand the code. That is an input? That is an output? That operation/operations
+        <p>First of all, you should understand the code. What is an input? What is an output? What operation/operations
         are performed. Most part of magic in programming stars with phrase: "Hm... This code works... somehow."
-        Keep calm and understand it. There is a time to think about algorithm itself. Is it optimal solution for
-        the problem that this code should solve. Check, whether more optimal algorithms with lower computational
-        complexity exist. You should consider many trade-off. For example, if there are more than one core available you
+        Keep calm and understand it. After you get enough knowledge there is a time to think about algorithm itself.
+        Is it optimal solution for the problem that this code should solve? Check, whether more optimal algorithms with
+        lower computational complexity exist.</p>
+        <p>You should consider many trade-offs. For example, if there are more than one core is available you
         should consider parallelization possibility as well. Furthermore, if SIMD optimization is planed, ensure that
         critical loops are scalarizable.</p>
         <h2 style="color: #6F3;">2. Optimize memory access patterns</h2>
         <p>It is everything about memory! Interesting enough, almost all algorithms are memory bound. If it comes to
-        function that is more complicated than streaming kernel we found that access pattern is not ideal. Other
+        function which is more complicated than streaming kernel we may found that access pattern is not ideal. Other
         algorithms just need huge amount of data to process.</p>
-        <p>I practice multiple technologies and one of them CUDA. GPUs have very interesting architecture. They are
+        <p>I practice multiple technologies and one of them is CUDA. GPUs have very interesting architecture. They are
         absolutely unbalanced in terms of memory latency relative to arithmetic latency. You know that, I cannot stand
-        then people provide technical reports and parers that say phrase "almost theoretical throughput achieved" with
-        no single world about how many bytes from this amount of data they really need. Without such information
-        statement about throughput says to me only that application consumes power on byte walking through the bus.</p>
+        then people provide technical reports and parers which say phrase "almost theoretical throughput achieved" with
+        no single world about how many bytes from this amount of data they really need. Statement about throughput says
+        to me only that application consumes power on byte walking through the bus without such information.</p>
         <p>You should beware your memory patterns. It is crucial to load only data that is really needed for
         computations. Usually it means some data restructuring, loop reorganization and so on.</p>
         <h2>3. Minimize number of operations</h2>
@@ -64,20 +65,20 @@
         For sure, compiler can figure this out. I am talking about optimizations that require deep understanding of the
         hardware.</p>
         <p>One example here is again from CUDA. GPUs support atomic operations in hardware. They are performed in L2
-        cache that is shared between separate units as well as normal writes. One atomic operation per cycle is scheduled
-        for each unit (I do not go in CUDA terminology to make this example understandable to a wide audience).
-        Performance of atomics is data-Dependant. I mean, everything is fast while different cache lines
+        cache (that is shared between separate units) as well as normal writes. One atomic operation per cycle is
+        scheduled for each unit (I do not go in CUDA terminology to make this example understandable to a wide audience).
+        Performance of atomics is data-dependent. I mean, everything is fast while different cache lines
         are accessed. To cut long story short, atomics are more optimal for operations like
         <pre><code class="cpp">
     ptr[index] += value;</code></pre></p>
         <p>The reason is simple. This line of code contains three operations: load, addition and store. Each of them
         depends on previous. Then we issue atomic we need data only in L2 not in registers. So path is shorter.
-        This trick added me 15% improvement relative to code in the listing on Kepler GPU for streaming kernel.</p>
+        This trick added me 15% improvement relative to code in the listing for streaming kernel on Kepler GPU.</p>
         <h2 style="color: #6F3;">6. Dive into assembly</h2>
-        <p>Yep, you've done everything you can to accelerate your code. Before enter into a contract with the devil lets
-        dive into assembly. As for me, I tend to use disasm during steps from 3 to 5. As for writing, the most common
-        scenarios there it is affordable are overcoming compiler bugs or usage of
-        instructions that are not present in higher level ISA.</p>
+        <p>Yep, you've done everything you can to accelerate your code. Before enter into a contract with the devil
+        let's dive into assembly. As for me, I tend to use disasm during steps from 3 to 5. As for writing, the most
+        common scenarios there it is affordable are overcoming compiler bugs or usage of instructions which
+        are not present in higher level ISA.</p>
         <p>For example, in NEON there is a 256-bit load instruction that is present only in raw assembly.
         <code class="asm">vld1 {d0, d1, d2, d3}</code>. Usage of this instruction will not accelerate your code twice
         (latency of this instruction higher as well), but it could help. Consecutively, if it helps, I use assembly.
