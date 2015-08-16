@@ -44,10 +44,10 @@
         the problem that this code should solve? Check, whether more optimal algorithms with lower computational
         complexity exist.</p>
         <p>The classical example here is sorting. There are so many ways to perform sorting like quick sort
-        or histogram based approaches like radix sort. All of them differ and number of operations per element
+        or histogram based approaches like radix sort. All of them differ and number of operations per element.
         Depending on the nature of algorithm and data as well as data distribution, your algorithmic choose will vary.</p>
         <p>You should consider many trade-offs. For example, if there are more than one core is available you
-        should consider parallelization possibility as well. Furthermore, if SIMD optimization is planed, ensure that
+        should consider parallelization possibility. Furthermore, if SIMD optimization is planed, ensure that
         critical loops are scalarizable.</p>
         <h2 style="color: #6F3;">2. Optimize memory access patterns</h2>
         <p>It is everything about memory! Interesting enough, almost all algorithms are memory bound. If it comes to
