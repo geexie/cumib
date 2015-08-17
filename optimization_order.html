@@ -33,37 +33,47 @@
       <section>
         <h1>Order matters</h1>
         <p>Well, we've decided to be pragmatic. <b>What to begin optimization with?</b> I know, all of us like to dive
-        into assembly and do all these geeky things. However for sure there are so many things to do before it.</p>
-        <p>I want share the steps that steps that I walk through while doing optimization, regardless of the size of
-        the problem. No matter if it is a full pipeline or just a computational kernel.</p>
+        into assembly and do all these geeky things. Nevertheless, for sure there are so many things to do before it.</p>
+        <p>I want share the steps I walk through while doing optimization, regardless of the size of the problem.
+        No matter if it is a full pipeline or just a concrete computational kernel. This steps are quite scalable.</p>
         <h2 style="color: #6F3;">1. Use appropriate algorithm</h2>
         <p>Before starting optimization you should understand the code. What is an input? What is an output?
-        What operation/operations are performed. Most part of magic in programming stars with phrase: "Hm... This code
+        What operation/operations are performed? Most part of "magic" in programming stars with phrase: "Hm... This code
         works... somehow." Keep calm and understand it.</p>
-        <p>After you get enough knowledge there is a time to think about algorithm itself. Is it optimal solution for
-        the problem that this code should solve? Check, whether more optimal algorithms with lower computational
+        <p>After you get enough knowledge there is a time to think about algorithm itself. Is it an optimal solution for
+        the problem that your code should solve? Check, whether more optimal algorithms with lower computational
         complexity exist.</p>
-        <p>The classical example here is sorting. There are so many ways to perform sorting like quick sort
-        or histogram based approaches like radix sort. All of them differ and number of operations per element.
-        Depending on the nature of algorithm and data as well as data distribution, your algorithmic choose will vary.</p>
-        <p>You should consider many trade-offs. For example, if there are more than one core is available you
-        should consider parallelization possibility. Furthermore, if SIMD optimization is planed, ensure that
-        critical loops are scalarizable.</p>
+        <!-- <p>detector example</p> -->
+        <p>The classical example here is sorting. There are so many ways to sort things like quick sort
+        or histogram based approaches such as radix sort. All of them differ in number of operations per data element.
+        Depending on the nature of algorithm and data as well as data distribution, your algorithmic choose will vary.
+        </p>
+        <p>Choosing algorithm you should consider many trade-offs. It is noteworthy, one of the most important factors
+        to think of is optimization opportunities. In particular, if there are more than one core is available you
+        should consider parallelization possibility. Furthermore, if SIMD optimization is planed, code where critical loops are scalarizable will be preferable.</p>
+        <!-- <p>add example here</p> -->
         <h2 style="color: #6F3;">2. Optimize memory access patterns</h2>
         <p>It is everything about memory! Interesting enough, almost all algorithms are memory bound. If it comes to
-        function which is more complicated than streaming kernel we may found that access pattern is not ideal. Other
-        algorithms just need huge amount of data to process.</p>
+        function which is more complicated than streaming kernel we may found that access pattern is not ideal. Whereas
+        other algorithms just need a huge amount of data to process.</p>
         <p>I practice multiple technologies and one of them is CUDA. GPUs have very interesting architecture. They are
         absolutely unbalanced in terms of memory latency relative to arithmetic latency. You know that, I cannot stand
-        then people provide technical reports and parers which say phrase "almost theoretical throughput achieved" with
-        no single world about how many bytes from this amount of data they really need. Statement about throughput says
-        to me only that application consumes power on byte walking through the bus without such information.</p>
+        when people provide technical reports and parers which say phrase similar to "almost theoretical throughput
+        achieved" with no single world about how many bytes from this amount of data they really need. Such statement
+        about throughput says to me only that application consumes power on byte walking through the bus without.</p>
         <p>You should beware your memory patterns. It is crucial to load only data that is really needed for
         computations. Usually it means some data restructuring, loop reorganization and so on.</p>
+        <!-- <p>add example from NEON here</p> -->
         <h2>3. Minimize number of operations</h2>
-        <p>As a matter of fact, less operations mean less time to process.</p>
+        <p>As a matter of fact, less operations mean less time to process. This is not a rule of thumb for most of
+        the modern architectures because all it are deeply pipelined. Hence multiple operations may be executed
+        on different pipes. Moreover, depth varies from pipe to pipe, so different operations have different execution
+        latency. As the result it comes more to critical path optimization rather than just simple code reduction.
+        But steel total number of operations is a good approximation of haw good your code is.</p>
+        <!-- <p>For example, tell about unrolling and principal of SIMD execution </p> -->
+        <!-- <p>Add NEON color conversion example here</p> -->
         <h2>4. Shrink critical path</h2>
-        <p></p>
+        <p>This step is connected to precious one. What is important is that...</p>
         <h2 style="color: #6F3;">5. Perform hardware specific optimizations</h2>
         <p>This is not about usage of <code class="cpp" style="background-color:#3F3F3F;padding:0;"> x &gt;&gt; 1</code>
         instead of <code class="cpp" style="background-color:#3F3F3F;padding:0;">x / 1</code>.
@@ -96,6 +106,8 @@
         <!-- add information about compiler bug overcoming -->
         <p>Writing assembly you should always consider many tread-offs like code portability, readability, and so on. So,
         think twice.</p>
+        <h2>Final words</h2>
+        <p></p>
         <hr>
         <hr>
         <a class="credits left" href="optimization_rules.html">&lt;&lt; go to the previous page</a>
