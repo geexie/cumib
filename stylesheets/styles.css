@@ -222,10 +222,16 @@ p {
   margin: 1em 0;
 }
 
+pre code,
+pre  code.hljs {
+  padding : 0em;
+  padding-bottom : 1.5em;
+}
+
 code,
 code.hljs {
   padding : 0em;
-  padding-bottom : 1.5em;
+  background-color:#3F3F3F;
 }
 
 table {
