@@ -74,15 +74,28 @@
         <!-- <p>add example from NEON here</p> -->
 
         <h2 style="color: #6F3;">4. Minimize the number of operations</h2>
-        <p>As a matter of fact, less operations mean less time to process. This is not a rule of thumb for most of
-        the modern architectures because typically they are deeply pipelined. Hence multiple operations may be executed
-        on different pipes. Moreover, depth varies from pipe to pipe, so different operations have different execution
-        latency. As the result it comes more about critical path optimization rather than just code reduction.
-        But still the number of operations is not bad approximation of how good your optimization is.</p>
+        <p>As a matter of fact, less number of operations require less time to process. However, This is not a rule
+        of thumb for the most of the modern architectures because typically they are deeply pipelined. Hence multiple
+        operations may be executed on different pipes. Moreover, depth varies from pipe to pipe, so different operations
+        have different execution latency. As the result, it comes more about critical path optimization rather than just
+        code reduction. But still the number of operations is not bad approximation of how well your optimization is.</p>
         <p>It is quite frequent that on this step you need to figure out problems that comes from some compiler limitations.
         For instance, if compiler failed with register allocation you'll get extra operations with stack or register
         movements. It is clear what these operations are the fist candidates for removal since it don't required
-        by the algorithm.</p>
+        by the algorithm. It usually mean that you need to "rephrase" the ideas explained in your code.</p>
+        <p>For instance, there are two types of vector registers in NEON (which SIMD extension to ARM processors):
+        64-bit D registers and 128-bit Q registers. Many, but not all, operations can be performed on both types of registers.
+        For example, you can add two D registers with instruction <code class="asm"> vadd.u8 d0, d1, d2</code> as well
+        as two Q registers <code class="asm"> vadd.u8 q0, q1, q2</code> with the same one. All the instructions are
+        wrapped by c/c++ intrinsics so that operations on long and short vectors are distinguished by postfix
+        <code>q</code> like <code >add</code> and <code >addq</code>. As for intrinsics, the set is complete. Thus
+        there are intrinsics that doesn't corresponds to single assembly instruction, such as <code >vst3q</code>
+        instruction for ARMv7 ISA. This instruction performs 3-way register interleaving before storing the result.
+        This is extremely useful for decoding into RGB images. Presently I've done NEON optimization for packaged Yuv
+        to RGB color space with use of this intrinsic. Here is an assembly snippet generated
+        with use of <code>vst3q</code> followed by a snippet generated with use of 2 <code>vst3q</code> intrinsics.</p>
+        <p>As you can see in both cases two D-variants of store instructions are generated, but in the first case
+        compiler some struggled with additional dependencies between registers.</p>
         <p>Over and above, reduction in the number of operations is one of reasons wherefore loop unrolling benefits on
         modern out-of-order architectures.</p>
         <!-- <p>tell about the principal of SIMD execution </p> -->
