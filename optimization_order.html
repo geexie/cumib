@@ -97,10 +97,19 @@
         with use of <code>vst3q</code> followed by a snippet generated with use of 2 <code>vst3q</code> intrinsics.</p>
         <p>As you can see in both cases two D-variants of store instructions are generated, but in the first case
         compiler some struggled with additional dependencies between registers.</p>
+        <pre><code class="asm">
+    vmov    d18, d4  @ v8qi
+    vmov    d17, d30  @ v8qi
+    vmov    d19, d2  @ v8qi
+    vmov    d21, d22  @ v8qi
+    vst3.8  {d16, d18, d20}, [r2]
+    vst3.8  {d17, d19, d21}, [r0]</code></pre>
+        <pre><code class="asm">
+    vst3.8  {d16-d18}, [r1]
+    vst3.8  {d10-d12}, [r0]</code></pre>
         <p>Over and above, reduction in the number of operations is one of reasons wherefore loop unrolling benefits on
         modern out-of-order architectures.</p>
         <!-- <p>tell about the principal of SIMD execution </p> -->
-        <!-- <p>Add NEON color conversion example here</p> -->
 
         <h2>5. Shrink the critical path</h2>
         <p>This step is connected to precious one. What is important is that...</p>
