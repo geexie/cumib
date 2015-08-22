@@ -76,7 +76,7 @@
         <p>It is quite frequent that on this step you need to figure out problems that comes from some compiler
         limitations first. For instance, if a compiler failed with register allocation you'll get extra operations
         with a stack or register movements. It is clear what these operations are the fist candidates for removal since
-        it don't required by the algorithm. It usually means that you need to "rephrase" the ideas explained in your
+        they aren't required by the algorithm. It usually means that you need to "rephrase" the ideas explained in your
         code.</p>
         <p>In particular, there are two types of vector registers in NEON (which SIMD extension to ARM processors):
         64-bit D registers and 128-bit Q registers. Many, but not all, operations can be performed on both types
@@ -101,7 +101,8 @@
     vst3.8  {d16-d18}, [r1]
     vst3.8  {d10-d12}, [r0]</code></pre>
         <p>As you can see in both cases two D-variants of store instructions are generated, but in the first case
-        compiler struggled with additional dependencies between registers.</p>
+        compiler struggled with additional dependencies between registers because more strict data placement required
+        for long instruction variant.</p>
         <p>After all extra operations are eliminated, you can move on to code restructuring in order to minimize
         actual arithmetic.</p>
         <p>Over and above, reduction in the number of operations is one of reasons wherefore loop unrolling benefits on
@@ -111,15 +112,16 @@
           <li>widening memory transactions;</li>
           <li>eliminating extra operation, such as prefetches;</li>
           <li>avoidance storage of intermediate results (such as needed in iterative algorithms);</li>
+          <li>etc.</li>
         </ul>
-        <!-- <p>tell about the principal of SIMD</p> -->
+        </p>
 
         <h2 style="color: #6F3;">5. Shrink the critical path</h2>
         <p>This step is connected to precious one. As a matter of fact, less number of operations require less time
         to process. However, This is not a rule of thumb for the most of the modern architectures because typically
         they are deeply pipelined. Hence multiple operations may be executed on different pipes. Moreover, depth varies
         from pipe to pipe, so different operations have different execution latency. As the result, it comes more about
-        critical path (he longest chain of dependent instructions) optimization rather than just code reduction.</p>
+        critical path (the longest chain of dependent instructions) optimization rather than just code reduction.</p>
         <p>Finding a critical path is a tough task. Specifically, I've seen many attempts to optimize pointer increments
         in SIMD optimized loops. Let's look at NEON ISA again. There are load and store operations which support
         post increment (incrementing the pointer passed to this instruction by number of bytes read/written). In ARMv8
@@ -128,7 +130,12 @@
         I have seem generate post incremented memory operations in very limited number of cases. As the result people
         trying to force a compiler generate it and finishing with assembly writing. But eventually in most cases
         the execution time for the loop remains unchanged. This is because for most NEON-optimized loops scalar
-        arithmetic is not a bottleneck since it is not included into the critical path.</p>
+        arithmetic is not a bottleneck since it is not included into the critical path. Pointer arithmetic with other
+        scalar operations can be executed in parallel with vector operations. They executed on dedicated integer pipe
+        and one of least latent instructions. Thereto, the result of these operations can be fast-forwarded directly to
+        load/store pipe so latency is reduced even more. Post-increment might help only for loops there pointer
+        arithmetic dominate over SIMD instructions. For example, some data repackaging loops, there a bunch of pointers
+        is read or written.</p>
 
         <h2 style="color: #6F3;">6. Perform hardware specific optimizations</h2>
         <p>This is not about usage of <code class="cpp">x &gt;&gt; 1</code> instead of <code class="cpp">x / 1</code>.
@@ -144,7 +151,6 @@
         <p>The reason is simple. This line of code contains three operations: load, addition and store. Each of them
         depends on previous. Then we issue atomic we need data only in L2 not in registers. So path is shorter.
         This trick added me 15% improvement relative to code in the listing for streaming kernel on Kepler GPU.</p>
-        <!-- <p>Clarify the example a bit more</p> -->
 
         <h2 style="color: #6F3;">6. Dive into assembly</h2>
         <p>Yep, you've done everything you can to accelerate your code. Before entering into a contract with the devil
@@ -154,7 +160,7 @@
         <p>For example, in NEON there is a 256-bit load instruction that is present only in raw assembly.
         <code class="armasm">vld1 {d0, d1, d2, d3}</code>. Usage of this instruction will not accelerate your code twice
         (latency of this instruction higher as well), but it could help. Consecutively, if it helps, I use assembly.
-        I newer seen compiler generated this. Even for codes like the following.
+        I never seen compiler generated this. Even for codes like the following.
         <pre><code class="cpp">
     uint8_t* ptr = /**/;
     uint8x16_t val0 = vld1q(ptr+   0);
@@ -163,11 +169,14 @@
         <p>Writing assembly you should always consider many tread-offs like code portability, readability, and so on. So,
         think twice.</p>
         <h2>Final words</h2>
-        <p></p>
+        <p>As you can see this approach is top-down fashioned. I mean, it goes from high to low level. It is works,
+        because <b>higher approach we apply more effect it will bring</b>. Improperly used algorithm may never allow
+        to reach target performance, useless loads are still useless even if you perform them with wide transaction,
+        etc. So let's be a bit more consistent to be a pragmatic optimizer.</p>
         <hr>
         <hr>
         <a class="credits left" href="optimization_rules.html">&lt;&lt; go to the previous page</a>
-        <a class="credits right" href="optimization_order.html">go to the next page&gt;&gt;</a>
+        <a class="credits right" href="aarch64.html">go to the next page&gt;&gt;</a>
         <hr>
         <hr>
         <hr>
