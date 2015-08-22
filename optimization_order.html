@@ -58,7 +58,6 @@
         to think of is optimization opportunities. In particular, if there is more than one core is available you
         should consider parallelization possibility. Furthermore, if SIMD optimization is planned, prefer to use
         algorithms whose critical loops can be explained in scalarizable code.</p>
-        <!-- <p>add example here, probably detector</p> -->
 
         <h2 style="color: #6F3;">3. Optimize memory access patterns</h2>
         <p>It is everything about memory! Interesting enough, almost all algorithms are memory bound. If it comes to
@@ -72,47 +71,50 @@
         about throughput says to me only that an application consumes power on byte walking through the bus.</p>
         <p>You should beware your memory patterns. It is crucial to load only data that is really needed for
         computations. Usually it means some data restructuring, loop reorganization and so on.</p>
-        <!-- <p>add example from NEON here</p> -->
 
         <h2 style="color: #6F3;">4. Minimize the number of operations</h2>
-        <p>As a matter of fact, less number of operations require less time to process. However, This is not a rule
-        of thumb for the most of the modern architectures because typically they are deeply pipelined. Hence multiple
-        operations may be executed on different pipes. Moreover, depth varies from pipe to pipe, so different operations
-        have different execution latency. As the result, it comes more about critical path optimization rather than just
-        code reduction. But still the number of operations is not bad approximation of how well your optimization is.</p>
-        <p>It is quite frequent that on this step you need to figure out problems that comes from some compiler limitations.
-        For instance, if a compiler failed with register allocation you'll get extra operations with stack or register
-        movements. It is clear what these operations are the fist candidates for removal since it don't required
-        by the algorithm. It usually mean that you need to "rephrase" the ideas explained in your code.</p>
-        <p>For instance, there are two types of vector registers in NEON (which SIMD extension to ARM processors):
-        64-bit D registers and 128-bit Q registers. Many, but not all, operations can be performed on both types of registers.
-        For example, you can add two D registers with instruction <code class="asm"> vadd.u8 d0, d1, d2</code> as well
-        as two Q registers <code class="asm"> vadd.u8 q0, q1, q2</code> with the same one. All the instructions are
-        wrapped by c/c++ intrinsics so that operations on long and short vectors are distinguished by postfix
-        <code>q</code> like <code >add</code> and <code >addq</code>. As for intrinsics, the set is complete. Thus
-        there are intrinsics that don't corresponds to single assembly instruction, such as <code >vst3q</code>
-        instruction for ARMv7 ISA. This instruction performs 3-way register interleaving before storing the result.
-        This is extremely useful for decoding into RGB images. Presently I've done NEON optimization for packaged Yuv
-        to RGB color space with use of this intrinsic. Here is an assembly snippet generated
-        with use of <code>vst3q</code> followed by a snippet generated with use of 2 <code>vst3q</code> intrinsics.</p>
-        <p>As you can see in both cases two D-variants of store instructions are generated, but in the first case
-        compiler some struggled with additional dependencies between registers.</p>
+        <p>It is quite frequent that on this step you need to figure out problems that comes from some compiler
+        limitations first. For instance, if a compiler failed with register allocation you'll get extra operations
+        with a stack or register movements. It is clear what these operations are the fist candidates for removal since
+        it don't required by the algorithm. It usually means that you need to "rephrase" the ideas explained in your
+        code.</p>
+        <p>In particular, there are two types of vector registers in NEON (which SIMD extension to ARM processors):
+        64-bit D registers and 128-bit Q registers. Many, but not all, operations can be performed on both types
+        of registers. For example, you can add two D registers with instruction
+        <code class="asm">vadd.u8 d0, d1, d2</code> as well as two Q registers
+        <code class="asm">vadd.u8 q0, q1, q2</code> with the same one. All the instructions are wrapped by c/c++
+        intrinsics so that operations on long and short vectors are distinguished by postfix <code>q</code> like
+        <code >add</code> and <code >addq</code>. As for intrinsics, the set is complete. Thus there are intrinsics
+        that don't correspond to single assembly instruction, such as <code >vst3q</code> for ARMv7 ISA. This instruction
+        performs 3-way register interleaving before storing the result. This is extremely useful for decoding into RGB
+        images. Recently I've done NEON optimization for color decoding from packaged Yuv to RGB color space with use
+        of this intrinsic. Here is an assembly snippet generated with use of <code>vst3q</code> followed by a snippet
+        generated with use of 2 <code>vst3q</code> intrinsics.</p>
         <pre><code class="asm">
     vmov    d18, d4  @ v8qi
     vmov    d17, d30  @ v8qi
     vmov    d19, d2  @ v8qi
     vmov    d21, d22  @ v8qi
-    vst3.8  {d16, d18, d20}, [r2]
+    vst3.8  {d16, d18, d20}, [r1]
     vst3.8  {d17, d19, d21}, [r0]</code></pre>
         <pre><code class="asm">
     vst3.8  {d16-d18}, [r1]
     vst3.8  {d10-d12}, [r0]</code></pre>
+        <p>As you can see in both cases two D-variants of store instructions are generated, but in the first case
+        compiler struggled with additional dependencies between registers.</p>
+        <p>After all extra operations are eliminated, you can move on to code restructuring in order to minimize
+        actual arithmetic.</p>
         <p>Over and above, reduction in the number of operations is one of reasons wherefore loop unrolling benefits on
         modern out-of-order architectures.</p>
-        <!-- <p>tell about the principal of SIMD execution </p> -->
+        <!-- <p>tell about the principal of SIMD</p> -->
 
-        <h2>5. Shrink the critical path</h2>
-        <p>This step is connected to precious one. What is important is that...</p>
+        <h2 style="color: #6F3;">5. Shrink the critical path</h2>
+        <p>This step is connected to precious one. As a matter of fact, less number of operations require less time
+        to process. However, This is not a rule of thumb for the most of the modern architectures because typically
+        they are deeply pipelined. Hence multiple operations may be executed on different pipes. Moreover, depth varies
+        from pipe to pipe, so different operations have different execution latency. As the result, it comes more about
+        critical path (he longest chain of dependent instructions) optimization rather than just code reduction.</p>
+        <!-- <p>Add example about postincrement optimization</p> -->
 
         <h2 style="color: #6F3;">6. Perform hardware specific optimizations</h2>
         <p>This is not about usage of <code class="cpp" style="background-color:#3F3F3F;padding:0;"> x &gt;&gt; 1</code>
