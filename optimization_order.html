@@ -114,23 +114,23 @@
         they are deeply pipelined. Hence multiple operations may be executed on different pipes. Moreover, depth varies
         from pipe to pipe, so different operations have different execution latency. As the result, it comes more about
         critical path (he longest chain of dependent instructions) optimization rather than just code reduction.</p>
-        <!-- <p>Add example about postincrement optimization</p> -->
+        <!-- <p>Add example about post-increment optimization</p> -->
 
         <h2 style="color: #6F3;">6. Perform hardware specific optimizations</h2>
-        <p>This is not about usage of <code class="cpp" style="background-color:#3F3F3F;padding:0;"> x &gt;&gt; 1</code>
-        instead of <code class="cpp" style="background-color:#3F3F3F;padding:0;">x / 1</code>.
-        For sure, compiler can figure this out. I am talking about optimizations that require deep understanding of the
-        hardware.</p>
+        <p>This is not about usage of <code class="cpp">x &gt;&gt; 1</code> instead of <code class="cpp">x / 1</code>.
+        For sure, a compiler can figure this out. I am talking about optimizations that require deep understanding of the
+        hardware as well as supported instruction set.</p>
         <p>One example here is again from CUDA. GPUs support atomic operations in hardware. They are performed in L2
         cache (that is shared between separate units) as well as normal writes. One atomic operation per cycle is
         scheduled for each unit (I don't go in CUDA terminology to make this example understandable to a wide audience).
         Performance of atomics is data-dependent. I mean, everything is fast while different cache lines
-        are accessed. To cut a long story short, atomics are more optimal for operations like
+        are accessed. To cut a long story short, atomics are more optimal for operations like following.
         <pre><code class="cpp">
     ptr[index] += value;</code></pre></p>
         <p>The reason is simple. This line of code contains three operations: load, addition and store. Each of them
         depends on previous. Then we issue atomic we need data only in L2 not in registers. So path is shorter.
         This trick added me 15% improvement relative to code in the listing for streaming kernel on Kepler GPU.</p>
+        <!-- <p>Clarify the example a bit more</p> -->
 
         <h2 style="color: #6F3;">6. Dive into assembly</h2>
         <p>Yep, you've done everything you can to accelerate your code. Before entering into a contract with the devil
@@ -146,7 +146,6 @@
     uint8x16_t val0 = vld1q(ptr+   0);
     uint8x16_t val1 = vld1q(ptr + 16);</code></pre>It is clear that likelihood that pointers alias is equal to
         zero but compiler do not merge this operations into one.</p>
-        <!-- add information about compiler bug overcoming -->
         <p>Writing assembly you should always consider many tread-offs like code portability, readability, and so on. So,
         think twice.</p>
         <h2>Final words</h2>
