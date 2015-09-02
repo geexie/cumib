@@ -1,0 +1,62 @@
+.reveal h1, .reveal h2 {
+  color: #66FF33;
+}
+
+.reveal b {
+  color: #66FF33;
+}
+
+pre b .number {
+  color: #66FF33;
+}
+
+.reveal a:hover img {
+  border-color: #66FF33;
+}
+
+/*********************************************
+ * NAVIGATION CONTROLS
+ *********************************************/
+.reveal .controls div.navigate-left,
+.reveal .controls div.navigate-left.enabled {
+  border-right-color: #66FF33;
+}
+
+.reveal .controls div.navigate-right,
+.reveal .controls div.navigate-right.enabled {
+  border-left-color: #66FF33;
+}
+
+.reveal .controls div.navigate-up,
+.reveal .controls div.navigate-up.enabled {
+  border-bottom-color: #66FF33;
+}
+
+.reveal .controls div.navigate-down,
+.reveal .controls div.navigate-down.enabled {
+  border-top-color: #66FF33;
+}
+
+.reveal .controls div.navigate-left.enabled:hover {
+  border-right-color: #47B224;
+}
+
+.reveal .controls div.navigate-right.enabled:hover {
+  border-left-color: #47B224;
+}
+
+.reveal .controls div.navigate-up.enabled:hover {
+  border-bottom-color: #47B224;
+}
+
+.reveal .controls div.navigate-down.enabled:hover {
+  border-top-color: #47B224;
+}
+
+.reveal .progress span {
+  background: #66FF33;
+}
+
+.reveal .slide-number {
+  color: #66FF33;
+}

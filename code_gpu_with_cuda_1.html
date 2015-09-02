@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
   <head>
     <meta charset="utf-8">
     <title>Code GPU with CUDA</title>
@@ -7,18 +8,27 @@
     <meta name="author" content="Marina Kolpakova (cuda.geek)">
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
-    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
-    <link rel="stylesheet" href="stylesheets/cuda.css">
-    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="plugin/reveal/css/reveal.css">
+    <link rel="stylesheet" href="plugin/reveal/css/theme/geek.css" id="theme">
+    <link rel="stylesheet" href="css/colors-green.css">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
     <script>
-      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
-        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'plugin/reveal/css/print/pdf.css' : 'plugin/reveal/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
     </script>
+
     <!--[if lt IE 9]>
-      <script src="3dparty/reveal/lib/js/html5shiv.js"></script>
+    <script src="plugin/reveal/lib/js/html5shiv.js"></script>
     <![endif]-->
   </head>
 
@@ -365,7 +375,7 @@ unsigned char y;
                 <td>4x24</td>
               </tr>
               <tr>
-                <td rowspan="2">L2</td>
+                <td rowspan="2" style="border-bottom:none;">L2</td>
                 <td>hit latency, clock</td>
                 <td>No data</td>
                 <td>212</td>
@@ -499,31 +509,38 @@ unsigned char y;
           <br>
           <h3>BY <a href="https://github.com/cuda-geek">cuda.geek</a> / 2013&ndash;2015</h3>
         </section>
+
       </div>
     </div>
-    <script src="3dparty/reveal/lib/js/head.min.js"></script>
-    <script src="3dparty/reveal/js/reveal.min.js"></script>
-    <script>
-            Reveal.initialize({
-                controls: true,
-                progress: true,
-                history: true,
-                center: false,
-                rollingLinks: false,
 
-                theme: Reveal.getQueryHash().theme,
-                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
-                dependencies: [
-                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
-                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
-                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
-                ]
-            });
+    <script src="plugin/reveal/lib/js/head.min.js"></script>
+    <script src="plugin/reveal/js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: false,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'plugin/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
     </script>
+
   </body>
 </html>

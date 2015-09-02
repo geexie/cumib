@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
   <head>
     <meta charset="utf-8">
 
@@ -9,18 +10,27 @@
     <meta name="author" content="cuda.geek">
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <link rel="stylesheet" href="3dparty/reveal/css/reveal.css">
-    <link rel="stylesheet" href="stylesheets/cuda.geek.css" id="theme">
-    <link rel="stylesheet" href="stylesheets/cuda.css">
-    <link rel="stylesheet" href="3dparty/reveal/lib/css/zenburn.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="plugin/reveal/css/reveal.css">
+    <link rel="stylesheet" href="plugin/reveal/css/theme/geek.css" id="theme">
+    <link rel="stylesheet" href="css/colors-green.css">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
     <script>
-      document.write( '<link rel="stylesheet" href="3dparty/reveal/css/print/' + ( window.location
-        .search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'plugin/reveal/css/print/pdf.css' : 'plugin/reveal/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
     </script>
+
     <!--[if lt IE 9]>
-      <script src="lib/js/html5shiv.js"></script>
+    <script src="plugin/reveal/lib/js/html5shiv.js"></script>
     <![endif]-->
   </head>
 
@@ -85,15 +95,15 @@
             <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename Ptr2DIn, typename Ptr2DOut, typename Op&gt;
 __global__ void streaming(const Ptr2DIn src, Ptr2DOut dst)
 {
-     const int x = <span class="keyword">blockDim.x</span> * <span class="keyword">blockIdx.x</span> + <span class="keyword">threadIdx.x</span>;
-     const int y = <span class="keyword">blockDim.y</span> * <span class="keyword">blockIdx.y</span> + <span class="keyword">threadIdx.y</span>;
+     const int x = blockDim.x * blockIdx.x + threadIdx.x;
+     const int y = blockDim.y * blockIdx.y + threadIdx.y;
 
      if (x < dst.cols && y < dst.rows)
          dst(y, x) = saturate_cast&lt;Ptr2DOut::elem_type&gt;(Op::apply(src(x, y)));
 }</code></pre>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">dim3</span> block(block_x, block_y);
-<span class="keyword">dim3</span> grid(roundUp(dst.cols, block_x), roundUp(dst.rows, block_y));
-streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keyword">&gt;&gt;&gt;</span>(src, dst);</code></pre>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">dim3 block(block_x, block_y);
+dim3 grid(roundUp(dst.cols, block_x), roundUp(dst.rows, block_y));
+streaming&lt;&lt;&lt;grid, block&gt;&gt;&gt;(src, dst);</code></pre>
             <p>General arithmetic and conversions, repack by map, resize, etc.</p>
           </section>
         </section>
@@ -118,10 +128,10 @@ streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keywor
                 </mstyle>
               </math>
             </blockquote>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> threshold_bw(const <span class="cls">DPtrb</span> src, <span class="cls">DPtrb</span> dst, <span class="cls">int32s</span> cols, <span class="cls">int32s</span> rows, <span class="cls">int8u</span> thr)
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ threshold_bw(const DPtrb src, DPtrb dst, int32s cols, int32s rows, int8u thr)
 {
-     const int x = <span class="keyword">blockDim.x</span> * <span class="keyword">blockIdx.x</span> + <span class="keyword">threadIdx.x</span>;
-     const int y = <span class="keyword">blockDim.y</span> * <span class="keyword">blockIdx.y</span> + <span class="keyword">threadIdx.y</span>;
+     const int x = blockDim.x * blockIdx.x + threadIdx.x;
+     const int y = blockDim.y * blockIdx.y + threadIdx.y;
 
      if (x < cols && y < rows)
          dst.row(y)[x] = max(thr, src.row(y)[x]);
@@ -175,13 +185,13 @@ streaming<span class="keyword">&lt;&lt;&lt;</span>grid, block<span class="keywor
 
           <section>
             <h3>Kernel unrolling: image row per warp</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> threshold_bw(const <span class="cls">DPtrb</span> src, <span class="cls">DPtrb</span> dst, <span class="cls">int32s</span> cols, <span class="cls">int32s</span> rows, <span class="cls">int8u</span> thr)
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ threshold_bw(const DPtrb src, DPtrb dst, int32s cols, int32s rows, int8u thr)
 {
-    int block_id = (<span class="keyword">blockIdx.y</span> * <span class="keyword">gridDim.x</span> + <span class="keyword">blockIdx.x</span>) * (<span class="keyword">blockDim.x</span> / <span class="keyword">warpSize</span>);
-    int y = (<span class="keyword">threadIdx.y</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>) / <span class="keyword">warpSize</span> + block_id;
+    int block_id = (blockIdx.y * gridDim.x + blockIdx.x) * (blockDim.x / warpSize);
+    int y = (threadIdx.y * blockDim.x + threadIdx.x) / warpSize + block_id;
 
     if (y < rows)
-        for (int x = lane(); x < cols; x += <span class="keyword">warpSize</span>)
+        for (int x = lane(); x < cols; x += warpSize)
             dst.row(y)[x] = max(thr, src.row(y)[x]);
 }</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L43">The code is available in cumib microbenchmars library</a></small>
@@ -272,8 +282,8 @@ else {/*compute tail*/ }</code></pre>
           <section>
             <h3>Kernel unrolling: use wider transactions</h3>
             <p>unsigned char -&gt; unsigned integer</p>
-            <pre style="width:100%"><code class="cpp" style="padding: 10px;">template&lt;typename T&gt; <span class="keyword">__device__ __forceinline__</span> T vmin_u8(T,T);
-template&lt;&gt; <span class="keyword">__device__ __forceinline__</span> unsigned int vmin_u8(unsigned v, unsigned m)
+            <pre style="width:100%"><code class="cpp" style="padding: 10px;">template&lt;typename T&gt; __device__ __forceinline__ T vmin_u8(T,T);
+template&lt;&gt; __device__ __forceinline__ unsigned int vmin_u8(unsigned v, unsigned m)
 {
     unsigned int res = 0;
     asm("vmax4.u32.u32.u32 %0, %1, %2, %3;" : "=r"(res) : "r"(v), "r"(m), "r"(0));
@@ -360,11 +370,11 @@ if (y < rows)
                 </mstyle>
               </math>
             </blockquote>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;<span class="keyword">__global__</span>
-void transposeNaive(const <span class="cls">DPtr</span>&lt;T&gt; idata, <span class="cls">DPtr</span>&lt;T&gt; odata, int cols, int rows)
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt; __global__
+void transposeNaive(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
 {
-    int xIndex = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>;
-    int yIndex = <span class="keyword">blockIdx.y</span> * <span class="keyword">blockDim.y</span> + <span class="keyword">threadIdx.y</span>;
+    int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
     odata.row(xIndex)[yIndex] = idata.row(yIndex)[xIndex];
 }</code></pre>
@@ -383,44 +393,44 @@ void transposeNaive(const <span class="cls">DPtr</span>&lt;T&gt; idata, <span cl
 
           <section>
             <h3>Coalesce memory access: smem usage code</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;<span class="keyword">__global__</span>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;__global__
 void transposeCoalesced(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
 {
-    <span class="keyword">__shared__</span> float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM];
+    __shared__ float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM];
 
-    int xIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
-    int yIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    int xIndex = blockIdx.x * TRANSPOSE_TILE_DIM + threadIdx.x;
+    int yIndex = blockIdx.y * TRANSPOSE_TILE_DIM + threadIdx.y;
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
-        tile[<span class="keyword">threadIdx.y</span> + i][<span class="keyword">threadIdx.x</span>] = idata.row(yIndex + i)[xIndex];
+        tile[threadIdx.y + i][threadIdx.x] = idata.row(yIndex + i)[xIndex];
 
     __syncthreads();
 
-    xIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
-    yIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    xIndex = blockIdx.y * TRANSPOSE_TILE_DIM + threadIdx.x;
+    yIndex = blockIdx.x * TRANSPOSE_TILE_DIM + threadIdx.y;
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
-        odata.row(yIndex + i)[xIndex] = tile[<span class="keyword">threadIdx.x</span>][<span class="keyword">threadIdx.y</span> + i];
+        odata.row(yIndex + i)[xIndex] = tile[threadIdx.x][threadIdx.y + i];
 }</code></pre>
           <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L167">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
             <h3>Smem accesses: avoid bank conflicts</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;<span class="keyword">__global__</span>
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;__global__
 void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
 {
-    <span class="keyword">__shared__</span> float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM <b>+ 1</b>];
+    __shared__ float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM + 1];
 
-    int xIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
-    int yIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    int xIndex = blockIdx.x * TRANSPOSE_TILE_DIM + threadIdx.x;
+    int yIndex = blockIdx.y * TRANSPOSE_TILE_DIM + threadIdx.y;
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
-        tile[<span class="keyword">threadIdx.y</span> + i][<span class="keyword">threadIdx.x</span>] = idata.row(yIndex + i)[xIndex];
+        tile[threadIdx.y + i][threadIdx.x] = idata.row(yIndex + i)[xIndex];
 
     __syncthreads();
 
-    xIndex = <span class="keyword">blockIdx.y</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.x</span>;
-    yIndex = <span class="keyword">blockIdx.x</span> * TRANSPOSE_TILE_DIM + <span class="keyword">threadIdx.y</span>;
+    xIndex = blockIdx.y * TRANSPOSE_TILE_DIM + threadIdx.x;
+    yIndex = blockIdx.x * TRANSPOSE_TILE_DIM + threadIdx.y;
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
-        odata.row(yIndex + i)[xIndex] = tile[<span class="keyword">threadIdx.x</span>][<span class="keyword">threadIdx.y</span> + i];
+        odata.row(yIndex + i)[xIndex] = tile[threadIdx.x][threadIdx.y + i];
 }</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L202">The code is available in cumib microbenchmars library</a></small>
           </section>
@@ -437,11 +447,11 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
 
           <section>
             <h3>Transpose shuffle code</h3>
-            <pre style="width:100%;"><code class="cpp"><span class="keyword">__global__</span> void transposeShuffle(
-    const <span style="color:#FF9C33;">DPtr32</span> idata, <span style="color:#FF9C33;">DPtr32</span> odata, int cols, int rows)
+            <pre style="width:100%;"><code class="cpp">__global__ void transposeShuffle(
+    const DPtr32 idata, DPtr32 odata, int cols, int rows)
 {
-    int xIndex = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>;
-    int yIndex = <span class="keyword">blockIdx.y</span> * <span class="keyword">blockDim.y</span> + <span class="keyword">threadIdx.y</span>;
+    int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
     int yIndex1 = yIndex * SHUFFLE_ELEMENTS_VECTORS;
 
     yIndex *= SHUFFLE_ELEMENTS_PERF_WARP;
@@ -462,12 +472,12 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
     unsigned int isEven = laneIsEven<unsigned int>();
     int4 target = isEven ? reg1 : reg0;
 
-    target.x = <span style="color:#66FF33;">__shfl_xor</span>(target.x, 1);
-    target.y = <span style="color:#66FF33;">__shfl_xor</span>(target.y, 1);
-    target.z = <span style="color:#66FF33;">__shfl_xor</span>(target.z, 1);
-    target.w = <span style="color:#66FF33;">__shfl_xor</span>(target.w, 1);
+    target.x = __shfl_xor(target.x, 1);
+    target.y = __shfl_xor(target.y, 1);
+    target.z = __shfl_xor(target.z, 1);
+    target.w = __shfl_xor(target.w, 1);
 
-    const int oIndexY = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + (<span class="keyword">threadIdx.x</span> >> 1) * 2;
+    const int oIndexY = blockIdx.x * blockDim.x + (threadIdx.x >> 1) * 2;
     const int oIndexX = yIndex1 + (isEven == 0);
 
     if (isEven) reg1 = target; else reg0 = target;
@@ -633,14 +643,14 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
               </mrow>
             </math>
           </blockquote>
-          <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void reduceNaive(const int *idata, int *odata, <span class="keyword">size_t</span> N )
+          <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__</span> void reduceNaive(const int *idata, int *odata, size_t N )
 {
     int partial = 0;
-    <span class="keyword">size_t</span> i = <span class="keyword">blockIdx.x</span> * <span class="keyword">blockDim.x</span> + <span class="keyword">threadIdx.x</span>;
-    for ( ; i < N; i += <span class="keyword">blockDim.x</span> * <span class="keyword">gridDim.x</span> )
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+    for ( ; i < N; i += blockDim.x * gridDim.x )
         partial += idata[i];
 
-    <span style="color:#66FF33;">atomicAdd</span>( odata, partial );
+    atomicAdd( odata, partial );
 }
 </code></pre>
           <p>Naive implementation with CUDA atomics is limited by write queue atomic throughput,<br/>therefore <b>hierarchical approaches</b> are used:</p>
@@ -699,22 +709,22 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
           <h2>Block reduction approaches</h2>
           <section>
             <h3>Ranking</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void reduceRanking(const int *idata, int *odata, <span class="keyword">size_t</span> N )
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ void reduceRanking(const int *idata, int *odata, size_t N )
 {
-    extern <span class="keyword">__shared__</span> int* partials;
+    extern __shared__ int* partials;
     int thread_partial = thread_reduce(idata, N);
-    partials[<span class="keyword">threadIdx.x</span>] = sum;
+    partials[threadIdx.x] = sum;
     __syncthreads();
-    if (<span class="keyword">threadIdx.x</span> &lt; 512) partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 512];
+    if (threadIdx.x &lt; 512) partials[threadIdx.x] += partials[threadIdx.x + 512];
     __syncthreads();
-    if (<span class="keyword">threadIdx.x</span> &lt; 256) partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 256];
+    if (threadIdx.x &lt; 256) partials[threadIdx.x] += partials[threadIdx.x + 256];
     __syncthreads();
-    if (<span class="keyword">threadIdx.x</span> &lt; 128) partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 128];
+    if (threadIdx.x &lt; 128) partials[threadIdx.x] += partials[threadIdx.x + 128];
      __syncthreads();
-    if (<span class="keyword">threadIdx.x</span> &lt; 64)  partials[<span class="keyword">threadIdx.x</span>] += partials[<span class="keyword">threadIdx.x</span> + 64];
+    if (threadIdx.x &lt; 64)  partials[threadIdx.x] += partials[threadIdx.x + 64];
     __syncthreads();
-    if (<span class="keyword">threadIdx.x</span> &lt; 32) warp_reduce(partials);
-    if (!<span class="keyword">threadIdx.x</span>) odata[blockIdx.x] = partials[0];
+    if (threadIdx.x &lt; 32) warp_reduce(partials);
+    if (!threadIdx.x) odata[blockIdx.x] = partials[0];
 }
 </code></pre>
           </section>
@@ -734,16 +744,16 @@ __device__ __forceinline__</span> void warp_reduce(int val, volatile int* smem)
           </section>
           <section>
             <h3>warp-centric reduction</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp"><span class="keyword">__global__</span> void reduceWarpCentric(const int *idata, int *odata, <span class="keyword">size_t</span> N )
+            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ void reduceWarpCentric(const int *idata, int *odata, size_t N )
 {
-    <span class="keyword">__shared__</span> int partials[WARP_SIZE];
+    __shared__ int partials[WARP_SIZE];
     int thread_partial = thread_reduce(idata, N);
     warp_reduce&lt;WARP_SIZE&gt;(thread_partial, partials);
     __syncthreads();
 
     if (!warp::id())
-      warp_reduce&lt;NUM_WARPS_IN_BLOCK&gt;(partials[<span class="keyword">threadIdx.x</span>], partials);
-    if (!<span class="keyword">threadIdx.x</span>) odata[blockIdx.x] = partials[0];
+      warp_reduce&lt;NUM_WARPS_IN_BLOCK&gt;(partials[threadIdx.x], partials);
+    if (!threadIdx.x) odata[blockIdx.x] = partials[0];
 }</code></pre>
           </section>
           <section>
@@ -923,8 +933,8 @@ end function
                 </section>
                 <section>
                     <h3>Warp per N windows: analysis, N = 4</h3>
-                    <pre style="width:100%"><code class="cpp"><span class="keyword">__device__ __forceinline__</span> static int pixel() { return <span class="keyword">threadIdx.x</span> &amp; 3; }
-<span class="keyword">__device__ __forceinline__</span> static int stage() { return <span class="keyword">threadIdx.x</span> &gt;&gt; 2; }</code></pre>
+                    <pre style="width:100%"><code class="cpp">__device__ __forceinline__</span> static int pixel() { return threadIdx.x &amp; 3; }
+__device__ __forceinline__ static int stage() { return threadIdx.x &gt;&gt; 2; }</code></pre>
                     <ul>
                         <li>Each warp loads 8 features for 4 windows. Each feature consists of 4 pixels. Total warp transactions:
                         8x4 of 16 bytes (instead of 32x4 of 4 byte).</li>
@@ -1002,29 +1012,35 @@ if (__all(!active)) break;</code></pre>
 
       </div>
     </div>
-    <script src="3dparty/reveal/lib/js/head.min.js"></script>
-    <script src="3dparty/reveal/js/reveal.min.js"></script>
-    <script>
-            Reveal.initialize({
-                controls: true,
-                progress: true,
-                history: true,
-                center: false,
-                rollingLinks: false,
 
-                theme: Reveal.getQueryHash().theme,
-                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
-                dependencies: [
-                    { src: '3dparty/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
-                    { src: '3dparty/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: '3dparty/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: '3dparty/reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-                    { src: '3dparty/reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-                    { src: '3dparty/reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-                    // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
-                    // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
-                ]
-            });
+    <script src="plugin/reveal/lib/js/head.min.js"></script>
+    <script src="plugin/reveal/js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: false,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'plugin/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
     </script>
+
   </body>
 </html>
