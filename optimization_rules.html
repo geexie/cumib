@@ -44,7 +44,7 @@
         rules I follow while doing my work. This is a simple, but essential set that is aimed to help you do your
         optimization work <b>optimally</b>.</p>
 
-        <h2 style="color: #6F3;">1. Say NO to premature optimization</h2>
+        <h2>1. Say NO to premature optimization</h2>
         <p>Yes, I know, this rule is rather well-known. Many books about programming explain this aspect.
         However, I feel I also need to consider it from a pragmatic point of view.</p>
         <p>Imagine you develop a cutting edge algorithm. This algorithm is not well defined and requires
@@ -64,14 +64,14 @@
         <p>Don't get me wrong, I'm not trying to dissuade you from doing your work.
         I urge you to choose the right moment for it.</p>
 
-        <h2 style="color: #6F3;">2. Time and profile, then optimize</h2>
+        <h2>2. Time and profile, then optimize</h2>
         <p>Consider pipeline runtime. Never start optimization if timings are not done. Do not start optimization
         with a function that you suspect to be a bottleneck. You need a proof! <b>Blind</b> optimization is not better
         than premature one. In general, it results in the same problems. If your guess is wrong, you spend time
         without any improvement. If your guess is right, you are lucky. It is pointless to rely just on luck
         when it comes to the fate of your project. Right?</p>
 
-        <h2 style="color: #6F3;">3. Optimize the most consuming function first</h2>
+        <h2>3. Optimize the most consuming function first</h2>
         <p>This is closely connected with the previous one. Sometimes, even if someone has an application profile,
         it is not considered. <b>Be objective.</b> Do not choose the easiest, the funniest, or just the first thing
         on the profile list and so on. <b>Bear in mind that 80% of the time is typically spent on 20% of the code.</b>.
@@ -79,7 +79,7 @@
         <p>In most cases, it is simple to follow this rule. Just collect your profile, find a bottleneck,
         optimize it and move on to the the next one.</p>
 
-        <h2 style="color: #6F3;">4. Identify performance limiters</h2>
+        <h2>4. Identify performance limiters</h2>
         <p>What limits performance of your function? Is it a number of memory transactions? Is it
         a critical path in arithmetic? Is it a lack of computational resources of a particular type? Depending
         on a kind of limiters your optimization strategy will vary. If you don't identify limiters, you will spend
@@ -93,7 +93,7 @@
           you did not get extra operations like spills on stack.</li>
         </ul>
 
-        <h2 style="color: #6F3;">5. Compute only what is necessary</h2>
+        <h2>5. Compute only what is necessary</h2>
         <p>Obviously, an empty function is extremely fast, but the problem is that it does nothing useful. First of all,
         you should understand the function and define the set of required operations. Get rid of everything
         except this set. A surprisingly large portion of the acceleration is done exactly this way.</p>
@@ -102,7 +102,7 @@
         functional calls. It also implies data restructuring. You should keep up a required subset of operations
         at each level of your code.</p>
 
-        <h2 style="color: #6F3;">6. Load only what is necessary</h2>
+        <h2>6. Load only what is necessary</h2>
         <p>It is well known that most codes are memory bound. Many thins are done to improve memory performance
         like multilevel cache hierarchies, write back and everything. But processor performance is still a bit ahead.
         You should be aware of memory organization of the system you currently targeting. Moreover,
@@ -111,13 +111,13 @@
         memory subsystem.</p>
         <p>Another aspect is choosing proper data types and data structures.</p>
 
-        <h2 style="color: #6F3;">7. Understand the reason of speedup</h2>
+        <h2>7. Understand the reason of speedup</h2>
         <p>It is cool that you got some speedup. Ask yourself: am I sure about its reasons? Have I eliminated
         pipeline stalls? Have I reused data in caches more effectively? This understanding will be extremely helpful
         to generalize your knowledge and reuse approaches in future. This function is not going to be the last code
         you optimize, right?</p>
 
-        <h2 style="color: #6F3;">8. Keep it simple</h2>
+        <h2>8. Keep it simple</h2>
         <p>Optimization is always a tread-off between code simplicity and peak performance. You should always consider
         this fact while submitting new optimizations. To be honest, I love all this geeky stuff very much.
         I mean, writing assembly, peephole optimization. Last 10% of runtime are cut out from that kind of thing
@@ -125,20 +125,20 @@
         <p>And finally, think about a guy who will maintain your code after you. If you don't want to be
         that guy, step back and trying to achieve the same performance level with a cleaner code.</p>
 
-        <h2 style="color: #6F3;">9. Check one approach at a time</h2>
+        <h2>9. Check one approach at a time</h2>
         <p>Do not try to apply all your ideas at once. If you do so, it would be hard to distinguish how much
         does each one contribute. Besides, some approaches conflict with each other and can not
         be applied together. <b>Be consistent.</b> Apply one approach, check how it performs, select the next approach
         to apply. Do not forget to discard the approaches that do not work.</p>
 
-        <h2 style="color: #6F3;">10. Use scientific approach</h2>
+        <h2>10. Use scientific approach</h2>
         <p><b>Think about profiling as of a scientific experiment.</b> Profilers are not going to do your work for you.
         Nonetheless a profiler helps you to get precise data to check your hypothesis. So, first of all,
         set the hypothesis. Otherwise you will have plenty of data and have no idea what to look for.
         Use a profiler to identify bottlenecks, to verify memory access patterns, to collect statistics
         in data-dependent workloads or to highlight hardware properties.</p>
 
-        <h2 style="color: #6F3;">11. Avoid blind SIMDization</h2>
+        <h2>11. Avoid blind SIMDization</h2>
         <p>By "blind SIMDization" I mean, the process of replacing scalar code with just the same vector code. Come on!
         Everybody who can write code and has list of supported instructions in front of the eyes is able to do this.
         Furthermore, most compilers can do this as well. You probably will be surprised how complex functions could

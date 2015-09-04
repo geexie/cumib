@@ -40,14 +40,14 @@
         No matter if it is a full pipeline or just a concrete computational kernel, you can use proposed approach.
         These steps are quite scalable.</p>
 
-        <h2 style="color: #6F3;">1. Understand the code</h2>
+        <h2>1. Understand the code</h2>
         <p>Before starting optimization you should understand the code. What is an input? What is an output?
         What operation/operations are performed? The most part of the "magic" in programming stars with the phrase: "Hm...
         This code works... <b>somehow</b>." Keep calm and understand it. Optimization of the code which is unknown
         is like walking through a minefield. What I mean is, changes in the code look very dangerous, while the results
         of optimizations seem unpredictable. </p>
 
-        <h2 style="color: #6F3;">2. Use appropriate algorithm</h2>
+        <h2>2. Use appropriate algorithm</h2>
         <p>After you get enough knowledge there is time to think about the algorithm itself. Is it an optimal
         solution for the problem that your code should solve? Check, whether there are more optimal algorithms with lower
         computational complexity.</p>
@@ -60,7 +60,7 @@
         should consider parallelization possibility. Furthermore, if SIMD optimization is planned, prefer to use
         algorithms whose critical loops can be explained in scalarizable code.</p>
 
-        <h2 style="color: #6F3;">3. Optimize memory access patterns</h2>
+        <h2>3. Optimize memory access patterns</h2>
         <p>It is everything about memory! Interesting enough, almost all algorithms are memory bound. If it comes to
         function which is more complicated than streaming kernel we may found that access pattern is not ideal. Whereas
         other algorithms just need a huge amount of data to process.</p>
@@ -73,7 +73,7 @@
         <p>You should beware your memory patterns. It is crucial to load only data that is really needed for
         computations. Usually it means some data restructuring, loop reorganization and so on.</p>
 
-        <h2 style="color: #6F3;">4. Minimize the number of operations</h2>
+        <h2>4. Minimize the number of operations</h2>
         <p>It is quite frequent that on this step you need to figure out problems that comes from some compiler
         limitations first. For instance, if a compiler failed with register allocation you'll get extra operations
         with a stack or register movements. It is clear what these operations are the fist candidates for removal since
@@ -117,7 +117,7 @@
         </ul>
         </p>
 
-        <h2 style="color: #6F3;">5. Shrink the critical path</h2>
+        <h2>5. Shrink the critical path</h2>
         <p>This step is connected to precious one. As a matter of fact, less number of operations require less time
         to process. However, This is not a rule of thumb for the most of the modern architectures because typically
         they are deeply pipelined. Hence multiple operations may be executed on different pipes. Moreover, depth varies
@@ -138,7 +138,7 @@
         arithmetic dominate over SIMD instructions. For example, some data repackaging loops, there a bunch of pointers
         is read or written.</p>
 
-        <h2 style="color: #6F3;">6. Perform hardware specific optimizations</h2>
+        <h2>6. Perform hardware specific optimizations</h2>
         <p>This is not about usage of <code class="cpp">x &gt;&gt; 1</code> instead of <code class="cpp">x / 1</code>.
         For sure, a compiler can figure this out. I am talking about optimizations that require deep understanding of the
         hardware as well as supported instruction set.</p>
@@ -153,7 +153,7 @@
         depends on previous. Then we issue atomic we need data only in L2 not in registers. So path is shorter.
         This trick added me 15% improvement relative to code in the listing for streaming kernel on Kepler GPU.</p>
 
-        <h2 style="color: #6F3;">6. Dive into assembly</h2>
+        <h2>6. Dive into assembly</h2>
         <p>Yep, you've done everything you can to accelerate your code. Before entering into a contract with the devil
         let's dive into assembly. As for me, I tend to use disasm during steps from 3 to 5. As for writing, the most
         common scenarios there it is affordable are overcoming compiler bugs or usage of instructions which
