@@ -41,7 +41,7 @@
         <section>
           <h1>Pragmatic optimization</h1>
           <h2>in modern programming</h2>
-          <h3>Optimization order</h3>
+          <h3>Ordering approaches</h3>
           <br>
           <br>
           <br>
@@ -57,7 +57,12 @@
           <ul>
             <li>What is optimization?</li>
             <li>Place for optimization in a project live cycle</li>
-            <li>Ordering optimization approaches</li>
+            <li>Ordering optimizations</li>
+            <li>Optimization steps overview
+              <ul>
+                <li>that would be discovered in details during the course</li>
+              </ul>
+            </li>
           </ul>
         </section>
 
@@ -66,28 +71,114 @@
         </section>
 
         <section>
-          <h2>Required knowledge</h2>
+          <h2>where to get performance?</h2>
           <ul>
-            <li>The code</li>
-            <li>The compiler</li>
-            <li>The platform</li>
+            <li>Software
+              <ul>
+                <li>mow level programming tricks</li>
+              </ul>
+            </li>
+            <li>Hardware
+              <ul>
+                <li>Sophisticated pipelines</li>
+              </ul>
+            </li>
+            <li>Software</li>
           </ul>
         </section>
 
         <section>
+          <h2>Required knowledge</h2>
+          <ol>
+            <li><b>The code</b>
+              <ul>
+                <li>The problem it solves</li>
+                <li>The algorithm it implements</li>
+                <li>Complexity of the algorithm</li>
+              </ul>
+            </li>
+            <li><b>The compiler</b>
+              <ul>
+                <li>Compilation trajectory</li>
+                <li>Compiler's optimization capabilities and obstacles</li>
+              </ul>
+            </li>
+            <li><b>The platform</b>
+              <ul>
+                <li>Architecture capabilities
+                  <ul>I<small style="vertical-align: bottom">nstruction</small>
+                      S<small style="vertical-align: bottom">set</small>
+                      A<small style="vertical-align: bottom">rchitecture</small></ul>
+                </li>
+                <li>Micro-architecture specifics</li>
+              </ul>
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Project life cycle</h2>
+          <img src="images/popt/pdl.jpg"/>
+        </section>
+
+        <section>
+          <h2>Project optimization cycle</h2>
+          <img src="images/popt/opt_cycle.jpg"/>
+        </section>
+
+        <section>
           <h2>High to low approach</h2>
+          <p>performance portability decreases</p>
         </section>
 
         <section>
           <h2>Understand the code</h2>
+          <ul>
+            <li>Different people think differently
+              <ul>
+                <li>you'll need time to get used to the code</li>
+              </ul>
+            </li>
+            <li>Understand dataflow
+              <ul>
+                <li>input parameters</li>
+                <li>output results</li>
+                <li>data dependencies</li>
+              </ul>
+            </li>
+            <li>Identify performance limiters
+              <ul>
+                <li>Time</li>
+                <li>Profile</li>
+                <li>Grub metrics
+                  <ul>
+                    <li>eg power consumption</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
         </section>
 
         <section>
           <h2>Use appropriate algorithm</h2>
+          <p>Consider:</p>
+          <ul>
+            <li><strong>Big O complexity</strong></li>
+            <li><strong>Appropriate data structures</strong></li>
+            <li>Scalarization opportunities</li>
+            <li>Parallelization opportunities</li>
+          </ul>
         </section>
 
         <section>
           <h2>Optimize memory access patterns</h2>
+          <p>Usually involves:</p>
+          <ul>
+            <li>Data restructuring</li>
+            <li>Data packaging</li>
+            <li>Loop transformations</li>
+          </ul>
         </section>
 
         <section>
@@ -96,14 +187,27 @@
 
         <section>
           <h2>Shrink the critical path</h2>
+          <p>Critical path is</p>
         </section>
 
         <section>
           <h2>Perform hardware specific optimizations</h2>
+          <p>Require comprehensive understanding of target HW</p>
         </section>
 
         <section>
           <h2>Dive into assembly</h2>
+          <p>Assembler is very often used to check the compiler and rarely used to write low-level code.</p>
+          <p>Raw assembly make sense to:</p>
+          <ul>
+            <li>Overcome compiler bugs & optimization limitation
+              <ul>
+                <li>additional instructions</li>
+                <li>suboptimal register allocation</li>
+              </ul>
+            </li>
+            <li>Use specific hardware features, which are not expressed in higher level ISA</li>
+          </ul>
         </section>
 
         <!-- Example of nested vertical slides -->
