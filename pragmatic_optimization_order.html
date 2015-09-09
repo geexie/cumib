@@ -56,6 +56,7 @@
           <h2>Outline</h2>
           <ul>
             <li>What is optimization?</li>
+            <li>Pragmatic approach</li>
             <li>Place for optimization in a project live cycle</li>
             <li>Ordering optimizations</li>
             <li>Optimization steps overview
@@ -68,10 +69,81 @@
 
         <section>
           <h2>What is optimization?</h2>
+          <blockquote>In computing, <b>optimization</b> is the process of modifying a system to make some aspect of it
+          work more efficiently or use fewer resources.
+          <br/>
+          In particular, this is a process of transforming a piece of code
+          to make it <b>more efficient without changing its output</b>.</blockquote>
+          <!--refactoring that mekes you code run faster-->
+          <p>Metrics are commonly considered:</p>
+          <dl>
+            <dt ><b>Wall-clock time, or wall time</b></dt>
+            <dd style="margin-left: 5em;">
+              <strong>is the human perception of the passage of time from the start to the completion of a task.</strong>
+            </dd>
+            <dt><b>power consumption</b></dt>
+            <dd style="margin-left: 5em;">is the electrical energy over time supplied to operate an electrical appliance.
+            The energy used by equipment is always more than the energy really needed.</dd>
+            <dt><b>CPU time (processor time)</b></dt>
+            <dd style="margin-left: 5em;">is the total execution time or runtime for which the CPU (or other computing
+            device) was dedicated to a process (used for processing instructions of that process)</dd>
+          </dl>
+
+<!--           <ol>
+            <li>Wall time</li>
+            <li>Power consumption</li>
+            <li>CPU lode</li>
+            <li>...</li>
+          </ol> -->
         </section>
 
         <section>
+          <h2>Pragmatic approach</h2>
+          <blockquote>
+          &ldquo;Programmers waste enormous amounts of time thinking about, or worrying about, the speed of non-critical
+          parts of their programs, and these attempts at efficiency actually have a strong negative impact when
+          debugging and maintenance are considered. We should forget about small efficiencies, say about 97% of the time;
+          <b>premature optimization is the root of all evil</b>. Yet we should not pass up our opportunities in
+          that critical 3%.&ldquo;
+            <div style="text-align:right;">
+              <small>-Donald Knuth, Structured Programming With go to Statements</small>
+            </div>
+          </blockquote>
+        </section>
+
+<!--           <section>
           <h2>where to get performance?</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Software</th>
+                <th>Hardware</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>hi</td>
+                <td>higher clocks</td>
+              </tr>
+              <tr>
+                <td>Lemonade</td>
+                <td>Sophisticated pipelines</td>
+              </tr>
+              <tr>
+                <td>Bread</td>
+                <td>Deep memory hierarchies</td>
+              </tr>
+              <tr>
+                <td>Apples</td>
+                <td>SIMD extensions</td>
+              </tr>
+              <tr>
+                <td>Task parallelization</td>
+                <td>Multi-core</td>
+              </tr>
+            </tbody>
+          </table>
+
           <ul>
             <li>Software
               <ul>
@@ -85,10 +157,10 @@
             </li>
             <li>Software</li>
           </ul>
-        </section>
+        </section> -->
 
         <section>
-          <h2>Required knowledge</h2>
+          <h2>Knowledge is required</h2>
           <ol>
             <li><b>The code</b>
               <ul>
@@ -118,7 +190,7 @@
 
         <section>
           <h2>Project life cycle</h2>
-          <img src="images/popt/pdl.jpg"/>
+          <img class="simple" src="images/popt/pdl.png"/>
         </section>
 
         <section>
@@ -128,7 +200,40 @@
 
         <section>
           <h2>High to low approach</h2>
-          <p>performance portability decreases</p>
+          <ol style="width:40%;">
+            <li><h4>Use appropriate algorithm</h4></li>
+            <br/>
+            <li><h4>Optimize memory access patterns</h4></li>
+            <li><h4>Minimize the number of operations</h4></li>
+            <br/>
+            <li><h4>Shrink the critical path</h4></li>
+            <li><h4>Perform hardware specific optimizations</h4></li>
+            <li><h4>Dive into assembly</h4></li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Where to get performance?</h2>
+          <dl>
+            <dt><b>Algorithm</b></dt>
+            <dd>decreasing big-O complexity, using optimized libraries for sub-routine, restructuring the code,
+              parallelization.</dd>
+            <dt><b>Memory access patterns &amp; operations</b></dt>
+            <dd>usage of optimizing compilers, loop optimizations, vectorization.</dd>
+            <dt><b>Shrinking critical path &amp; hardware specific optimizations</b></dt>
+            <dd>fine-gained optimizations</dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2>Tread-offs</h2>
+          <ul>
+            <li>Code portability decreased when we go deeper</li>
+            <li>Performance portability decreased when we go deeper</li>
+            <li>The cost of maintenance and extendability increases when we go deeper</li>
+            <li>Optimizations are often not reusable</li>
+            <li>Optimizations are ofter become obsolete very quickly</li>
+          </ul>
         </section>
 
         <section>
@@ -164,21 +269,36 @@
           <h2>Use appropriate algorithm</h2>
           <p>Consider:</p>
           <ul>
-            <li><strong>Big O complexity</strong></li>
+            <li><strong>Big O complexity</strong>
+            <br/><img width="60%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
             <li><strong>Appropriate data structures</strong></li>
             <li>Scalarization opportunities</li>
             <li>Parallelization opportunities</li>
+            <li>Look for already optimized libraries</li>
           </ul>
         </section>
 
         <section>
           <h2>Optimize memory access patterns</h2>
-          <p>Usually involves:</p>
           <ul>
-            <li>Data restructuring</li>
-            <li>Data packaging</li>
-            <li>Loop transformations</li>
+            <li>You'll be surprised how many algorithms are memory bound</li>
+            <li>It is crucial to load only data that is really needed for computations</li>
           </ul>
+          <p>Usually involves:</p>
+          <dl>
+            <dt><strong>Data restructuring</strong></dt>
+            <dd>to use only needed bytes</dd>
+            <dt><strong>Data packaging</strong></dt>
+            <dd>to shrink data in size</dd>
+            <dt><strong>Loop transformations</strong></dt>
+            <dd>
+              <ul>
+                <li>to walk through data in more efficient way,</li>
+                <li>increase temporal &amp; spacial locality,</li>
+                <li>to perform cache-aware optimizations</li>
+              </ul>
+            </dd>
+          </dl>
         </section>
 
         <section>
@@ -197,7 +317,7 @@
 
         <section>
           <h2>Dive into assembly</h2>
-          <p>Assembler is very often used to check the compiler and rarely used to write low-level code.</p>
+          <p>Assembler is very often used to check the compiler<br/>and rarely used to write low-level code.</p>
           <p>Raw assembly make sense to:</p>
           <ul>
             <li>Overcome compiler bugs & optimization limitation
@@ -206,7 +326,11 @@
                 <li>suboptimal register allocation</li>
               </ul>
             </li>
-            <li>Use specific hardware features, which are not expressed in higher level ISA</li>
+            <li>Use specific hardware features
+              <ul>
+                <li>which are not expressed in higher level ISA</li>
+              </ul>
+            </li>
           </ul>
         </section>
 
@@ -407,7 +531,7 @@ Reveal.addEventListener( 'customevent', function() {
         progress: true,
         slideNumber: true,
         history: true,
-        center: false,
+        // center: false,
 
         width: 960,
         height: 720,
