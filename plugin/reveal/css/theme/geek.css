@@ -391,3 +391,33 @@ pre .cls {
     color: #FF9C33;
 }
 
+.reveal pre code { display: block; }
+.reveal .cols2
+{
+  columns: 2;
+  -moz-columns: 2;
+  -webkit-columns: 2;
+}
+
+.reveal .cols2 ul
+{
+  display: block;
+}
+
+.reveal .cols3
+{
+  columns: 3;
+  -moz-columns: 3;
+  -webkit-columns: 3;
+}
+
+.reveal .cols4
+{
+  columns: 4;
+  -moz-columns: 4;
+  -webkit-columns: 4;
+}
+
+.reveal .cols2 pre { margin:0; }
+.reveal .cols3 pre { margin:0; }
+.reveal .cols2 pre { margin:0; }

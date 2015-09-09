@@ -56,12 +56,12 @@
           <h2>Outline</h2>
           <ul>
             <li>What is optimization?</li>
-            <li>Pragmatic approach</li>
-            <li>Place for optimization in a project live cycle</li>
+            <li>Towards pragmatic approach</li>
+            <li>Place of optimization in a project live cycle</li>
             <li>Ordering optimizations</li>
             <li>Optimization steps overview
               <ul>
-                <li>that would be discovered in details during the course</li>
+                <li>which would be discussed in details during the course</li>
               </ul>
             </li>
           </ul>
@@ -81,12 +81,11 @@
             <dd style="margin-left: 5em;">
               <strong>is the human perception of the passage of time from the start to the completion of a task.</strong>
             </dd>
-            <dt><b>power consumption</b></dt>
-            <dd style="margin-left: 5em;">is the electrical energy over time supplied to operate an electrical appliance.
-            The energy used by equipment is always more than the energy really needed.</dd>
-            <dt><b>CPU time (processor time)</b></dt>
+            <dt><b>Power consumption</b></dt>
+            <dd style="margin-left: 5em;">is the electrical energy over time which is supplied to complete task.</dd>
+            <dt><b>CPU time, or processor time</b></dt>
             <dd style="margin-left: 5em;">is the total execution time or runtime for which the CPU (or other computing
-            device) was dedicated to a process (used for processing instructions of that process)</dd>
+            device) was dedicated to a task (used for processing instructions of that task)</dd>
           </dl>
         </section>
 
@@ -99,6 +98,7 @@
           <b>premature optimization is the root of all evil</b>. Yet we should not pass up our opportunities in
           that critical 3%.&ldquo;
             <div style="text-align:right;">
+              <br/>
               <small>-Donald Knuth, Structured Programming With go to Statements</small>
             </div>
           </blockquote>
@@ -157,8 +157,8 @@
           <ol>
             <li><b>The code</b>
               <ul>
-                <li>The problem it solves</li>
-                <li>The algorithm it implements</li>
+                <li>The problem, it solves</li>
+                <li>The algorithm, it implements</li>
                 <li>Complexity of the algorithm</li>
               </ul>
             </li>
@@ -192,7 +192,7 @@
         </section>
 
         <section>
-          <h2>High to low approach</h2>
+          <h2>Top-Down (High-low) approach</h2>
           <ol style="width:40%;">
             <li><h4>Use appropriate algorithm</h4></li>
             <br/>
@@ -206,14 +206,25 @@
         </section>
 
         <section>
-          <h2>Where to get performance?</h2>
+          <h2>From whence get performance?</h2>
           <dl>
             <dt><b>Algorithm</b></dt>
-            <dd>decreasing big-O complexity, using optimized libraries for sub-routine, restructuring the code,
-              parallelization.</dd>
+            <dd>
+              <ul>
+                <li>decreasing big-O complexity,</li>
+                <li>using optimized libraries for sub-routines,</li>
+                <li>restructuring the code,</li>
+                <li>parallelization.</li>
+              </ul>
+            </dd>
             <dt><b>Memory access patterns &amp; operations</b></dt>
-            <dd>usage of optimizing compilers, loop optimizations, vectorization.</dd>
-            <dt><b>Shrinking critical path &amp; hardware specific optimizations</b></dt>
+            <dd>
+              <ul>
+                <li>usage of optimizing compilers, auto-vectorization</li>
+                <li>loop optimizations, vectorization.</li>
+              </ul>
+            </dd>
+            <dt><b>Shrinking critical path &amp; performing HW specific optimizations</b></dt>
             <dd>fine-gained optimizations</dd>
           </dl>
         </section>
@@ -221,11 +232,11 @@
         <section>
           <h2>Tread-offs</h2>
           <ul>
-            <li>Code portability decreased when we go deeper</li>
-            <li>Performance portability decreased when we go deeper</li>
-            <li>The cost of maintenance and extendability increases when we go deeper</li>
+            <li>Code portability decreases when we go deeper</li>
+            <li>Performance portability decreases when we go deeper</li>
+            <li>The cost of maintenance &amp; extendability increases when we go deeper</li>
             <li>Optimizations are often not reusable</li>
-            <li>Optimizations are ofter become obsolete very quickly</li>
+            <li>Optimizations become obsolete very quickly</li>
           </ul>
         </section>
 
@@ -244,7 +255,7 @@
                 <li>data dependencies</li>
               </ul>
             </li>
-            <li>Identify performance limiters
+            <li><b>Identify performance limiters</b>
               <ul>
                 <li>Time</li>
                 <li>Profile</li>
@@ -266,9 +277,8 @@
               <li><strong>Big O complexity</strong>
               <br/><img width="60%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
               <li><strong>Appropriate data structures</strong></li>
-              <li>Scalarization opportunities</li>
-              <li>Parallelization opportunities</li>
               <li>Look for already optimized libraries</li>
+              <li>Scalarization &amp; parallelization opportunities</li>
             </ul>
           </section>
 
@@ -296,30 +306,91 @@
               <dd>
                 <ul>
                   <li>to walk through data in more efficient way,</li>
-                  <li>increase temporal &amp; spacial locality,</li>
+                  <li>to increase temporal &amp; spacial locality,</li>
                   <li>to perform cache-aware optimizations</li>
                 </ul>
               </dd>
             </dl>
           </section>
           <section>
-            <!--add code here-->
+            <h2>Optimize memory access patterns</h2>
+            <div class="cols2">
+            <pre><code class="cpp">
+    for (int j = 0; j &lt; img.height; j++)
+    {
+        for (int i = 0; i &lt; img.width; i++)
+        {
+            if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
+            {
+                count++;
+            }
+        }
+    }
+            </code></pre>
+            <pre><code class="cpp">
+    for (int i = 0; i &lt; img.width; i++)
+    {
+        for (int j = 0; j &lt; img.height; j++)
+        {
+            if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
+            {
+                count++;
+            }
+        }
+    }
+            </code></pre>
+            </div>
+            <br/>
             <h3>Which is more optimal for conventional CPU processor?</h3>
           </section>
         </section>
 
         <section>
-          <h2>Minimize the number of operations</h2>
+          <section>
+            <h2>Minimize number of operations</h2>
+            <blockquote>Reducing in the number of program operations does not necessarily decrease its running time, but it is
+  a good heuristic though.</blockquote>
+            <p>A Compiler is good in local optimizations. So they usually helps a lot here:</p>
+            <div class="cols2">
+              <ul>
+                <li>Machine-independent optimizations
+                  <ul>
+                    <li>Eliminating common sub-expressions</li>
+                    <li>Constant propagation</li>
+                    <li>Redundancy elimination</li>
+                    <li>..</li>
+                  </ul>
+                </li>
+                <br/>
+                <li>Machine-dependent optimizations
+                  <ul>
+                    <li>Register allocation</li>
+                    <li>InstrucIon selecIon</li>
+                    <li>Instruction scheduling</li>
+                    <li>Peephole opImizaIon</li>
+                    <li>..</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+            <p>But it also could fail one of this steps and harm the performance. To tell whether the compiler is actually
+            automating  a particular optimization, it is worth to look at the assembly code from this step.</p>
+          </section>
+          <section>
+            <h2>Minimize number of operations</h2>
+            <!--add code example there everything removed-->
+          </section>
         </section>
 
         <section>
           <h2>Shrink the critical path</h2>
-          <p>Critical path is the longest sequence of operations in a code block which must be completed in order</p>
+          <p>Critical path is the longest sequence of operations in a code block which must be completed in order.
+          It is caused by dependencies between operations.</p>
         </section>
 
         <section>
-          <h2>Perform hardware specific optimizations</h2>
-          <p>Require comprehensive understanding of target HW</p>
+          <h2>Perform HW specific optimizations</h2>
+          <p>Require comprehensive understanding of target HW, that are usually beyond of compiler abilities</p>
         </section>
 
         <section>
@@ -390,27 +461,6 @@
           </section>
         </section> -->
 
-<!--         <section>
-          <h2>Pretty Code</h2>
-          <pre><code data-trim contenteditable>
-function linkify( selector ) {
-  if( supports3DTransforms ) {
-
-    var nodes = document.querySelectorAll( selector );
-
-    for( var i = 0, len = nodes.length; i &lt; len; i++ ) {
-      var node = nodes[i];
-
-      if( !node.className ) {
-        node.className += ' roll';
-      }
-    }
-  }
-}
-          </code></pre>
-          <p>Code syntax highlighting courtesy of <a href="http://softwaremaniacs.org/soft/highlight/en/description/">highlight.js</a>.</p>
-        </section>
- -->
 <!--         <section>
           <h2>Tabular Tables</h2>
           <table>
