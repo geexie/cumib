@@ -74,7 +74,7 @@
           <br/>
           In particular, this is a process of transforming a piece of code
           to make it <b>more efficient without changing its output</b>.</blockquote>
-          <!--refactoring that mekes you code run faster-->
+          <!--refactoring that makes you code run faster-->
           <p>Metrics are commonly considered:</p>
           <dl>
             <dt ><b>Wall-clock time, or wall time</b></dt>
@@ -88,13 +88,6 @@
             <dd style="margin-left: 5em;">is the total execution time or runtime for which the CPU (or other computing
             device) was dedicated to a process (used for processing instructions of that process)</dd>
           </dl>
-
-<!--           <ol>
-            <li>Wall time</li>
-            <li>Power consumption</li>
-            <li>CPU lode</li>
-            <li>...</li>
-          </ol> -->
         </section>
 
         <section>
@@ -266,39 +259,53 @@
         </section>
 
         <section>
-          <h2>Use appropriate algorithm</h2>
-          <p>Consider:</p>
-          <ul>
-            <li><strong>Big O complexity</strong>
-            <br/><img width="60%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
-            <li><strong>Appropriate data structures</strong></li>
-            <li>Scalarization opportunities</li>
-            <li>Parallelization opportunities</li>
-            <li>Look for already optimized libraries</li>
-          </ul>
+          <section>
+            <h2>Use appropriate algorithm</h2>
+            <p>Consider:</p>
+            <ul>
+              <li><strong>Big O complexity</strong>
+              <br/><img width="60%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
+              <li><strong>Appropriate data structures</strong></li>
+              <li>Scalarization opportunities</li>
+              <li>Parallelization opportunities</li>
+              <li>Look for already optimized libraries</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Use appropriate algorithm</h2>
+            <p>You need to sort 100 Mb of numerical data...</p>
+            <h3>What sorting algorithm would you choose?</h3>
+          </section>
         </section>
 
         <section>
-          <h2>Optimize memory access patterns</h2>
-          <ul>
-            <li>You'll be surprised how many algorithms are memory bound</li>
-            <li>It is crucial to load only data that is really needed for computations</li>
-          </ul>
-          <p>Usually involves:</p>
-          <dl>
-            <dt><strong>Data restructuring</strong></dt>
-            <dd>to use only needed bytes</dd>
-            <dt><strong>Data packaging</strong></dt>
-            <dd>to shrink data in size</dd>
-            <dt><strong>Loop transformations</strong></dt>
-            <dd>
-              <ul>
-                <li>to walk through data in more efficient way,</li>
-                <li>increase temporal &amp; spacial locality,</li>
-                <li>to perform cache-aware optimizations</li>
-              </ul>
-            </dd>
-          </dl>
+          <section>
+            <h2>Optimize memory access patterns</h2>
+            <ul>
+              <li>You'll be surprised how many algorithms are memory bound</li>
+              <li>It is crucial to load only data that is really needed for computations</li>
+            </ul>
+            <p>Usually involves:</p>
+            <dl>
+              <dt><strong>Data restructuring</strong></dt>
+              <dd>to use only needed bytes</dd>
+              <dt><strong>Data packaging</strong></dt>
+              <dd>to shrink data in size</dd>
+              <dt><strong>Loop transformations</strong></dt>
+              <dd>
+                <ul>
+                  <li>to walk through data in more efficient way,</li>
+                  <li>increase temporal &amp; spacial locality,</li>
+                  <li>to perform cache-aware optimizations</li>
+                </ul>
+              </dd>
+            </dl>
+          </section>
+          <section>
+            <!--add code here-->
+            <h3>Which is more optimal for conventional CPU processor?</h3>
+          </section>
         </section>
 
         <section>
@@ -307,7 +314,7 @@
 
         <section>
           <h2>Shrink the critical path</h2>
-          <p>Critical path is</p>
+          <p>Critical path is the longest sequence of operations in a code block which must be completed in order</p>
         </section>
 
         <section>
