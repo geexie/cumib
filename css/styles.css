@@ -170,7 +170,9 @@ section .credits {
 .wrapper {
   max-width: 1080px;
   margin: 0 auto;
-  margin-top: 8.5em;
+  padding-top: 1.5em;
+  margin-top: 6em;
+  background-color: rgba(0,0,0,0.15);
 }
 
 .left {
@@ -187,7 +189,7 @@ section .credits {
   text-align: center;
   position: fixed;
   top: 0em;
-  height: 6em;
+  height: 5em;
   padding-top: 1em;
 }
 
@@ -224,7 +226,6 @@ h6 {
 body {
   font-family: 'Lato', sans-serif;
   font-weight: normal;
-  letter-spacing: -0.01em;
 }
 
 strong,

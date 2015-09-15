@@ -59,7 +59,7 @@
               <li>Vector transaction</li>
               <li>Coalesced memory access</li>
               <li>Memory hierarchy</li>
-              <li>request trajectory</li>
+              <li>Request trajectory</li>
               <li>Hardware supported atomics</li>
               <li>Texture, constant, shared memory types</li>
               <li>Register spilling</li>
@@ -236,13 +236,13 @@
             <li><b>LD</b>
               <ul style="margin-left: 65px;">
                 <li>Default (cache all): <b>No special suffix</b>
-                  <pre><code class="avrasm"><span class="keyword">LD</span> R8, [R6];</code></pre>
+                  <pre><code class="avrasm">LD R8, [R6];</code></pre>
                 </li>
                 <li>Cache only in L2 (cache global): <b>LD.CG</b>
                   <pre><code class="avrasm">LD.CG R4, [R16];</code></pre>
                 </li>
                 <li>Bypass caches (cache volatile) <b>LD.CV</b>
-                  <pre><code class="avrasm"><span class="keyword">LD.CV</span> R14, [R14];</code></pre>
+                  <pre><code class="avrasm">LD.CV R14, [R14];</code></pre>
                 </li>
                 <li>Cache streaming</li>
               </ul>
@@ -267,8 +267,8 @@
           <ul style="list-style-type: none;"><li><b>Wide</b>
               <ul style="margin-left: 65px;">
                 <li>GPU supports wide memory transactions
-                  <pre><code class="avrasm">/*1618*/    LD.E.<b>128</b> R8, [R14];
-/*1630*/    ST.E.<b>128</b> [R18], R8;</code></pre>
+                  <pre><code class="avrasm">/*1618*/    LD.E.128 R8, [R14];
+/*1630*/    ST.E.128 [R18], R8;</code></pre>
                 </li>
                 <li>Only 64 and 128-bit transactions are supported since they can be mapped to 2(4) 32-bit registers</li>
               </ul>
@@ -319,8 +319,8 @@ unsigned char y;
           </table>
           <p>Same address means the same cache line</p>
           <ul>
-            <li>ATOM<pre style="width:100%;"><code class="avrasm"><span class="keyword">ATOM</span>.E.INC R4, [R6], R8;</code></pre></li>
-            <li>RED<pre style="width:100%;"><code class="avrasm"><span class="keyword">RED</span>.E.ADD [R2], R0;</code></pre></li>
+            <li>ATOM<pre style="width:100%;"><code class="avrasm">ATOM.E.INC R4, [R6], R8;</code></pre></li>
+            <li>RED <pre style="width:100%;"><code class="avrasm">RED.E.ADD [R2], R0;</code></pre></li>
           </ul>
         </section>
 
@@ -395,16 +395,16 @@ unsigned char y;
           <h2>Read-only data cache</h2>
           <p><b>L1 Texture cache</b> is opened for <b>global load</b> bypassing interpolation hardware.
           Supported by sm_35.</p>
-          <pre><code class="avrasm">  /*0288*/                <span class="keyword">TEXDEPBAR</span> 0x0;
-  /*0290*/                <span class="keyword">LDG</span>.E.64 R8, [R4];
-  /*0298*/                <span class="keyword">TEXDEPBAR</span> 0x0;
-  /*02a0*/                <span class="keyword">LDG</span>.E.64 R4, [R8];
-  /*02a8*/                <span class="keyword">IADD</span> R6, R6, 0x4;
-  /*02b0*/                <span class="keyword">TEXDEPBAR</span> 0x0;
-  /*02b8*/                <span class="keyword">LDG</span>.E.64 R8, [R4];
-
-  /*02c8*/                <span class="keyword">ISETP</span>.LT.AND P0, PT, R6, R7, PT;
-  /*02d0*/                <span class="keyword">TEXDEPBAR</span> 0x0;</code></pre>
+          <pre><code class="avrasm">
+/*0288*/    TEXDEPBAR 0x0;
+/*0290*/    LDG.E.64 R8, [R4];
+/*0298*/    TEXDEPBAR 0x0;
+/*02a0*/    LDG.E.64 R4, [R8];
+/*02a8*/    IADD R6, R6, 0x4;
+/*02b0*/    TEXDEPBAR 0x0;
+/*02b8*/    LDG.E.64 R8, [R4];
+/*02c8*/    ISETP.LT.AND P0, PT, R6, R7, PT;
+/*02d0*/    TEXDEPBAR 0x0;</code></pre>
           <ul>
             <li>Size is 48&thinsp;KB (4 sub-partitions x 12&thinsp;KB)</li>
             <li>Different warps go through different sub-partitions</li>
@@ -432,13 +432,15 @@ unsigned char y;
             <li>Prefix pointer with <code>const</code> keyword</li>
             <li>Memory access must be uniform across all threads in the block (not dependent on threadIdx)</li>
           </ul>
-          <pre><code class="cpp"><span class="keyword">__global__</span> void kernel( test_t *g_dst, const test_t *g_src )
+          <pre><code class="cpp">
+__global__ void kernel( test_t *g_dst, const test_t *g_src )
 {
   const int tid = /**/;
-  g_dst[tid] = g_src[0] + g_src[<span class="keyword">blockIdx.x</span>];
+  g_dst[tid] = g_src[0] + g_src[blockIdx.x];
 }</code></pre>
-          <pre><code class="avrasm">  /*0078*/        LDU.E R0, [R4];
-  /*0080*/        LDU.E R2, [R2];</code></pre>
+          <pre><code class="avrasm">
+/*0078*/        LDU.E R0, [R4];
+/*0080*/        LDU.E R2, [R2];</code></pre>
         </section>
 
         <section>
@@ -448,12 +450,13 @@ unsigned char y;
           <img src="images/c1/banks.svg" width="90%">
           <p>Atomic operations are done in lock/unlock manner</p>
           <pre><code class="cpp">         (void) atomicAdd( &smem[0], src[threadIdx.x] );</code></pre>
-            <pre><code class="avrasm">  /*0050*/        <b>SSY</b> 0x80;
-  /*0058*/        <span class="keyword">LDSLK</span> P0, R3, [RZ];
-  /*0060*/    @P0 <span class="keyword">IADD</span> R3, R3, R0;
-  /*0068*/    @P0 <span class="keyword">STSUL</span> [RZ], R3;
-  /*0070*/   @!P0 <span class="keyword">BRA</span> 0x58;
-  /*0078*/        NOP.<b>S</b>;</code></pre>
+            <pre><code class="avrasm">
+  /*0050*/        SSY 0x80;
+  /*0058*/        LDSLK P0, R3, [RZ];
+  /*0060*/    @P0 IADD R3, R3, R0;
+  /*0068*/    @P0 STSUL [RZ], R3;
+  /*0070*/   @!P0 BRA 0x58;
+  /*0078*/        NOP.S;</code></pre>
         </section>
 
         <section>

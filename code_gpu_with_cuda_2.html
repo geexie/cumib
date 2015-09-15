@@ -40,8 +40,8 @@
 
         <section>
           <h1>Code GPU with CUDA</h1>
-          <h2>CTA programming model</h2>
-          <h3>Introduction to CUDA</h3>
+          <h2>CUDA</h2>
+          <h3>Introduction</h3>
           <br>
           <br>
           <br>
@@ -111,12 +111,13 @@
         </section>
 
         <section>
-          <h2>Programming model</h2>
           <section>
+            <h2>Programming model</h2>
             <p>Kernel is executed by many threads</p>
             <img class="simple" src="images/c2/threads.svg" alt="0">
           </section>
           <section>
+            <h2>Programming model</h2>
             <p>Threads are grouped into blocks</p>
             <div style="align:left;">
               <img class="simple" src="images/c2/blocks.svg" alt="0">
@@ -124,6 +125,7 @@
             </div>
           </section>
           <section>
+            <h2>Programming model</h2>
             <p>Thread blocks form an execution grid</p>
             <img class="simple" src="images/c2/grid.svg" alt="0" width="70%">
             <p>Each block has a block ID</p>
@@ -131,12 +133,13 @@
         </section>
 
         <section>
-          <h2>Execution (HW mapping) model</h2>
           <section>
+            <h2>Execution (HW mapping) model</h2>
             <p>Single thread is executed on core</p>
             <img class="simple" width="60%" src="images/c2/thread_core.svg" alt="0">
           </section>
           <section>
+            <h2>Execution (HW mapping) model</h2>
             <ul class="none">
               <li>Each block is executed by one SM and does not migrate</li>
               <li>Number of concurrent blocks that
@@ -145,6 +148,7 @@
             <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
           </section>
           <section>
+            <h2>Execution (HW mapping) model</h2>
             <ul class="none">
               <li>Threads in a block can cooperate via <b>shared memory</b> and <b>synchronization</b></li>
               <li>There is no hardware support for cooperation between threads from different blocks</li>
@@ -152,32 +156,36 @@
             <img class="simple" width="80%" src="images/c2/block_sm.svg" alt="block on SM">
           </section>
           <section>
+            <h2>Execution (HW mapping) model</h2>
             <p>One or multiple (sm_20+) kernels are executed on the device</p>
             <img class="simple" src="images/c2/grid_gpu.svg" alt="gid on GPU">
             </section>
         </section>
 
         <section>
-          <h2>Memory model</h2>
           <section>
+            <h2>Memory model</h2>
             <p>Thread has its own registers</p>
             <img class="simple" width="30%" src="images/c2/reg.svg" alt="0">
           </section>
           <section>
+            <h2>Memory model</h2>
             <p>Thread has its own local memory</p>
             <img class="simple" width="30%" src="images/c2/local.svg" alt="0">
           </section>
           <section>
+            <h2>Memory model</h2>
             <ul class="none">
               <li>Block has shared memory</li>
               <li>Pointer to shared memory is valid while block is resident</li>
             </ul>
             <img class="simple" width="45%" src="images/c2/shared.svg" alt="0">
             <pre><code class="cpp">
-  <span class="keyword">__shared__</span> float buffer[CTA_SIZE];
+  __shared__ float buffer[CTA_SIZE];
             </code></pre>
           </section>
           <section>
+            <h2>Memory model</h2>
             <p>Grid is able to access global and constant memory</p>
             <img class="simple" width="50%" src="images/c2/global.svg" alt="0">
           </section>
@@ -192,11 +200,14 @@
             <li>Threads use their <b>threadIdx</b> and <b>blockIdx</b> to dispatch work</li>
             <li>
               Kernel function is marked with <span style="color:rgb(227, 206, 171);"> __global__</span> keyword
-              <pre><code class="cpp" style="margin-left:-2.2em;"><span class="keyword">  __global__</span> void kernel(float *in, float *out)
-  {
-      int tid = <b>blockIdx.x</b> * <b>blockDim.x</b> + <b>threadIdx.x</b>;
-      out[tid] = in[tid];
-  }</code></pre>
+              <pre><code class="cpp">
+__global__ void kernel(float *in, float *out)
+{
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    out[tid] = in[tid];
+}
+
+</code></pre>
             </li>
             <li>Common kernel structure:
               <ol>
@@ -221,12 +232,12 @@
   // 1. Upload data into device memory
   cudaMemcpy(device_in, host_in, cudaMemcpyHostToDevice);
 
-  // 2. <b>Configure kernel launch</b>
+  // 2. Configure kernel launch
   dim3 block(256);
   dim3 grid(size / 256);
 
-  // 3. <b>Execute kernel</b>
-  kernel<b>&lt;&lt;&lt;</b>grid, block<b>&gt;&gt;&gt;</b>(device_in, device_out);
+  // 3. Execute kernel
+  kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(device_in, device_out);
 
   // 4. Wait till completion
   cudaThreadSynchronize();

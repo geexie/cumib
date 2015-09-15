@@ -224,34 +224,27 @@
           </blockquote>
         </section>
 
-<!--         <section>
-          <h2>Adjust configuration</h2>
-          <b>Block configuration itself can affect occupancy.</b>
-          <img class="simple" src="images/c2/block_conf.svg" width="80%">
-          <ul>
-            <li>Number of threads per threadblock</li>
-            <li>Number of threadblocks</li>
-            <li>Amount of work per threadblock</li>
-          </ul>
-        </section> -->
-
         <section>
           <h2>Improving ILP</h2>
           <ul>
             <li><b>Kernel unrolling</b>: process more elements by thread, because operations on different elements are independent
-            <pre width="100%"><code class="cpp"><span class="keyword">__global__</span> void unrolled(const float* in, float* out )
+            <pre width="100%"><code class="cpp">
+__global__ void unrolled(const float* in, float* out )
 {
   const int tid = blockDim.x * blockIdx.x + threadIdx.x;
   const int totalThrads = blockDim.x * gridDim.x;
   out[tid]               = process(in[tid]);
   out[tid + totalThrads] = process(in[tid + totalThrads]);
 }
+
 </code></pre>
             </li>
             <li>Device code compiler is not bad in instruction reordering</li>
             <li><b>Loop unrolling</b> in device code to increase number of independent operations
-            <pre width="100%"><code class="cpp">#pragma unroll CONST_EXPRESSION
+            <pre width="100%"><code class="cpp">
+#pragma unroll CONST_EXPRESSION
 for( int i = 0; i < N_ITERATIONS; i++ ) { /* ... */ }
+
 </code></pre></li>
             <li>Other techniques used for increasing ILP on CPU are suitable</li>
           </ul>

@@ -72,55 +72,55 @@
         </section>
 
         <section>
-          <h2>Memory Types</h2>
-          <table class="tbl1">
-            <colgroup>
-              <col></col>
-              <col></col>
-              <col></col>
-              <col></col>
-              <col></col>
-              <col></col>
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Memory</th>
-                <th>Scope</th>
-                <th>Location</th>
-                <th>Cached</th>
-                <th>Access</th>
-                <th>Lifetime</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Register</th><td>Thread</td><td>On-chip</td><td>N/A</td><td>R/W</td><td>Thread</td>
-              </tr>
-              <tr>
-                <th>Local</th><td>Thread</td><td>Off-chip</td><td>L1/L2</td><td>R/W</td><td>Thread</td>
-              </tr>
-              <tr>
-                <th>Shared</th><td>Block</td><td>On-chip</td><td>N/A</td><td>R/W</td><td>Block</td>
-              </tr>
-              <tr>
-                <th>Global</th><td>Grid + Host</td><td>Off-chip</td><td>L2</td><td>R/W</td><td>App</td>
-              </tr>
-              <tr>
-                <th>Constant</th><td>Grid + Host</td><td>Off-chip</td><td>L1,L2,L3</td><td>R</td><td>App</td>
-              </tr>
-              <tr>
-                <th>Texture</th><td>Grid + Host</td><td>Off-chip</td><td>L1,L2</td><td>R</td><td>App</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-
-        <section>
-          <h2>Memory types (Cont.)</h2>
           <section>
+            <h2>Memory Types</h2>
+            <table class="tbl1">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Memory</th>
+                  <th>Scope</th>
+                  <th>Location</th>
+                  <th>Cached</th>
+                  <th>Access</th>
+                  <th>Lifetime</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>Register</th><td>Thread</td><td>On-chip</td><td>N/A</td><td>R/W</td><td>Thread</td>
+                </tr>
+                <tr>
+                  <th>Local</th><td>Thread</td><td>Off-chip</td><td>L1/L2</td><td>R/W</td><td>Thread</td>
+                </tr>
+                <tr>
+                  <th>Shared</th><td>Block</td><td>On-chip</td><td>N/A</td><td>R/W</td><td>Block</td>
+                </tr>
+                <tr>
+                  <th>Global</th><td>Grid + Host</td><td>Off-chip</td><td>L2</td><td>R/W</td><td>App</td>
+                </tr>
+                <tr>
+                  <th>Constant</th><td>Grid + Host</td><td>Off-chip</td><td>L1,L2,L3</td><td>R</td><td>App</td>
+                </tr>
+                <tr>
+                  <th>Texture</th><td>Grid + Host</td><td>Off-chip</td><td>L1,L2</td><td>R</td><td>App</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <h2>Memory Types</h2>
             <img src="images/c1/gk107b.jpg" width="58%">
           </section>
           <section>
+            <h2>Memory Types</h2>
             <img src="images/c2/smx_sm.png" width="55%">
           </section>
         </section>
@@ -166,15 +166,17 @@
         </section>
 
         <section>
-          <h2>GMEM: Strided</h2>
-          <img src="images/c2/stridden.svg" class="simple">
           <section>
+            <h2>GMEM: Strided</h2>
+            <img src="images/c2/stridden.svg" class="simple">
             <ul>
               <li>If pattern is regular, try to change data layout: <abbr title="Array of structures">AoS</abbr> -> <abbr title="Structure of arrays">SoA</abbr></li>
             </ul>
             <img src="images/c2/soa.svg" class="simple">
           </section>
           <section>
+            <h2>GMEM: Strided</h2>
+            <img src="images/c2/stridden.svg" class="simple">
             <ul>
               <li>Use smem to correct access pattern.
                 <ol>
@@ -186,6 +188,8 @@
             </ul>
           </section>
           <section>
+            <h2>GMEM: Strided</h2>
+            <img src="images/c2/stridden.svg" class="simple">
             <ul>
               <li>Use warp shuffle to permute elements for warp
                 <ol>
@@ -199,6 +203,8 @@
             </ul>
           </section>
           <section>
+            <h2>GMEM: Strided</h2>
+            <img src="images/c2/stridden.svg" class="simple">
             <ul>
               <li>Use proper caching strategy</li>
               <ul>
@@ -211,8 +217,8 @@
         </section>
 
         <section>
-          <h2>GMEM: Thread-affine</h2>
           <section>
+            <h2>GMEM: Thread-affine</h2>
             <p>Each thread accesses relatively long continuous memory region</p>
             <img src="images/c2/th_affine.svg" class="simple">
             <ul>
@@ -222,27 +228,31 @@
             </ul>
           </section>
           <section>
+            <h2>GMEM: Thread-affine</h2>
             <p>Work distribution</p>
-            <pre><code class="cpp"> int tid = blockIdx.x * blockDim.x + threadIdx.x;</code></pre>
-            <pre><code class="cpp"> int threadN = N / blockDim.x * gridDim.x;
-  for (size_t i = tid * N; i < (tid + 1) * N; ++i )
-  {
-    sum =+ in[i]
-  }</code></pre>
-            <pre><code class="cpp"> for (size_t i = tid; i < N; i += blockDim.x * gridDim.x )
-  {
-    sum =+ in[i]
-  }</code></pre>
+            <pre><code class="cpp">int tid = blockIdx.x * blockDim.x + threadIdx.x;</code></pre>
+            <pre><code class="cpp">
+int threadN = N / blockDim.x * gridDim.x;
+for (size_t i = tid * N; i < (tid + 1) * N; ++i )
+{
+  sum =+ in[i]
+}</code></pre>
+            <pre><code class="cpp">
+for (size_t i = tid; i < N; i += blockDim.x * gridDim.x )
+{
+  sum =+ in[i]
+}</code></pre>
           </section>
           <section>
-            <h3>Uniform load</h3>
+            <h2>Uniform load</h2>
             <p>All threads in a block access the same address as read only.</p>
             <p>Memory operation uses 3-level constant cache</p>
             <ul>
               <li>Generated by compiler</li>
               <li>Available as PTX asm insertion</li>
             </ul>
-            <pre><code class="cpp"><span class="keyword">__device__ __forceinline__</span> float __ldu(const float* ptr)
+            <pre><code class="cpp">
+__device__ __forceinline__ float __ldu(const float* ptr)
 {
   float val;
   asm ("ldu.global.f32 %0, [%1];" : "="f(val) : l(ptr));
@@ -279,7 +289,6 @@
         </section>
 
         <section>
-          <h2>SMEM: Banking</h2>
           <!-- <section> -->
             <!-- <h4>No bank conflict</h4> -->
             <!-- <img src="img/smem-no-bk.png"> -->
@@ -289,10 +298,11 @@
             <!-- <img src="img/smem-bk.png"> -->
           <!-- </section> -->
           <section>
+            <h2>SMEM: Banking</h2>
             <h3>Kepler: 32-bit and 64-bit modes</h3>
             <img src="images/c1/banks.svg">
             <p>special case: 2D smem usage (Fermi example)</p>
-            <pre><code class="cpp"><span class="keyword"> __shared__</span> float smem_buffer [32][32 + 1] </code></pre>
+            <pre><code class="cpp">__shared__ float smem_buffer [32][32 + 1] </code></pre>
           </section>
           <!-- <p>note about throughput and volatile</p> -->
         </section>
@@ -336,7 +346,6 @@
           </ul>
         </section>
 
-
         <section>
           <h2>LMEM</h2>
           <p>Local memory is a stack memory analogue: call stack, register spilling.
@@ -356,7 +365,8 @@
           <h2>spilling control</h2>
             <ol>
               <li>Use <b>__launch_bounds__</b> to help compiler to select maximum amount of registers.
-                <pre width="100%"><code class="cpp"><span class="keyword">__global__</span> void <span class="keyword">__launch_bounds__</span>(
+                <pre width="100%"><code class="cpp">
+__global__ void __launch_bounds__(
 maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
 {
   //...
@@ -372,9 +382,8 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
         </section>
 
         <section>
-          <h2>Control flow</h2>
           <section>
-            <h3>Problems</h3>
+            <h2>Control flow: Problems</h2>
             <ul>
               <li><b>Warp divergence</b>: branching, early loop exit... Inspect SASS to find divergent pieces of code</li>
               <li><b>Workload is data dependent</b>: code-path depends on input (like classification task)</li>
@@ -385,7 +394,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
             </ul>
           </section>
           <section>
-            <h3>Solutions</h3>
+            <h2>Control flow: Solutions</h2>
             <ul>
               <li>Understand your problem. Select best algorithm keeping in mind GPU architecture. Maximize independent parallelism</li>
               <li>Compiler generates branch predication with -O3 during if/switch optimization but number of instructions
@@ -395,7 +404,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
             </ul>
           </section>
           <section>
-            <h3>Kernel Fusion and Fission</h3>
+            <h2>Kernel Fusion and Fission</h2>
             <ul class="none">
               <li><b>Fusion</b>
                 <ul>
@@ -415,10 +424,11 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
             </ul>
           </section>
         </section>
+
         <section>
-          <h2>Tuning block configuration</h2>
-          <p>Finding optimal launch configuration is crucial to achieve best performance. Launch configuration affects occupancy</p>
           <section>
+            <h2>Tuning block configuration</h2>
+            <p>Finding optimal launch configuration is crucial to achieve best performance. Launch configuration affects occupancy</p>
             <ul>
               <li>low occupancy presents full hardware utilization and lowers possibility to hide patency</li>
               <li>high occupancy for kernels with large memory demands results in over polluted read or write queues</li>
@@ -426,13 +436,15 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
             <p>Experiment to find optimal configuration (block and grid resolutions, amount of work per thread) that is optimal for your kernel.</p>
           </section>
           <section>
+            <h2>Tuning block configuration</h2>
+            <p>Finding optimal launch configuration is crucial to achieve best performance. Launch configuration affects occupancy</p>
             <img class="simple" src="images/c2/block_conf.svg" width="80%">
           </section>
         </section>
 
         <section id="sec_2">
-          <h2>Final words</h2>
           <section>
+            <h2>Final words</h2>
             <ul>
               <li>Basic CUDA Code Optimizations
                 <ul>
@@ -452,6 +464,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
             </ul>
           </section>
           <section>
+            <h2>Final words</h2>
             <ul>
               <li>Conventional parallelization optimizations
               <ul>
@@ -466,6 +479,7 @@ maxThreadsPerBlock, minBlocksPerMultiprocessor) kernel(...)
             </ul>
           </section>
           <section>
+            <h2>Final words</h2>
             <ul>
               <li>Conventional architectural optimizations
                 <ul>

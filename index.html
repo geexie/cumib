@@ -24,54 +24,104 @@
   <body>
     <div id="header">
       <div id="title">
-        <a href="index.html"><h1>cumib</h1></a>
-        <p>The CUDA microbenchmarks</p>
+        <a href="index.html"><h1>__pragmatic_optimization__</h1></a>
+        <p>Geek's blog about optimization, architectures and everything.</p>
       </div>
     </div>
 
     <div class="wrapper">
       <section>
+        <h1><strong>Posts</strong></h1>
+        <ul style="list-style-image: url('images/bullet-1.png'); margin-left: 2em;">
+          <li><b><a href="optimization_rules.html">Essential optimization rules</a></b></li>
+          <li><b><a href="optimization_order.html">The order matters</a></b></li>
+          <li><a href="aarch64.html">AArch64: Going to 64-bit</a></li>
+          <li><a href="demystifying_assembler.html">Demystifying assembler</a></li>
+        </ul>
+      </section>
+      <br/>
+      <section>
         <h1><strong>Presentations</strong></h1>
           <ul>
             <li>
-              <h2>Code GPU with CUDA</h2>
-              <p>This is a list of presentations for course about NVIDIA GPU architecture. The main aim of the course is
-               to explain the details and unique properties of the architecture and to give advice about approaches
-               to optimization.</p>
-              <p>The first presentation explains key properties of the architecture. The second &ndash; describes
-              the ideas of programming model which is named "Cooperative Thread Arrays". The third presentation
-              highlights the main optimization principle. The fourth presentation describes the memory architecture
-              in the very details. The fifth &ndash; gives concrete advice for optimizers how to deal with SIMT GPUs.
-              The sixth presentation gives more concrete examples for optimizations. The last one shows helpful
-              approaches to identify performance limiters.</p>
+            <h2>Pragmatic optimization</h2>
               <ol>
-                <li><a href="code_gpu_with_cuda_0.html">SIMT - NVIDIA GPU architecture</a></li>
-                <li><a href="code_gpu_with_cuda_2.html">CTA programming model</a></li>
-                <li><a href="code_gpu_with_cuda_3.html">Device code optimization principle</a></li>
-                <li><a href="code_gpu_with_cuda_1.html">Memory subsystem</a></li>
-                <li><a href="code_gpu_with_cuda_4.html">Optimizing memory & control flow</a></li>
-                <li><a href="code_gpu_with_cuda_5.html">Applying optimization techniques</a></li>
-                <li><a href="code_gpu_with_cuda_6.html">Identifying performance limiters</a></li>
+              </ol>
+            </li>
+            <li>
+              <h2>Code GPU with CUDA</h2>
+              <p>This is a list of presentations for my course about NVIDIA GPU architecture. The main aims of
+               this course are
+               <ul>
+                 <li>explaining details and unique properties of the architecture;</li>
+                 <li>advising useful optimization approaches for it.</li>
+               </ul>
+              </p>
+              <p>The first presentation explains key properties of the architecture. The second one describes
+              the concepts of CUDA's programming, execution and memory models. The third presentation
+              highlights the main optimization principle. The fourth presentation describes the memory architecture
+              in details. The fifth gives concrete pieces of advice for optimizers about dealing with SIMT GPUs.
+              The sixth presentation gives more concrete examples of optimization approaches. The last one describes how
+              to identify performance limiters.</p>
+              <ol>
+                <li>
+                  <a href="code_gpu_with_cuda_0.html">SIMT - NVIDIA GPU architecture</a>
+                  <br>
+                  <br>
+                  <iframe src="https://www.slideshare.net/slideshow/embed_code/key/N1i4q1Y9WIzH8o"
+                  width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"
+                  style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
+                  </iframe>
+                </li>
+                <li>
+                  <a href="code_gpu_with_cuda_2.html">CUDA - Introduction</a>
+                  <br>
+                  <br>
+                  <iframe src="https://www.slideshare.net/slideshow/embed_code/key/5NUdtDmEpKkqh8"
+                  width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"
+                  style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
+                  </iframe>
+                </li>
+                <li>
+                  <a href="code_gpu_with_cuda_3.html">Device code optimization principle</a>
+                  <br>
+                  <br>
+                  <iframe src="https://www.slideshare.net/slideshow/embed_code/key/jGd66JnAWk6GmO"
+                  width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"
+                  style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
+                  </iframe>
+                </li>
+                <li>
+                  <a href="code_gpu_with_cuda_1.html">Memory subsystem</a>
+                  <br>
+                  <br>
+                  <iframe src="https://www.slideshare.net/slideshow/embed_code/key/5fwNLEcFXp0Mlz"
+                  width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"
+                  style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
+                  </iframe>
+                </li>
+                <li>
+                  <a href="code_gpu_with_cuda_4.html">Optimizing memory & control flow</a>
+                  <br>
+                  <br>
+                  <iframe src="https://www.slideshare.net/slideshow/embed_code/key/9nu3f9uKw44W9x"
+                  width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"
+                  style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
+                  </iframe>
+                </li>
+                <li>
+                  <a href="code_gpu_with_cuda_5.html">Applying optimization techniques</a>
+                </li>
+                <li>
+                  <a href="code_gpu_with_cuda_6.html">Identifying performance limiters</a>
+                </li>
               </ol>
             </li>
           </ul>
-        <hr/>
-        <h1><strong>Articles and posts</strong></h1>
-        <ul>
-          <li>
-          <h2>Pragmatic optimization</h2>
-            <ol>
-              <li><b><a href="optimization_rules.html">Essential optimization rules</a></b></li>
-              <li><b><a href="optimization_order.html">The order matters</a></b></li>
-              <li><a href="aarch64.html">AArch64: Going to 64-bit</a></li>
-              <li><a href="demystifying_assembler.html">Demystifying assembler</li>
-            </ol>
-          </li>
-          <!-- <li><a href="microbench.html">Microbenchmarking</a></li> -->
-          <!-- <li><a href="optimization.html">Optimization notes</a></li> -->
-        </ul>
-        <hr>
-        <small class="credits left">Project maintained by <a style="margin-left:0.5em;" href="https://github.com/cuda-geek">cuda-geek</a></small>
+      </section>
+      <br/>
+      <section>
+        <small class="credits left">Maintained by <a href="https://github.com/cuda-geek">cuda-geek</a></small>
         <small class="credits right">Hosted on GitHub Pages</small>
       </section>
     </div>
