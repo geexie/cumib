@@ -77,40 +77,44 @@
 
         <section>
           <h2>Streaming kernel</h2>
-          <section>
-            <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-              <math display="block">
-              <mstyle>
-                  <mi>y</mi>
-                  <mo>=</mo>
-                  <mi>f</mi>
-                  <mrow>
-                    <mo>(</mo>
-                    <mi>x</mi>
-                    <mo>)</mo>
-                  </mrow>
-                </mstyle>
-              </math>
-            </blockquote>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename Ptr2DIn, typename Ptr2DOut, typename Op&gt;
+          <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+            <math display="block">
+            <mstyle>
+                <mi>y</mi>
+                <mo>=</mo>
+                <mi>f</mi>
+                <mrow>
+                  <mo>(</mo>
+                  <mi>x</mi>
+                  <mo>)</mo>
+                </mrow>
+              </mstyle>
+            </math>
+          </blockquote>
+          <pre><code class="cpp">
+template &lt;typename Ptr2DIn, typename Ptr2DOut, typename Op&gt;
 __global__ void streaming(const Ptr2DIn src, Ptr2DOut dst)
 {
-     const int x = blockDim.x * blockIdx.x + threadIdx.x;
-     const int y = blockDim.y * blockIdx.y + threadIdx.y;
+   const int x = blockDim.x * blockIdx.x + threadIdx.x;
+   const int y = blockDim.y * blockIdx.y + threadIdx.y;
 
-     if (x < dst.cols && y < dst.rows)
-         dst(y, x) = saturate_cast&lt;Ptr2DOut::elem_type&gt;(Op::apply(src(x, y)));
-}</code></pre>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">dim3 block(block_x, block_y);
+   if (x < dst.cols && y < dst.rows)
+       dst(y, x) = saturate_cast&lt;Ptr2DOut::elem_type&gt;(Op::apply(src(x, y)));
+}
+
+</code></pre>
+          <pre><code class="cpp">
+dim3 block(block_x, block_y);
 dim3 grid(roundUp(dst.cols, block_x), roundUp(dst.rows, block_y));
-streaming&lt;&lt;&lt;grid, block&gt;&gt;&gt;(src, dst);</code></pre>
-            <p>General arithmetic and conversions, repack by map, resize, etc.</p>
-          </section>
+streaming&lt;&lt;&lt;grid, block&gt;&gt;&gt;(src, dst);
+
+</code></pre>
+          <p>General arithmetic and conversions, repack by map, resize, etc.</p>
         </section>
 
         <section>
-          <h2>Threshold</h2>
           <section>
+            <h2>Threshold</h2>
             <h3>Pixel per thread</h3>
             <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
               <math display="block">
@@ -128,18 +132,23 @@ streaming&lt;&lt;&lt;grid, block&gt;&gt;&gt;(src, dst);</code></pre>
                 </mstyle>
               </math>
             </blockquote>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ threshold_bw(const DPtrb src, DPtrb dst, int32s cols, int32s rows, int8u thr)
+            <pre><code class="cpp">
+__global__ threshold_bw(const DPtrb src, DPtrb dst,
+    int32s cols, int32s rows, int8u thr)
 {
      const int x = blockDim.x * blockIdx.x + threadIdx.x;
      const int y = blockDim.y * blockIdx.y + threadIdx.y;
 
      if (x < cols && y < rows)
          dst.row(y)[x] = max(thr, src.row(y)[x]);
-}</code></pre>
+}
+
+</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L24">The code is available in cumib microbenchmars library</a></small>
             <p>Adjusting launch parameters for specific hardware</p>
           </section>
           <section>
+            <h2>Threshold</h2>
             <h3>Pixel per thread: results</h3>
             <table class="tbl1" style="width:100%;">
               <colgroup>
@@ -182,18 +191,22 @@ streaming&lt;&lt;&lt;grid, block&gt;&gt;&gt;(src, dst);</code></pre>
             <small>* Time has been measured on 1080p input for GK107 with 2 SMX (1.0 GHz), 128-bit GDDR5
             <br/>** Time has been measured on 1080p input for GM107 with 5 SMX (0.5 GHz), 128-bit GDDR5</small>
           </section>
-
           <section>
+            <h2>Threshold</h2>
             <h3>Kernel unrolling: image row per warp</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ threshold_bw(const DPtrb src, DPtrb dst, int32s cols, int32s rows, int8u thr)
+            <pre><code class="cpp">
+__global__ threshold_bw(const DPtrb src, DPtrb dst,
+    int32s cols, int32s rows, int8u thr)
 {
-    int block_id = (blockIdx.y * gridDim.x + blockIdx.x) * (blockDim.x / warpSize);
-    int y = (threadIdx.y * blockDim.x + threadIdx.x) / warpSize + block_id;
+    int block_id = (blockIdx.y*gridDim.x+blockIdx.x) * (blockDim.x / warpSize);
+    int y = (threadIdx.y*blockDim.x+threadIdx.x) / warpSize + block_id;
 
     if (y < rows)
         for (int x = lane(); x < cols; x += warpSize)
             dst.row(y)[x] = max(thr, src.row(y)[x]);
-}</code></pre>
+}
+
+</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L43">The code is available in cumib microbenchmars library</a></small>
             <table class="tbl1" style="width:100%;">
               <colgroup>
@@ -232,8 +245,10 @@ streaming&lt;&lt;&lt;grid, block&gt;&gt;&gt;(src, dst);</code></pre>
           </section>
 
           <section>
+            <h2>Threshold</h2>
             <h3>Kernel unrolling: more independent elements</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">// same as previous
+            <pre><code class="cpp">
+// same as previous
 unsigned char tmp[2];
 if (y * 2 < rows - 2)
     for (int x = lane(); x < cols; x += warpSize)
@@ -244,7 +259,9 @@ if (y * 2 < rows - 2)
         dst.row(y * 2)[x] = tmp[0];
         dst.row(y * 2 + 1)[x] = tmp[1];
     }
-else {/*compute tail*/ }</code></pre>
+else {/*compute tail*/ }
+
+</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L61">The code is available in cumib microbenchmars library</a></small>
             <table class="tbl1" style="width:100%;">
               <colgroup>
@@ -280,27 +297,35 @@ else {/*compute tail*/ }</code></pre>
           </section>
 
           <section>
+            <h2>Threshold</h2>
             <h3>Kernel unrolling: use wider transactions</h3>
             <p>unsigned char -&gt; unsigned integer</p>
-            <pre style="width:100%"><code class="cpp" style="padding: 10px;">template&lt;typename T&gt; __device__ __forceinline__ T vmin_u8(T,T);
-template&lt;&gt; __device__ __forceinline__ unsigned int vmin_u8(unsigned v, unsigned m)
+            <pre><code class="cpp">
+template&lt;typename T&gt; __device__ __forceinline__ T vmin_u8(T,T);
+template&lt;&gt; __device__ __forceinline__ unsigned vmin_u8(unsigned v, unsigned m)
 {
     unsigned int res = 0;
-    asm("vmax4.u32.u32.u32 %0, %1, %2, %3;" : "=r"(res) : "r"(v), "r"(m), "r"(0));
+    asm("vmax4.u32.u32.u32 %0, %1, %2, %3;" : "=r"(res) : "r"(v),"r"(m),"r"(0));
     return res;
-}</code></pre>
-            <pre style="width:100%"><code class="cpp" style="padding: 10px;">// same as previous
+}
+
+</code></pre>
+            <pre><code class="cpp">
+// same as previous
 if (y < rows)
     for (int x = lane(); x < cols / sizeof(int8u); x += warpSize)
     {
         int32u tmp = src.row&lt;unsigned int&gt;(y)[x];
         int32u res = vmin_u8(tmp, mask);
         dst.row&lt;unsigned int&gt;(y)[x] = res;
-    }</code></pre>
+    }
+
+</code></pre>
           <small><a href="https://github.com/cuda-geek/cumib/blob/master/threshold.cu#L114">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
+            <h2>Threshold</h2>
             <h3>Wider transactions : results</h3>
             <table class="tbl1" style="width:100%;">
               <colgroup>
@@ -349,8 +374,8 @@ if (y < rows)
         </section>
 
         <section>
-          <h2>Transpose</h2>
           <section>
+            <h2>Transpose</h2>
             <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
               <math display="block">
                 <mstyle>
@@ -370,31 +395,39 @@ if (y < rows)
                 </mstyle>
               </math>
             </blockquote>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt; __global__
+            <pre><code class="cpp">
+template &lt;typename T&gt; __global__
 void transposeNaive(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
 {
     int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
     odata.row(xIndex)[yIndex] = idata.row(yIndex)[xIndex];
-}</code></pre>
+}
+
+</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L124">The code is available in cumib microbenchmars library</a></small>
+            <br>
             <img src="images/c3/tr_mat.svg" width="60%" class="simple">
           </section>
 
           <section>
+            <h2>Transpose</h2>
             <h3>Coalesce memory access: smem usage</h3>
             <ul>
               <li>Split the input matrix into tiles, assigning <b>one thread block for one tile</b>. Tile size (in elements) and block size (in threads) are not necessarily the same.</li>
               <li>Load tile in coalesced fashion to smem -> read from smem by column -> write to destination in coalesced fashion.</li>
             </ul>
+            <br>
             <img src="images/c3/transpose.svg" class="simple">
           </section>
 
           <section>
             <h3>Coalesce memory access: smem usage code</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;__global__
-void transposeCoalesced(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
+            <pre><code class="cpp">
+template &lt;typename T&gt;__global__
+void transposeCoalesced(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata,
+    int cols, int rows)
 {
     __shared__ float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM];
 
@@ -409,14 +442,19 @@ void transposeCoalesced(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols
     yIndex = blockIdx.x * TRANSPOSE_TILE_DIM + threadIdx.y;
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
         odata.row(yIndex + i)[xIndex] = tile[threadIdx.x][threadIdx.y + i];
-}</code></pre>
+}
+
+</code></pre>
           <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L167">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
+            <h2>Transpose</h2>
             <h3>Smem accesses: avoid bank conflicts</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template &lt;typename T&gt;__global__
-void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int cols, int rows)
+            <pre><code class="cpp">
+template &lt;typename T&gt;__global__
+void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata,
+    int cols, int rows)
 {
     __shared__ float tile[TRANSPOSE_TILE_DIM][TRANSPOSE_TILE_DIM + 1];
 
@@ -431,21 +469,26 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
     yIndex = blockIdx.x * TRANSPOSE_TILE_DIM + threadIdx.y;
     for (int i = 0; i < TRANSPOSE_TILE_DIM; i += TRANSPOSE_BLOCK_ROWS)
         odata.row(yIndex + i)[xIndex] = tile[threadIdx.x][threadIdx.y + i];
-}</code></pre>
+}
+
+</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L202">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
+            <h2>Transpose</h2>
             <h3>Warp shuffle</h3>
             <img src="images/c2/shuffle.png" class="simple">
           </section>
 
           <section>
+            <h2>Transpose</h2>
             <h3>Transpose shuffle</h3>
             <img src="images/c3/traspose_shuffle.svg" class="simple">
           </section>
 
           <section>
+            <h2>Transpose</h2>
             <h3>Transpose shuffle code</h3>
             <pre style="width:100%;"><code class="cpp">__global__ void transposeShuffle(
     const DPtr32 idata, DPtr32 odata, int cols, int rows)
@@ -458,18 +501,24 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
 
     int4 reg0, reg1;
 
-    reg0.x = idata.row(yIndex + 0)[xIndex]; reg0.y = idata.row(yIndex + 1)[xIndex];
-    reg0.z = idata.row(yIndex + 2)[xIndex]; reg0.w = idata.row(yIndex + 3)[xIndex];
+    reg0.x = idata.row(yIndex + 0)[xIndex];
+    reg0.y = idata.row(yIndex + 1)[xIndex];
+    reg0.z = idata.row(yIndex + 2)[xIndex];
+    reg0.w = idata.row(yIndex + 3)[xIndex];
 
-    reg1.x = idata.row(yIndex + 4)[xIndex]; reg1.y = idata.row(yIndex + 5)[xIndex];
-    reg1.z = idata.row(yIndex + 6)[xIndex]; reg1.w = idata.row(yIndex + 7)[xIndex];
+    reg1.x = idata.row(yIndex + 4)[xIndex];
+    reg1.y = idata.row(yIndex + 5)[xIndex];
+    reg1.z = idata.row(yIndex + 6)[xIndex];
+    reg1.w = idata.row(yIndex + 7)[xIndex];
+
 </code></pre>
           <p>continued on the next slide...</p>
           </section>
           <section>
+            <h2>Transpose</h2>
             <h3>Transpose shuffle code (cont.)</h3>
-            <pre style="width:100%;"><code class="cpp">
-    unsigned int isEven = laneIsEven<unsigned int>();
+            <pre><code class="cpp">
+    unsigned int isEven = laneIsEven&lt;unsigned int&gt;();
     int4 target = isEven ? reg1 : reg0;
 
     target.x = __shfl_xor(target.x, 1);
@@ -477,18 +526,21 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
     target.z = __shfl_xor(target.z, 1);
     target.w = __shfl_xor(target.w, 1);
 
-    const int oIndexY = blockIdx.x * blockDim.x + (threadIdx.x >> 1) * 2;
+    const int oIndexY = blockIdx.x * blockDim.x + (threadIdx.x &gt;&gt; 1) * 2;
     const int oIndexX = yIndex1 + (isEven == 0);
 
     if (isEven) reg1 = target; else reg0 = target;
 
     odata(oIndexY + 0, oIndexX, reg0);
     odata(oIndexY + 1, oIndexX, reg1);
-}</code></pre>
+}
+
+</code></pre>
             <small><a href="https://github.com/cuda-geek/cumib/blob/master/transpose.cu#L245">The code is available in cumib microbenchmars library</a></small>
           </section>
 
           <section>
+            <h2>Transpose</h2>
             <h3>Results</h3>
               <table class="tbl1" style="width:100%;">
                 <colgroup>
@@ -523,88 +575,22 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
           </section>
         </section>
 
-<!--      <section>
-            <h2>Resize area</h2>
-          </section> -->
+        <section>
+          <h2>when use kernel fusion?</h2>
+          <ul>
+            <li>Batch of small kernels
+              <ul>
+                <li>competitive solution for kernel unrolling since it improves <b>instruction per byte</b> ratio</li>
+              </ul>
+            </li>
+            <li>Append one or more small kernels to register-heavy kernel
+              <ul>
+                <li>might affect kernel unrolling factors or launch parameters</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
 
-          <section>
-            <h2>when use kernel fusion?</h2>
-            <ul>
-              <li>Batch of small kernels
-                <ul>
-                  <li>competitive solution for kernel unrolling since it improves <b>instruction per byte</b> ratio</li>
-                </ul>
-              </li>
-              <li>Append one or more small kernels to register-heavy kernel
-                <ul>
-                  <li>might affect kernel unrolling factors or launch parameters</li>
-                </ul>
-              </li>
-            </ul>
-          </section>
-
- <!--                <section>
-                    <h2>Stencil kernel</h2>
-                    <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-                        <math xmlns="http://www.w3.org/1998/Math/MathML">
-                                <mrow>
-                                    <munderover>
-                                        <mo>&Sum;</mo>
-                                        <mrow>
-                                            <msub>
-                                                <mi>y</mi>
-                                                <mrow>
-                                                    <mi>1</mi>
-                                                </mrow>
-                                            </msub>
-                                        </mrow>
-                                        <mrow>
-                                            <msub>
-                                                <mi>y</mi>
-                                                <mrow>
-                                                    <mi>2</mi>
-                                                </mrow>
-                                            </msub>
-                                        </mrow>
-                                    </munderover>
-                                    <munderover>
-                                        <mo>&Sum;</mo>
-                                        <mrow>
-                                            <msub>
-                                                <mi>x</mi>
-                                                <mrow>
-                                                    <mi>1</mi>
-                                                </mrow>
-                                            </msub>
-                                        </mrow>
-                                        <mrow>
-                                            <msub>
-                                                <mi>x</mi>
-                                                <mrow>
-                                                    <mi>2</mi>
-                                                </mrow>
-                                            </msub>
-                                        </mrow>
-                                    </munderover>
-                                    <mrow>
-                                        <mi>f</mi>
-                                        <mrow>
-                                            <mo>(</mo>
-                                            <mi>I</mi>
-                                            <mo>)</mo>
-                                        </mrow>
-                                    </mrow>
-                                </mrow>
-                            </math>
-                    </blockquote>
-                        <pre style="width:100%;"><code style="padding: 10px;" class="cpp">
-</code></pre>
-                </section>
-
-                <section>
-                    <h2>Filters</h2>
-                </section>
- -->
         <section id="sec_1">
           <h1>Reduction</h1>
         </section>
@@ -643,7 +629,8 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
               </mrow>
             </math>
           </blockquote>
-          <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__</span> void reduceNaive(const int *idata, int *odata, size_t N )
+          <pre><code class="cpp">
+__global__ void reduceNaive(const int *idata, int *odata, size_t N )
 {
     int partial = 0;
     size_t i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -652,6 +639,7 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
 
     atomicAdd( odata, partial );
 }
+
 </code></pre>
           <p>Naive implementation with CUDA atomics is limited by write queue atomic throughput,<br/>therefore <b>hierarchical approaches</b> are used:</p>
           <ul>
@@ -706,10 +694,11 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
           </ul>
         </section>
         <section>
-          <h2>Block reduction approaches</h2>
           <section>
+            <h2>Block reduction approaches</h2>
             <h3>Ranking</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ void reduceRanking(const int *idata, int *odata, size_t N )
+            <pre><code class="cpp">
+__global__ void reduceRanking(const int *idata, int *odata, size_t N )
 {
     extern __shared__ int* partials;
     int thread_partial = thread_reduce(idata, N);
@@ -726,12 +715,15 @@ void transposeCoalescedPlus1(const DPtr&lt;T&gt; idata, DPtr&lt;T&gt; odata, int
     if (threadIdx.x &lt; 32) warp_reduce(partials);
     if (!threadIdx.x) odata[blockIdx.x] = partials[0];
 }
+
 </code></pre>
           </section>
           <section>
+            <h2>Block reduction approaches</h2>
             <h3>Warp reduce</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">template&lt;int SIZE&gt;<span class="keyword">
-__device__ __forceinline__</span> void warp_reduce(int val, volatile int* smem)
+            <pre><code class="cpp">
+template&lt;int SIZE&gt;
+__device__ __forceinline__ void warp_reduce(int val, volatile int* smem)
 {
     #pragma unroll
     for (int offset = SIZE &gt;&gt; 1; offset &gt;= 1 ; offset &gt;&gt;= 1 )
@@ -740,11 +732,14 @@ __device__ __forceinline__</span> void warp_reduce(int val, volatile int* smem)
     int warpId = warp::id();
     int laneId = warp::lane();
     if (!laneId) smem[warpId] = val;
-}</code></pre>
+}
+</code></pre>
           </section>
           <section>
+            <h2>Block reduction approaches</h2>
             <h3>warp-centric reduction</h3>
-            <pre style="width:100%;"><code style="padding: 10px;" class="cpp">__global__ void reduceWarpCentric(const int *idata, int *odata, size_t N )
+            <pre><code class="cpp">
+__global__ void reduceWarpCentric(const int *idata, int *odata, size_t N )
 {
     __shared__ int partials[WARP_SIZE];
     int thread_partial = thread_reduce(idata, N);
@@ -754,9 +749,11 @@ __device__ __forceinline__</span> void warp_reduce(int val, volatile int* smem)
     if (!warp::id())
       warp_reduce&lt;NUM_WARPS_IN_BLOCK&gt;(partials[threadIdx.x], partials);
     if (!threadIdx.x) odata[blockIdx.x] = partials[0];
-}</code></pre>
+}
+</code></pre>
           </section>
           <section>
+            <h2>Block reduction approaches</h2>
             <h3>Results</h3>
             <table class="tbl1" style="width:100%;">
               <colgroup>
@@ -798,81 +795,13 @@ __device__ __forceinline__</span> void warp_reduce(int val, volatile int* smem)
           </section>
         </section>
 
-<!--                 <section>
-                    <h2>Scan</h2>
-                    <section>
-                        <blockquote style="width:100%;" cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-                            <math xmlns="http://www.w3.org/1998/Math/MathML">
-                                <mrow>
-                                    <mo>[</mo>
-                                    <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
-                                    <mo>,</mo>
-                                    <msub><mi>x</mi><mrow><mi>1</mi></mrow></msub>
-                                    <mo>,</mo>
-                                    <mo>...</mo>
-                                    <mo>,</mo>
-                                    <msub><mi>x</mi><mrow><mi>n</mi><mo>-</mo><mi>1</mi></mrow></msub>
-                                    <mo>]</mo>
-                                    <mi>&#8594;</mi>
-                                    <mo>[</mo>
-                                    <mi>0</mi>
-                                    <mo>,</mo>
-                                    <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
-                                    <mo>,</mo>
-                                    <mrow>
-                                        <mo>[</mo>
-                                        <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
-                                        <mo>&#x2297;</mo>
-                                        <msub><mi>x</mi><mrow><mi>1</mi></mrow></msub>
-                                        <mo>]</mo>
-                                    </mrow>
-                                    <mo>,</mo>
-                                    <mo>...</mo>
-                                    <mo>,</mo>
-                                    <mrow>
-                                        <mo>[</mo>
-                                        <msub><mi>x</mi><mrow><mi>0</mi></mrow></msub>
-                                        <mo>&#x2297;</mo>
-                                        <msub><mi>x</mi><mrow><mi>1</mi></mrow></msub>
-                                        <mo>&#x2297;</mo>
-                                        <mo>...</mo>
-                                        <mo>&#x2297;</mo>
-                                        <msub><mi>x</mi><mrow><mi>n-1</mi></mrow></msub>
-                                        <mo>]</mo>
-                                    </mrow>
-                                    <mo>]</mo>
-                                </mrow>
-                            </math>
-                        </blockquote>
-                        <p>2-step Blelloch scan approach</p>
-                        <img src="img/blelloch.png" style="padding:10px;">
-                    </section>
-                    <section>
-                        <h3>Classic meta-scan</h3>
-                        <img src="img/merill_scan.png" class="simple">
-                    </section>
-                    <section>
-                        <h3>Reduce-then-scan</h3>
-                        <img src="img/merill_reduce_scan.png" class="simple">
-                    </section>
-                    <section>
-                        <h3>Merill's approach: 2-levels reduce-then-scan</h3>
-                        <img src="img/merill_reduce_scan_2.png" class="simple">
-                    </section> -->
-<!--                     <section>
-                        <h3>Block-wide scan</h3>
-                    </section> -->
-<!--                     <section>
-                        <h3>Integral image</h3>
-                    </section> -->
-                <!-- </section> -->
         <section>
           <h1>Optimizing<br>Control flow</h1>
         </section>
 
         <section>
-          <h2>Sliding window detector</h2>
           <section>
+            <h2>Sliding window detector</h2>
             <img src="images/c3/slw.png" class="simple" width="50%" style="display:inline;">
             <pre style="width:40%;display:inline;float:right;"><code>
 
@@ -890,6 +819,7 @@ end function
 </code></pre>
           </section>
           <section>
+            <h2>Sliding window detector</h2>
             <h3>Thread per window</h3>
             <img class="simple" src="images/c3/tpp.svg">
           </section>
@@ -904,10 +834,12 @@ end function
             </ul>
           </section>
           <section>
+            <h2>Sliding window detector</h2>
             <h3>Warp per window</h3>
             <img class="simple" src="images/c3/wpp.svg">
           </section>
           <section>
+            <h2>Sliding window detector</h2>
             <h3>Warp per window: analysis</h3>
             <ul>
               <li>All lanes in a warp load different features. Access pattern is random</li>
@@ -915,7 +847,8 @@ end function
               <li>Work balanced for a warp. Warps in a block compute neighboring windows . Likelihood that block needs same number of features is hight</li>
               <li>Use warp-wide prefix sum for decision making.</li>
             </ul>
-            <pre style="width:100%"><code class="cpp">for ( int offset = ExecutionPolicy::warp_pixels; offset < 32; offset *= 2)
+            <pre><code class="cpp">
+for ( int offset = ExecutionPolicy::warp_pixels; offset < 32; offset *= 2)
 {
     asm volatile  ( " { "
     " .reg .f32 r0 ; "
@@ -926,69 +859,77 @@ end function
     " } " : " +f " ( impact ) : "r" ( offset ) ) ;
 }
 </code></pre>
-                </section>
-                <section>
-                    <h3>Warp per N windows</h3>
-                    <img class="simple" src="images/c3/wp4p.svg">
-                </section>
-                <section>
-                    <h3>Warp per N windows: analysis, N = 4</h3>
-                    <pre style="width:100%"><code class="cpp">__device__ __forceinline__</span> static int pixel() { return threadIdx.x &amp; 3; }
-__device__ __forceinline__ static int stage() { return threadIdx.x &gt;&gt; 2; }</code></pre>
-                    <ul>
-                        <li>Each warp loads 8 features for 4 windows. Each feature consists of 4 pixels. Total warp transactions:
-                        8x4 of 16 bytes (instead of 32x4 of 4 byte).</li>
-                        <li>Warp is active while at least one of window positions is active.</li>
-                    </ul>
-                    <pre style="width:100%"><code class="cpp">uint desision = (confidence + impact > trace[t]);
+          </section>
+          <section>
+            <h2>Sliding window detector</h2>
+            <h3>Warp per N windows</h3>
+            <img class="simple" src="images/c3/wp4p.svg">
+          </section>
+          <section>
+            <h2>Sliding window detector</h2>
+            <h3>Warp per N windows: analysis, N = 4</h3>
+            <pre><code class="cpp">
+__device__ __forceinline__ static int pixel() { return threadIdx.x &amp; 3; }
+__device__ __forceinline__ static int stage() { return threadIdx.x &gt;&gt; 2; }
+
+</code></pre>
+            <ul>
+              <li>Each warp loads 8 features for 4 windows. Each feature consists of 4 pixels. Total warp transactions:
+               8x4 of 16 bytes (instead of 32x4 of 4 byte).</li>
+              <li>Warp is active while at least one of window positions is active.</li>
+            </ul>
+            <pre><code class="cpp">
+uint desision = (confidence + impact > trace[t]);
 uint mask = __ballot(desision);
 uint pattern   = 0x11111111 << pixel;
 
 if ( active && (__popc(mask & pattern) != 8)) active = 0;
-if (__all(!active)) break;</code></pre>
-                </section>
-                <section>
-                    <h3>Results</h3>
-                    <table class="tbl1" style="width:100%;">
-                        <colgroup>
-                            <col></col>
-                            <col></col>
-                            <col></col>
-                            <col></col>
-                            <col></col>
-                            <col></col>
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>video sequence</th>
-                                <th>thread /window, ms</th>
-                                <th>warp /window, ms</th>
-                                <th>warp /4 windows, ms</th>
-                                <th>speedup w/w, X</th>
-                                <th>speedup w/4w, X</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th>seq06</th><td>169.13</td><td>98.29</td><td>27.13</td><td>1.72</td><td>6.23</td>
-                            </tr>
-                            <tr>
-                                <th>seq07</th><td>166.92</td><td>100.12</td><td>36.52</td><td>1.66</td><td>4.57</td>
-                            </tr>
-                            <tr>
-                                <th>seq08</th><td>172.89</td><td>98.12</td><td>38.87</td><td>1.76</td><td>4.44</td>
-                            </tr>
-                            <tr>
-                                <th>seq09</th><td>175.82</td><td>102.54</td><td>34.18</td><td>1.76</td><td>4.45</td>
-                            </tr>
-                            <tr>
-                                <th>seq10</th><td>144.13</td><td>96.87</td><td>32.40</td><td>1.71</td><td>5.14</td>
-                            </tr>
-                        </tbody>
-                    </table>
+if (__all(!active)) break;
 
-                </section>
-              </section>
+</code></pre>
+          </section>
+          <section>
+            <h2>Sliding window detector</h2>
+            <h3>Results</h3>
+            <table class="tbl1" style="width:100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>video sequence</th>
+                  <th>thread /window, ms</th>
+                  <th>warp /window, ms</th>
+                  <th>warp /4 windows, ms</th>
+                  <th>speedup w/w, X</th>
+                  <th>speedup w/4w, X</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>seq06</th><td>169.13</td><td>98.29</td><td>27.13</td><td>1.72</td><td>6.23</td>
+                </tr>
+                <tr>
+                  <th>seq07</th><td>166.92</td><td>100.12</td><td>36.52</td><td>1.66</td><td>4.57</td>
+                </tr>
+                <tr>
+                  <th>seq08</th><td>172.89</td><td>98.12</td><td>38.87</td><td>1.76</td><td>4.44</td>
+                </tr>
+                <tr>
+                  <th>seq09</th><td>175.82</td><td>102.54</td><td>34.18</td><td>1.76</td><td>4.45</td>
+                </tr>
+                <tr>
+                  <th>seq10</th><td>144.13</td><td>96.87</td><td>32.40</td><td>1.71</td><td>5.14</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
 
         <section>
           <h2>Final words</h2>
