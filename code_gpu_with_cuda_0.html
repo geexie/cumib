@@ -336,12 +336,15 @@
         <section>
           <h2>Divergent code example</h2>
           <pre><code class="cpp"> (void) atomicAdd( &smem[0], src[threadIdx.x] );</code></pre>
-          <pre><code class="avrasm">    /*0050*/        <b>SSY</b> 0x80;
-    /*0058*/        <span class="keyword">LDSLK</span> P0, R3, [RZ];
-    /*0060*/    @P0 <span class="keyword">IADD</span> R3, R3, R0;
-    /*0068*/    @P0 <span class="keyword">STSUL</span> [RZ], R3;
-    /*0070*/   @!P0 <span class="keyword">BRA</span> 0x58;
-    /*0078*/        NOP.<b>S</b>;</code></pre>
+          <pre><code class="avrasm">
+    /*0050*/        SSY 0x80;
+    /*0058*/        LDSLK P0, R3, [RZ];
+    /*0060*/    @P0 IADD R3, R3, R0;
+    /*0068*/    @P0 STSUL [RZ], R3;
+    /*0070*/   @!P0 BRA 0x58;
+    /*0078*/        NOP.S;
+
+</code></pre>
           <p>Assume warp size == 4</p>
           <img class="simple" src="images/c1/covergence.svg">
         </section>
@@ -359,7 +362,7 @@
               <ul style="margin-left: 65px;">
                 <li>Compare instruction sets condition code (CC) registers.</li>
                 <li>CC is 4-bit state vector (sign, carry, zero, overflow)
-                  <pre><code class="avrasm"><span class="keyword">IMAD</span> R8.<b>CC</b>, R0, 0x4, R3;</code></pre>
+                  <pre><code class="avrasm">IMAD R8.CC, R0, 0x4, R3;</code></pre>
                 </li>
                 <li>No WB stage for CC-marked registers</li>
                 <li>Used in Maxwell to skip unneeded computations for arithmetic operations implemented in hardware with multiple instructions</li>
