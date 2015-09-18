@@ -41,7 +41,7 @@
         <section>
           <h1>Pragmatic optimization</h1>
           <h2>in modern programming</h2>
-          <h3>Ordering approaches</h3>
+          <h3>Ordering optimization approaches</h3>
           <br>
           <br>
           <br>
@@ -55,37 +55,126 @@
         <section>
           <h2>Outline</h2>
           <ul>
+            <li>This course and its goals</li>
             <li>What is optimization?</li>
-            <li>Towards pragmatic approach</li>
-            <li>Place of optimization in a project live cycle</li>
-            <li>Ordering optimizations</li>
-            <li>Optimization steps
+            <li>Pragmatic approach</li>
+            <li>Place of optimization in a project life cycle</li>
+            <li>Ordering optimization techniques</li>
+            <li>Overview of optimization stages</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Course goals</h2>
+          <ul>
+            <li>Master common optimization approaches</li>
+            <li>Understand architecture details and trends</li>
+            <li>Emphasize critical HW features to look on</li>
+            <li>Highlight possible pitfalls</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Themes &amp; Contents</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
               <ul>
-                <li>which we'll discuss in details during the course</li>
+                <li>Ordering optimization approaches</li>
+                <li>Demystifying a compiler</li>
+                <li>Mastering optimization tools</li>
+              </ul>
+            </li>
+            <li><strong>Computer Architectures</strong>
+              <ul>
+                <li>Architecture of modern computers</li>
+                <li>Memory hierarchy</li>
+                <li>Pipelining</li>
+                <li>Latency vs Throughput architectures</li>
+              </ul>
+            </li>
+            <li><strong>Optimization technologies</strong>
+              <ul>
+                <li>Multi-core programming</li>
+                <li>SIMD extensions</li>
+                <li>Specific coprocessors</li>
               </ul>
             </li>
           </ul>
         </section>
 
         <section>
+          <h2>How to learn optimization?</h2>
+          <p>Optimization is a craft more than a science.<br/>So,</p>
+          <ul>
+            <li>Practice more
+              <ul>
+                <li>do not make practical knowledge too theoretical.</li>
+              </ul>
+            </li>
+            <li>Look that other people do
+              <ul>
+                <li>it helps to find a real use-cases of different approaches and techniques.</li>
+              </ul>
+            </li>
+            <li>Dig into the architecture
+              <ul>
+                <li>hardware evolves very fast hence today's devices obsolete very quick. Comprehensive knowledge
+                helps to see beforehand.</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <section>
+            <h2>Recommended literature</h2>
+            <img width="30%" src="images/popt/hp.jpg">
+            <p>
+              <a href="http://www.amazon.com/Computer-Architecture-Fifth-Quantitative-Approach/dp/012383872X/ref=asap_bc?ie=UTF8">
+                Computer Architecture, Fifth Edition: A Quantitative Approach</a> by
+              <a href="http://www.computerhistory.org/fellowawards/hall/bios/John,Hennessy/">John L. Hennessy</a>
+              and
+              <a href="https://www.eecs.berkeley.edu/Faculty/Homepages/patterson.html">David A. Patterson.</a>
+            </p>
+          </section>
+
+          <section>
+            <h2>Recommended literature</h2>
+            <img src="images/popt/moh.jpg">
+            <p>
+              <a href="http://carlos.bueno.org/optimization/mature-optimization.pdf">The Mature Optimization Handbook</a>
+              by <a href="http://carlos.bueno.org/about.html">Carlos Bueno</a>
+            </p>
+          </section>
+
+          <section>
+            <h2>Recommended literature</h2>
+            <img width="30%" src="images/popt/pm.jpg">
+            <p><a href="https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook-1c.2015.01.31a.pdf">
+              Is Parallel Programming Hard, And, If So, What Can You Do About It?</a> by
+              <a href="http://www.rdrop.com/~paulmck/">Paul E. McKenney</a>
+            </p>
+          </section>
+        </section>
+
+        <section>
           <h2>What is optimization?</h2>
           <blockquote>In computing, <b>optimization</b> is the process of modifying a system to make some aspect of it
-          work more efficiently or use fewer resources.
-          <br/>
-          In particular, this is a process of transforming a piece of code
-          to make it <b>more efficient without changing its output</b>.</blockquote>
-          <!--refactoring that makes you code run faster-->
+            work more efficiently or use fewer resources.
+            <br/> In particular, this is a process of transforming a piece of code to make it
+            <b>more efficient without changing its output</b>.
+          </blockquote>
           <p>Metrics are commonly considered:</p>
           <dl>
-            <dt ><b>Wall-clock time, or wall time</b></dt>
+            <dt ><b>Wall(-clock) time</b></dt>
             <dd style="margin-left: 5em;">
-              <strong>is the human perception of the passage of time from the start to the completion of a task.</strong>
+              <strong>is a human perception of the passage of time from the start to the completion of a task.</strong>
             </dd>
             <dt><b>Power consumption</b></dt>
             <dd style="margin-left: 5em;">is the electrical energy over time which is supplied to complete task.</dd>
-            <dt><b>CPU time, or processor time</b></dt>
-            <dd style="margin-left: 5em;">is the total execution time or runtime for which the CPU (or other computing
-            device) was dedicated to a task (used for processing instructions of that task)</dd>
+            <dt><b>processor time</b></dt>
+            <dd style="margin-left: 5em;">is the total execution time or runtime for which a processor was dedicated
+            to a task (used for processing instructions of that task).</dd>
           </dl>
         </section>
 
@@ -104,68 +193,20 @@
           </blockquote>
         </section>
 
-<!--           <section>
-          <h2>where to get performance?</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Software</th>
-                <th>Hardware</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>hi</td>
-                <td>higher clocks</td>
-              </tr>
-              <tr>
-                <td>Lemonade</td>
-                <td>Sophisticated pipelines</td>
-              </tr>
-              <tr>
-                <td>Bread</td>
-                <td>Deep memory hierarchies</td>
-              </tr>
-              <tr>
-                <td>Apples</td>
-                <td>SIMD extensions</td>
-              </tr>
-              <tr>
-                <td>Task parallelization</td>
-                <td>Multi-core</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <ul>
-            <li>Software
-              <ul>
-                <li>mow level programming tricks</li>
-              </ul>
-            </li>
-            <li>Hardware
-              <ul>
-                <li>Sophisticated pipelines</li>
-              </ul>
-            </li>
-            <li>Software</li>
-          </ul>
-        </section> -->
-
         <section>
-          <h2>Knowledge is required</h2>
+          <h2>Knowledge which is required</h2>
           <ol>
             <li><b>The code</b>
               <ul>
                 <li>The problem, it solves</li>
                 <li>The algorithm, it implements</li>
-                <li>Complexity of the algorithm</li>
+                <li>The algorithmic complexity</li>
               </ul>
             </li>
             <li><b>The compiler</b>
               <ul>
                 <li>Compilation trajectory</li>
-                <li>Compiler's optimization capabilities and obstacles</li>
+                <li>Compiler's capabilities and obstacles</li>
               </ul>
             </li>
             <li><b>The platform</b>
@@ -192,6 +233,86 @@
         </section>
 
         <section>
+          <section>
+            <h2>From whence get performance?</h2>
+            <dl>
+              <dt><b>Algorithm</b></dt>
+              <dd>Compilers are not aware of semantics of your code,<br>so focus on this aspect first.<br>
+                <ul>
+                  <li>decreasing big-O complexity,</li>
+                  <li>using optimized libraries for sub-routines,</li>
+                  <li>restructuring the code,</li>
+                  <li>sub-tasking,</li>
+                  <li>parallelization.</li>
+                </ul>
+              </dd>
+          </section>
+          <section>
+            <h2>From whence get performance?</h2>
+            <dl>
+              <dt><b>Memory access patterns &amp; operations</b></dt>
+              <dd>
+                <ul>
+                  <li>using optimizing compilers,</li>
+                  <li>enabling auto-vectorization,</li>
+                  <li>optimizing critical loops,
+                  <li>vectorizing.</li>
+                </ul><br>
+                Compilers are much better in local optimization such as<br>
+                <ul>
+                  <li>loop bodies,</li>
+                  <li>local functions,</li>
+                  <li>arithmetic expressions,</li>
+                </ul><br>so help a compiler rather than try to outfox it.<br>
+              </dd>
+            </dl>
+          </section>
+          <section>
+            <h2>From whence get performance?</h2>
+            <dl>
+              <dt><b>HW specific optimizations</b></dt>
+              <dd>
+                <ul>
+                  <li>utilizing unique properties of the hardware</li>
+                </ul>
+                <br>Modern hardware is quite advanced,<br>
+                <ul>
+                  <li>deep pipelines,</li>
+                  <li>out-of-order execution,</li>
+                  <li>sophisticated branch prediction,</li>
+                  <li>multi-level memory hierarchies,</li>
+                  <li>processor specialization.</li>
+                </ul><br>
+                so peephole optimizations are not as important as it used to be 10 years ago.<br>
+              </dd>
+            </dl>
+          </section>
+          <section>
+            <h2>From whence get performance?</h2>
+            <table>
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td><h3 style="margin-top:0.5em;">High-level</h3></td>
+                  <td><h3 style="margin-top:0.5em;">programmer</h3></td>
+                </tr>
+                <tr>
+                  <td><h3 style="margin-top:0.5em;">Middle-level</h3></td>
+                  <td><h3 style="margin-top:0.5em;">compiler</h3></td>
+                </tr>
+                <tr>
+                  <td><h3 style="margin-top:0.5em;">Low-level</h3></td>
+                  <td><h3 style="margin-top:0.5em;">hardware</h3></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+
+        <section>
           <h2>Top-Down (High-low) approach</h2>
           <ol style="width:40%;">
             <li><h4>Use appropriate algorithm</h4></li>
@@ -206,30 +327,6 @@
         </section>
 
         <section>
-          <h2>From whence get performance?</h2>
-          <dl>
-            <dt><b>Algorithm</b></dt>
-            <dd>
-              <ul>
-                <li>decreasing big-O complexity,</li>
-                <li>using optimized libraries for sub-routines,</li>
-                <li>restructuring the code,</li>
-                <li>parallelization.</li>
-              </ul>
-            </dd>
-            <dt><b>Memory access patterns &amp; operations</b></dt>
-            <dd>
-              <ul>
-                <li>usage of optimizing compilers, auto-vectorization</li>
-                <li>loop optimizations, vectorization.</li>
-              </ul>
-            </dd>
-            <dt><b>Shrinking critical path &amp; performing HW specific optimizations</b></dt>
-            <dd>fine-grained optimizations</dd>
-          </dl>
-        </section>
-
-        <section>
           <h2>Tread-offs</h2>
           <ul>
             <li>Code portability decreases when we go deeper</li>
@@ -239,7 +336,7 @@
             <li>Optimizations become obsolete very quickly</li>
           </ul>
           <br/>
-          <strong>...but still for most applications performance is a crucial requirement.</strong>
+          <strong>...but still performance is a crucial requirement for most applications.</strong>
         </section>
 
         <section>
@@ -316,32 +413,43 @@
           </section>
           <section>
             <h2>Optimize memory access patterns</h2>
-            <div class="cols2">
-            <pre><code class="cpp">
-    for (int j = 0; j &lt; img.height; j++)
+            <table>
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code class="cpp">
+for (int j=0; j &lt; img.height; j++)
+{
+    for (int i=0; i &lt; img.width; i++)
     {
-        for (int i = 0; i &lt; img.width; i++)
+        if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
         {
-            if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
-            {
-                count++;
-            }
+            count++;
         }
     }
-            </code></pre>
-            <pre><code class="cpp">
-    for (int i = 0; i &lt; img.width; i++)
+}
+                    </code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="cpp">
+for (int i=0; i &lt; img.width; i++)
+{
+    for (int j=0; j &lt; img.height; j++)
     {
-        for (int j = 0; j &lt; img.height; j++)
+        if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
         {
-            if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
-            {
-                count++;
-            }
+            count++;
         }
     }
-            </code></pre>
-            </div>
+}
+                    </code></pre>
+                  </td>
+              </tbody>
+            </table>
             <br/>
             <h3>Which is more optimal for conventional CPU processor?</h3>
           </section>
@@ -353,30 +461,43 @@
             <blockquote>Reducing in the number of program operations does not necessarily decrease its running time, but it is
   a good heuristic though.</blockquote>
             <p>A Compiler is good in local optimizations. So they usually helps a lot here:</p>
-            <div class="cols2">
-              <ul>
-                <li>Machine-independent optimizations
-                  <ul>
-                    <li>Eliminating common sub-expressions</li>
-                    <li>Constant propagation</li>
-                    <li>Redundancy elimination</li>
-                    <li>..</li>
-                  </ul>
-                </li>
-                <br/>
-                <li>Machine-dependent optimizations
-                  <ul>
-                    <li>Register allocation</li>
-                    <li>InstrucIon selecIon</li>
-                    <li>Instruction scheduling</li>
-                    <li>Peephole opImizaIon</li>
-                    <li>..</li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-            <p>But sometimes it fails one of this steps and harms the performance.</p>
-            <p>Starting from this optimization step it is worth to look at the assembly code to check whether
+            <table>
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    Machine-independent optimizations
+                    <ul>
+                      <li>Eliminating common sub-expressions</li>
+                      <li>Constant propagation</li>
+                      <li>Redundancy elimination</li>
+                      <li>..</li>
+                    </ul>
+                  </td>
+                  <td>
+                    Machine-dependent optimizations
+                    <ul>
+                      <li>Register allocation</li>
+                      <li>InstrucIon selecIon</li>
+                      <li>Instruction scheduling</li>
+                      <li>Peephole opImizaIon</li>
+                      <li>..</li>
+                    </ul>
+                  </td>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <h2>Minimize number of operations</h2>
+            <p>But, sometimes it fails one of this steps and harms the performance by introducing redundant operations.</p>
+            <ul>
+              <li>Register allocation</li>
+              <li>Scalarization</li>
+            </ul>
+            <p>Starting from this optimization step it is worth to <strong>look at the assembly code</strong> to check whether
             the compiler is actually automating a particular optimization.</p>
           </section>
           <section>
@@ -431,7 +552,7 @@
           <p>Assembler is very often used to check the compiler<br/>and rarely used to write low-level code.</p>
           <p>Raw assembly make sense to:</p>
           <ul>
-            <li>Overcome compiler bugs & optimization limitation
+            <li>Overcome compiler bugs & optimization limitations
               <ul>
                 <li>additional instructions</li>
                 <li>suboptimal register allocation</li>
@@ -447,7 +568,7 @@
 
         <section id="end1">
           <h1>THE END</h1>
-          <img class="simple" width="30%" src="images/popt/infinity.png">
+          <img class="simple" src="images/popt/infinity.png">
           <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015</h4s>
         </section>
 
@@ -467,7 +588,7 @@
         progress: true,
         slideNumber: true,
         history: true,
-        // center: false,
+        center: false,
 
         width: 960,
         height: 720,
