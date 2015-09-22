@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Pragmatic optimization in modern programming</title>
+    <meta name="description" content="Pragmatic optimization in modern programming - Introduction">
+    <meta name="author" content="Marina Kolpakova (cuda.geek)">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="plugin/reveal/css/reveal.css">
+    <link rel="stylesheet" href="plugin/reveal/css/theme/geek.css" id="theme">
+    <link rel="stylesheet" href="css/colors-orange.css">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'plugin/reveal/css/print/pdf.css' : 'plugin/reveal/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="plugin/reveal/lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h1>Pragmatic optimization</h1>
+          <h2>in modern programming</h2>
+          <h3>Demystifying the Compiler</h3>
+          <br>
+          <br>
+          <br>
+          <small>Created by
+            <a href="http://github.com/cuda-geek">Marina Kolpakova</a>
+            for
+            <a href="http://www.unn.ru/eng/">UNN</a>
+          </small>
+        </section>
+
+        <section>
+          <h2>Outline</h2>
+          <ul>
+            <li>Compilation trajectory</li>
+            <li>Compiler optimizations
+              <ul>
+                <li>Taxonomy</li>
+                <li>Examples</li>
+              </ul>
+            <li>Obstacles</li>
+            <li>Flags and directives</li>
+            <li>Helping the compiler</li>
+            <!-- <li>Dangerous optimizations: fast math</li> -->
+            <!-- <li>Pointer optimization</li> -->
+            <li>Summary</li>
+          </ul>
+        </section>
+
+        <section>
+
+          <section>
+            <h2>Executable generation phases</h2>
+            <ul>
+              <li>Pre-processing
+                <ul>
+                  <li><code>gcc -E test.cc</code>, <code>cl /E test.cc</code> Pre-process, but don't compile.</li>
+                </ul>
+              </li>
+              <li>Compilation
+                <ul>
+                  <li><code>gcc -S test.cc</code>, <code>cl /FA test.cc</code> Compile but don't assemble.</li>
+                </ul>
+              </li>
+              <li>Assembly
+                <ul>
+                  <li><code>gcc -c test.cc</code>, <code>cl /c test.cc</code> Assemble but don't link.</li>
+                </ul>
+              </li>
+              <li>Linking
+                <ul>
+                  <li><code>gcc test.cc</code>, <code>cl test.cc</code> Link object files and generate the executable.</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Compiler trajectory</h2>
+            <img width="40%" src="images/popt/compiler_phases.jpg">
+          </section>
+
+          <section>
+            <h2>Compiler trajectory</h2>
+            <dl>
+              <dt><b>Lexical Analysis</b></dt>
+              <dd>scans the source code as a stream of characters &amp; converts it into lexemes (tokens).</dd>
+              <dt><b>Syntax Analysis</b></dt>
+              <dd>takes the token produced by lexical analysis as input and generates a syntax tree.
+                Source code grammar (syntactical correctness) is checked here.</dd>
+              <dt><b>Semantic Analysis</b></dt>
+              <dd>checks whether the syntax tree constructed follows the rules of language (eg, type checks).</dd>
+              <dt><b>Intermediate Code Generation</b></dt>
+              <dd>represents a program for some abstract machine. It is in between the high-level language and the
+                machine language.</dd>
+              <dt><b>Code Optimization</b></dt>
+              <dd>does code optimization of the intermediate code (eg, redundancy elimination).</dd>
+              <dt><b>Code Generation</b></dt>
+              <dd>takes the optimized representation of the intermediate code and maps it to the target machine language.</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Fontend and backend</h2>
+            <img src="images/popt/Compiler_design_IPL.png">
+            <ul>
+              <li>No requirement for a full native compiler for each new target or programming language</li>
+              <li>Only backend part needed to support every new machine</li>
+              <li>Only fontend part needed to support every new programming language</li>
+              <li>Most of optimization resemble for all targets and could be applied in between font end and backend.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Intermediate language</h2>
+            <img src="images/popt/intermediate_code.jpg"/>
+            <p>It becomes easier to apply code optimization techniques on the intermediate code. Modern compiler usually
+            use 2 levels of intermediate representation (IR).</p>
+            <dl>
+              <dt><b>High Level IR</b></dt>
+              <dd>is close to the source and can be easily generated from the source code. Some code optimizations
+              are possible, is less preferred for target machine optimization.</dd>
+              <dt><b>Low Level IR</b></dt>
+              <dd>is close to the target machine and suitable for register allocation, instruction selection, peephole,
+              etc, is used for machine-dependent optimizations.</dd>
+            </dl>
+          </section>
+
+<!-- Intermediate code generator receives input from its predecessor phase, semantic analyzer,
+in the form of an annotated syntax tree. That syntax tree then can be converted into a linear
+representation, e.g., postfix notation. Intermediate code tends to be machine independent code.
+Therefore, code generator assumes to have unlimited number of memory storage (register) to generate code. -->
+
+          <section>
+            <h2>Intermediate language</h2>
+            <ul>
+              <li>Language-specific: it can be used for JIT compilation later:
+                <ul>
+                  <li>Java, Scala bute code; CLI for .NET languages like C#, F#, PTX for GPU shaders.</li>
+                </ul>
+              </li>
+              <li>language independent like three-address code (similar to classic RISC ISA).</li>
+            </ul>
+            <p>Three-Address Code (TAC)</p>
+            <table style="width:100%;">
+              <colgroup>
+                <col style="width:50%;"></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code class="cpp">a = b + c * d;</code>.</pre>
+                  </td>
+                  <td>
+                    <pre><code>r1 = c * d;
+r2 = b + r1;
+r3 = r2 + r1;
+a = r3</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Here <strong>r1, r2</strong>, etc are as abstract registers.</p>
+          </section>
+
+          <section>
+            <h2>Three-Address Code</h2>
+            <ul>
+              <li>Quadruples has four fields: operator, arg1, arg2, and result
+                <table>
+                  <colgroup>
+                    <col></col>
+                    <col></col>
+                    <col></col>
+                    <col></col>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>Op</th>
+                      <th>arg1</th>
+                      <th>arg2</th>
+                      <th>result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>*</td>
+                      <td>c</td>
+                      <td>d</td>
+                      <td>r1</td>
+                    </tr>
+                    <tr>
+                      <td>+</td>
+                      <td>b</td>
+                      <td>r1</td>
+                      <td>r2</td>
+                    </tr>
+                    <tr>
+                      <td>+</td>
+                      <td>r2</td>
+                      <td>r1</td>
+                      <td>r3</td>
+                    </tr>
+                    <tr>
+                      <td>=</td>
+                      <td>r3</td>
+                      <td></td>
+                      <td>a</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </li>
+              <li>Triples or Indirect triples has three fields : op, arg1, and arg2.
+                <table>
+                  <colgroup>
+                    <col></col>
+                    <col></col>
+                    <col></col>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>Op</th>
+                      <th>arg1</th>
+                      <th>arg2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>*</td>
+                      <td>c</td>
+                      <td>d</td>
+                    </tr>
+                    <tr>
+                      <td>+</td>
+                      <td>b</td>
+                      <td>(0)</td>
+                    </tr>
+                    <tr>
+                      <td>+</td>
+                      <td>(1)</td>
+                      <td>(0)</td>
+                    </tr>
+                    <tr>
+                      <td>=</td>
+                      <td>(2)</td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Intermediate language</h2>
+            <p>Provide font-end independent code representation.</p>
+            <dl>
+              <dt>GENERIC and GIMPLE</dt>
+              <dd>GNU Compiler Collection gcc
+                <small style="vertical-align:middle;">(
+                  <code>-fdump-tree-all -fdump-tree-ssa -fdump-tree-optimized -fdump-rtl-all</code>)
+                </small>
+              </dd>
+              <!-- ftp://gcc.gnu.org/pub/gcc/summit/2003/GENERIC%20and%20GIMPLE.pdf -->
+              <!-- https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html -->
+              <dt>LLWM IL</dt>
+              <dd>clang and other LLWM based compilers <small  style="vertical-align:middle;">(
+                <code>-emit-llvm</code>)
+                </small>
+              </dd>
+              <!-- http://llvm.org/docs/LangRef.html -->
+              <dt>CIL (C Intermediate Language)</dt>
+              <dd>Visual Studio cl.exe</dd>
+            </dl>
+            <!-- https://en.wikipedia.org/wiki/Static_single_assignment_form -->
+            <!-- https://idea.popcount.org/2013-07-24-ir-is-better-than-assembly/ -->
+            <blockquote>
+              clang -Os -S -emit-llvm squere.c -o squere.ll; cat squere.ll
+            </blockquote>
+            <table style="width:100%;">
+              <colgroup>
+                <col style="width:50%;"></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code class="cpp">int square(int a)
+{
+  return a*a;
+}</code></pre>
+                  </td>
+                  <td>
+                    <pre><code>define i32 @square(i32 %a) #0 {
+%1 = mul nsw i32 %a, %a
+ret i32 %1
+}</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+<!--
+        <section>
+          <h2>GENERIC example</h2>
+          <pre><code class="cpp">struct A { A(); ~A(); };
+ int i;
+ int g();
+ void f()
+ {
+   A a;
+   int j = (--i, i ? 0 : 1);
+
+   for (int x = 42; x > 0; --x)
+     {
+       i += g()*4 + 32;
+     }
+ }
+          </code></pre>
+          <pre><code class="cpp">void f()
+     {
+       int i.0;
+       int T.1;
+       int iftmp.2;
+       int T.3;
+       int T.4;
+       int T.5;
+       int T.6;
+
+       {
+         struct A a;
+         int j;
+
+         __comp_ctor (&a);
+         try
+           {
+             i.0 = i;
+             T.1 = i.0 - 1;
+             i = T.1;
+             i.0 = i;
+             if (i.0 == 0)
+               iftmp.2 = 1;
+             else
+               iftmp.2 = 0;
+             j = iftmp.2;
+             {
+               int x;
+
+               x = 42;
+               goto test;
+               loop:;
+
+               T.3 = g ();
+               T.4 = T.3 * 4;
+               i.0 = i;
+               T.5 = T.4 + i.0;
+               T.6 = T.5 + 32;
+               i = T.6;
+               x = x - 1;
+
+               test:;
+               if (x > 0)
+                 goto loop;
+               else
+                 goto break_;
+               break_:;
+             }
+           }
+         finally
+           {
+             __comp_dtor (&a);
+           }
+       }
+     }</code></pre>
+        </section> -->
+
+        <section>
+          <h2>Towards a compiler</h2>
+          <ul>
+            <li>Correctness is always emphasized over performance</li>
+            <li>For typical constructs the compiler will usually do a better job than programmer</li>
+            <li>A compiler is not aware of semantics of your program</li>
+            <li>Learn a compiler well and stick with it</li>
+            <li>Express your intentions to the compiler clearly</li>
+            <li>Compiler optimization is a multi-phase iterative process</li>
+            <li>Performing one optimization enables others </li>
+            <li>Most optimizations need to be applied in order</li>
+          </ul>
+        </section>
+
+        <section>
+          <section>
+            <h2>Optimization obstacles: pointer aliasing</h2>
+              <table style="width:100%;">
+                <colgroup>
+                  <col style="width:50%;"></col>
+                  <col></col>
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td>
+                      <pre><code class="cpp">
+  void twiddle(int *xp, int *yp)
+  {
+      *xp += *yp;
+      *xp += *yp;
+  }
+                      </code></pre>
+                    </td>
+                    <td>
+                      <pre><code class="cpp">
+  void twiddle(int *xp, int *yp)
+  {
+      *xp += 2* *yp;
+  }
+                      </code></pre>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            <h3>Are they equal?</h3>
+          </section>
+
+          <section>
+            <h2>Optimization obstacles: pointer aliasing</h2>
+              <table style="width:100%;">
+                <colgroup>
+                  <col style="width:50%;"></col>
+                  <col></col>
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td>
+                      <pre><code class="cpp">
+void twiddle(int *xp, int *yp)
+{
+    *xp += *yp;
+    *xp += *yp;
+}
+                      </code></pre>
+                    </td>
+                    <td>
+                      <pre><code class="cpp">
+void twiddle(int *xp, int *yp)
+{
+    *xp += 2* *yp;
+}
+                      </code></pre>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <blockquote>
+                 <b>Aliasing</b>
+                 refers to the situation where the same memory location can be accessed using different names.
+              </blockquote>
+          </section>
+
+          <section>
+            <h2>Strict aliasing assumption</h2>
+            <p>Strict aliasing is an assumption, made by the C (or C++) compiler, that dereferencing pointers to objects
+            of different types will never refer to the same memory location.</p>
+            <p>This assumption enables much more optimization, but programmer should follow strict aliasing rules
+            to get code working correctly.</p>
+            <pre><code class="cpp">void check(int32_t *h, int64_t *k)
+{
+  *h = 5;
+  *k = 6;
+  printf("%d\n", *h);
+}
+
+int main (void)
+{
+  int64_t k;
+  check((int32_t *)&k, &k);
+  return 0;
+
+}</code></pre>
+          <p><code style="background-color:black;">gcc -O1 cast.c -o cast3 ; ./cast3</code> results in <b>6</b></p>
+          <p><code style="background-color:black;">gcc -O2 cast.c -o cast3 ; ./cast3</code> results in <b>5</b></p>
+          </section>
+
+<!--           <section>
+            <h2>Limited optimizations</h2>
+          </section> -->
+        </section>
+
+        <section>
+          <section>
+            <h2>Optimization obstacles: functional calls</h2>
+              <table style="width:100%;">
+                <colgroup>
+                  <col style="width:50%;"></col>
+                  <col></col>
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td>
+                      <pre><code class="cpp">
+int callee();
+
+int caller()
+{
+  return callee() + callee();
+}
+                      </code></pre>
+                    </td>
+                    <td>
+                      <pre><code class="cpp">
+int callee();
+
+int caller()
+{
+  return 2*callee();
+}
+                      </code></pre>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            <h3>Are they equal?</h3>
+          </section>
+
+          <section>
+            <h2>Optimization obstacles: functional calls</h2>
+              <table style="width:100%;">
+                <colgroup>
+                  <col style="width:50%;"></col>
+                  <col></col>
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td>
+                      <pre><code class="cpp">
+int callee(int i);
+
+int caller()
+{
+  int sum = 0;
+  for (int i = 0; i < 1000; i++)
+  {
+    sum += callee(i);
+  }
+
+  return sum;
+}
+                      </code></pre>
+                    </td>
+                    <td>
+                      <pre><code class="cpp">
+int callee(int i);
+
+int caller()
+{
+  int sum0 = 0, sum1 = 0;
+  for (int i = 0; i < 500; i+= 2)
+  {
+    sum0 += callee(i);
+    sum1 += callee(i+1);
+  }
+
+  return sum0 + sum1;
+}
+                      </code></pre>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            <h3>Are they equal?</h3>
+          </section>
+
+
+          <section>
+            <h2>Pure functions</h2>
+            <dl>
+              <dt><b>Pure function</b></dt>
+              <dd>is a function if both below statements hold about the function:
+                <ul>
+                  <li>The function always evaluates the same result value given the same argument value(s). The function
+                  result value cannot depend on any hidden information or state that may change while program execution
+                  proceeds or between different executions of the program, nor can it depend on any external input
+                  from I/O devices.</li>
+                  <li>Evaluation of the result does not cause any semantically observable side effect or output,
+                  such as mutation of mutable objects or output to I/O devices.
+                  </li>
+                </ul>
+              </dd>
+            </dl>
+            <p>Pure functions are much easy to optimize:</p>
+            <ul>
+              <li>Use <b>static</b> keyword to help the compiler to deduces whether the function is pure</li>
+              <li>Use <b>constexpr</b> keyword for c++11 to hint a compiler that function could be evaluated in compile time</li>
+              <li>Most functions from math.h are not pure.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Function body inlining</h2>
+            <p>Replacing a subroutine call with the code from the original function.</p>
+            <ul>
+              <li>Enables other optimizations (including auto-vectorization)</li>
+              <li>Eliminates overhead of function calls</li>
+              <!-- <li>Has potential to bloat code and stack</li> -->
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Optimization obstacles: Exceptions</h2>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Optimization obstacles: Storage type global variables</h2>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Optimization obstacles: Floating point</h2>
+          </section>
+        </section>
+
+        <section>
+          <h2>Optimization levels</h2>
+          <dl>
+            <dt><b>-O0</b> (the default)</dt>
+            <dd>No optimization; generates unoptimized code but has the fastest compilation time.</dd>
+            <dt><b>-O1</b></dt>
+            <dd>Moderate optimization; optimizes reasonably well but does not degrade compilation time significantly.</dd>
+            <dt><b>-O2</b></dt>
+            <dd>Full optimization; generates highly optimized code and has the slowest compilation time.</dd>
+            <dt><b>-O3</b></dt>
+            <dd>Full optimization as in `-O2'; also uses more aggressive automatic inlining of subprograms within a unit
+              (Inlining of Subprograms) and attempts to vectorize loops.</dd>
+            <dt><b>-Os</b></dt>
+            <dd>Optimize space usage (code and data) of resulting program.</dd>
+          </dl>
+          <!-- http://www-01.ibm.com/support/docview.wss?uid=swg27005174&aid=1 -->
+        </section>
+
+        <section>
+        <h2>enabled optimizations: GCC -O3 </h2>
+        <p>GNU C (Ubuntu 4.9.2-0ubuntu1~14.04) version 4.9.2 (x86_64-linux-gnu)</p>
+        <pre style="width:70%;"><code class="bash"> touch empty.c && gcc -O3 -S -fverbose-asm empty.c</code></pre>
+          <small>
+            <blockquote>
+options enabled:
+-faggressive-loop-optimizations
+-fasynchronous-unwind-tables
+-fauto-inc-dec
+-fbranch-count-reg
+-fcaller-saves
+-fcombine-stack-adjustments
+-fcommon
+-fcompare-elim
+-fcprop-registers
+-fcrossjumping
+-fcse-follow-jumps
+-fdefer-pop
+-fdelete-null-pointer-checks
+-fdevirtualize
+-fdevirtualize-speculatively
+-fdwarf2-cfi-asm
+-fearly-inlining
+-feliminate-unused-debug-types
+-fexpensive-optimizations
+-fforward-propagate
+-ffunction-cse
+-fgcse
+-fgcse-after-reload
+-fgcse-lm
+-fgnu-runtime
+-fgnu-unique
+-fguess-branch-probability
+-fhoist-adjacent-loads
+-fident
+-fif-conversion
+-fif-conversion2
+-findirect-inlining
+-finline
+-finline-atomics
+-finline-functions
+-finline-functions-called-once
+-finline-small-functions
+-fipa-cp
+-fipa-cp-clone
+-fipa-profile
+-fipa-pure-const
+-fipa-reference
+-fipa-sra
+-fira-hoist-pressure
+-fira-share-save-slots
+-fira-share-spill-slots
+-fisolate-erroneous-paths-dereference
+-fivopts
+-fkeep-static-consts
+-fleading-underscore
+-fmath-errno
+-fmerge-constants
+-fmerge-debug-strings
+-fmove-loop-invariants
+-fomit-frame-pointer
+-foptimize-sibling-calls
+-foptimize-strlen
+-fpartial-inlining
+-fpeephole
+-fpeephole2
+-fpredictive-commoning
+-fprefetch-loop-arrays
+-free
+-freg-struct-return
+-freorder-blocks
+-freorder-blocks-and-partition
+-freorder-functions
+-frerun-cse-after-loop
+-fsched-critical-path-heuristic
+-fsched-dep-count-heuristic
+-fsched-group-heuristic
+-fsched-interblock
+-fsched-last-insn-heuristic
+-fsched-rank-heuristic
+-fsched-spec
+-fsched-spec-insn-heuristic
+-fsched-stalled-insns-dep
+-fschedule-insns2
+-fshow-column
+-fshrink-wrap
+-fsigned-zeros
+-fsplit-ivs-in-unroller
+-fsplit-wide-types
+-fstack-protector
+-fstrict-aliasing
+-fstrict-overflow
+-fstrict-volatile-bitfields
+-fsync-libcalls
+-fthread-jumps
+-ftoplevel-reorder
+-ftrapping-math
+-ftree-bit-ccp
+-ftree-builtin-call-dce
+-ftree-ccp -ftree-ch
+-ftree-coalesce-vars
+-ftree-copy-prop
+-ftree-copyrename
+-ftree-cselim
+-ftree-dce
+-ftree-dominator-opts
+-ftree-dse
+-ftree-forwprop
+-ftree-fre
+-ftree-loop-distribute-patterns
+-ftree-loop-if-convert
+-ftree-loop-im
+-ftree-loop-ivcanon
+-ftree-loop-optimize
+-ftree-loop-vectorize
+-ftree-parallelize-loops=
+-ftree-partial-pre
+-ftree-phiprop
+-ftree-pre
+-ftree-pta
+-ftree-reassoc
+-ftree-scev-cprop
+-ftree-sink
+-ftree-slp-vectorize
+-ftree-slsr
+-ftree-sra
+-ftree-switch-conversion
+-ftree-tail-merge
+-ftree-ter
+-ftree-vrp
+-funit-at-a-time
+-funswitch-loops
+-funwind-tables
+-fverbose-asm
+-fzero-initialized-in-bss
+-m128bit-long-double
+-m64
+-m80387
+-malign-stringops
+-mavx256-split-unaligned-load
+-mavx256-split-unaligned-store
+-mfancy-math-387
+-mfp-ret-in-387
+-mfxsr
+-mglibc
+-mieee-fp
+-mlong-double-80
+-mmmx
+-mno-sse4
+-mpush-args
+-mred-zone
+-msse
+-msse2
+-mtls-direct-seg-refs
+-mvzeroupper
+            </blockquote>
+          </small>
+        </section>
+
+        <section>
+          <h2>Optimization levels</h2>
+          example how optimization level effects the performance
+        </section>
+
+        <section>
+          <h2>Auto-vectorization</h2>
+          <ul>
+            <li>Machine code generation that takes advantage of vector instructions.</li>
+            <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
+              <ul>
+                <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
+                <li>AltiVec, VSX</li>
+                <li>ASIMD (NEON), MSA</li>
+              </ul>
+            </li>
+            <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Compiler optimization reports</h2>
+          <p style="color:red;">optimizer reports form specific compilers (get report from hexagon scheduling!!!)</p>
+        </section>
+
+<!--         <section>
+          <h2>profile-guided optimization (PGO)</h2>
+        </section> -->
+
+        <section>
+          <section>
+            <h2>Hints: Aligning Data</h2>
+            <ul>
+              <li>Specifying alignment eliminates manual padding</li>
+              <li>Helps with auto-vectorization as well</li>
+            </ul>
+            <pre><code class="cpp">
+/* GCC, align to 16 bytes */
+unsigned long lock __attribute__ ((aligned(16)));
+            </code></pre>
+            <pre><code class="cpp">
+/* Intel, align to 16 bytes */
+__declspec(align(16)) unsigned long lock;
+            </code></pre>
+          </section>
+          <section>
+            <h2>Hints: prefetching</h2>
+<!-- GCC: __builtin_prefetch() -->
+          </section>
+        </section>
+
+        <section>
+          <h2>False optimizations</h2>
+        </section>
+
+        <section>
+          <h2>Software pipelining</h2>
+          <!-- https://en.wikipedia.org/wiki/Software_pipelining -->
+        </section>
+
+        <section>
+          <h2></h2>
+          font and optimizations: constant folding
+          intermediate representations
+          backend optimizations
+        </section>
+
+        <section>
+          <h2>IPA: Interprocedural optimization</h2>
+          <!-- https://gcc.gnu.org/onlinedocs/gccint/IPA.html -->
+          <!-- https://en.wikipedia.org/wiki/Interprocedural_optimization -->
+        </section>
+
+        <section>
+          <h2>Link-Time Code Generation</h2>
+          When LTCG is enabled (by specifying the /GL compiler switch), the compiler driver (cl.exe)
+          goggle about gcc analogy
+          C Inter­mediate Language (CIL)
+           GCC 4.8 will feature a few improvements when it comes to LTO, a.k.a. Link-Time Optimization
+           <!-- https://gcc.gnu.org/onlinedocs/gccint/LTO-Overview.html -->
+           <!-- http://gcc-python-plugin.readthedocs.org/en/latest/lto.html -->
+        </section>
+
+        <section>
+          <h2>Register allocation</h2>
+          <p>CSO (common subexpression optimization) and register allocation</p>
+          <p>16-32 registers are optimal register number for the compiler</p>
+        </section>
+
+        <section>
+          <h2>Compilers for DSP</h2>
+          <p>Compilers are more important for low-power especially VLIW targets</p>
+        </section>
+
+<!--         <section>
+          int sum(int x) {
+  int result = 0;
+  int count = 0;
+  for (int i = 1; i <= x; ++i) {
+    ++count;
+    result += i;
+  }
+  printf("%d", count);
+  return result;
+}
+
+#include <math.h> // sqrt.
+#include <stdbool.h> // bool, true and false.
+#include "Source2.h"
+int cube(int x) { return x*x*x; }
+int sum(int x) {
+  int result = 0;
+  for (int i = 1; i <= x; ++i) result += i;
+  return result;
+}
+int sumOfCubes(int x) {
+  int result = 0;
+  for (int i = 1; i <= x; ++i) result += cube(i);
+  return result;
+}
+static
+bool isPrime(int x) {
+  for (int i = 2; i <= (int)sqrt(x); ++i) {
+    if (x % i == 0) return false;
+  }
+  return true;
+}
+int getPrime(int x) {
+  int count = 0;
+  int candidate = 2;
+  while (count != x) {
+    if (isPrime(candidate))
+      ++count;
+  }
+  return candidate;
+}
+
+#include <stdio.h> // scanf_s and printf.
+#include "Source2.h"
+int square(int x) { return x*x; }
+main() {
+  int n = 5, m;
+  scanf_s("%d", &m);
+  printf("The square of %d is %d.", n, square(n));
+  printf("The square of %d is %d.", m, square(m));
+  printf("The cube of %d is %d.", n, cube(n));
+  printf("The sum of %d is %d.", n, sum(n));
+  printf("The sum of cubes of %d is %d.", n, sumOfCubes(n));
+  printf("The %dth prime number is %d.", n, getPrime(n));
+}
+        </section>
+
+        <section>
+          do
+{
+   item = 10;
+   value = value + item;
+} while(value<100);
+
+This code involves repeated assignment of the identifier item, which if we put this way:
+
+Item = 10;
+do
+{
+   value = value + item;
+} while(value<100);
+        </section> -->
+
+<!--
+There is only -ftree-vectorizer-verbose=N currently and the various dump-files
+the individual passes produce (-fdump-tree-all[-subflags]
+-fdump-rtl-all[-subflags]).
+
+        <section>
+          pointer optimization
+          evil?
+          reduction of levels of indirection usually helps
+          -ftree-vectorizer-verbose=n
+          -fdump-rtl-loop2
+          -fdump-ipa-all
+
+
+-ftree-vectorizer-verbose is analogous to the icc -vec-report option (included in -opt-report).
+Among the questions not answered by -opt-report are those associated with application (or not) of -complex-limited-range (gcc -fcx-limited-range).
+-opt-report3 I believe turns on reporting of software prefetch application, which is important but difficult to follow.
+It's nearly impossible to compare icc and gcc optimization other than by examining assembly and using a profiler which shows paths taken.
+        </section>
+
+        <section>
+          IPO/IPA
+Interprocedural Optimization/Analysis
+Generates intermediate code at compile time.
+Generates object code during final link.
+Compiler can move, optimize, restructure and delete
+code between procedures and files.
+
+As with SWP, exposes more opportunities to
+optimization passes.
+Stronger typing of pointers, arguments and data
+structures can vastly increase effectiveness.
+
+Software Pipelining
+Consider more than one iteration of a loop.
+To use it, the compiler must predict:
+Keep more intermediate results in registers and
+cache.
+Loop count
+Inter-iteration dependencies
+Aliasing
+Optimization can be a trade off.
+Loop set up and tear down can be costly.
+40Pointer Aliasing
+The most efficient optimization is deletion.
+Compilers must assume that memory (by pointers) has changed or overlaps.
+Especially loads and stores!
+Unless you help it to conclude otherwise.
+This is called the pointer aliasing problem. It is really bad in C and C++.
+Can be controlled on command line and through keywords.
+
+42Profile Directed Feedback
+●
+●
+a.k.a Feedback Directed Optimization
+Collect data about what the code really does and
+then adapt.
+–
+●
+Important for:
+–
+–
+●
+Old idea, but (still) not very well developed.
+Branches (I-cache/ITLB misses, BP misprediction)
+Loop bounds (unroll, SWP, jam, etc)
+Future will be to make most decisions based on
+real data.
+NOTUR2009
+Philip Mucci, Multicore Optimization
+43Compiler Flags
+●
+All compilers support the -O(n) flag.
+–
+●
+This flag actually turns on lots of other optimizations.
+Better to start at -O(big) and disable
+optimizations rather than other way around.
+–
+–
+NOTUR2009
+Develop your knowledge of what to turn off.
+Compiler documentation is usually clear about
+which n can result in wrong answers.
+Philip Mucci, Multicore Optimization
+44GNU Compiler Flags
+●
+-O3 -ffast-math -funroll-all-loops
+-msse3 -fomit-frame-pointer
+-march=native -mtune=native
+–
+●
+Sometimes you need -fno-strict-aliasing
+to get correct results.
+–
+●
+-Q --help=optimizers
+-O2 and higher assume strict aliasing.
+Feedback directed optimization:
+–
+–
+NOTUR2009
+First time use -fprofile-generate
+Subsequent times use -fprofile-use
+Philip Mucci, Multicore Optimization
+45PathScale Compiler Flags
+●
+-Ofast is equivalent to:
+–
+●
+●
+Takes most of the same flags as GCC.
+To find out what the compiler is doing:
+–
+–
+●
+-O3 -ipa -OPT:Ofast -ffast-math -fno-
+math-errno -fomit-frame-pointer
+-LNO:vintr_verbose=1
+-LNO:simd_verbose=1
+Feedback directed optimization:
+–
+–
+NOTUR2009
+First time use -fb_create fbdata
+Subsequent times use -fb_opt fbdata
+Philip Mucci, Multicore Optimization
+46Intel Compiler Flags
+●
+-fast equals -O3 -ipo -xT -static
+-no-prec-div
+–
+–
+●
+To find out what the compiler is doing:
+–
+●
+-ip is subset of -ipo for single files
+-shared-intel to allow tools to work
+-opt-report [0123], -opt-report-file f
+Feedback directed optimization
+–
+–
+NOTUR2009
+First time use -prof-gen
+Subsequent times use -prof-use
+Philip Mucci, Multicore Optimization
+Loop Split
+–
+
+Limiting Aliasing
+●
+restrict keyword
+–
+–
+Part of the C99 standard (-std=c99 with GCC)
+A pointer refers to unique memory.
+●
+–
+●
+Writes through this pointer will not affect anyone else.
+Allows very good optimization!
+-fstrict-aliasing allows aliasing only for
+pointers of the same type.
+–
+For GCC and many compilers, auto when >= -O2
+
+Important C/C++ Keywords
+static In global scope, used only in this file.
+const – Data or location never changes.
+volatile - Data may change from an alias outside of scope.
+inline – Inline all the time.
+        </section>
+
+        <section>
+
+Compiler flags
+Many optimizations can be controlled separately from -O<big>
+If possible, it's better to selectively disable optimizations rather than reduce the level of global optimization.
+
+Exceptions
+Numerical computations resulting in undefined results or requiring assistance.
+Exception is generated by the processor.
+Handled in software by the Operating System.
+DENORM's are the worst.
+
+Pointer Aliasing
+The compiler needs to assume that any 2 pointers can point to the same region of memory.
+This removes many optimization opportunities.
+Programmer knows much more about pointer usage than compiler, try to express it with directives.
+
+Software Pipelining
+Different iterations of a loop are overlapped in time in an attempt to keep all the functional units busy.
+Data needs to be in cache for this to work well.
+
+Interprocedural Analysis
+When analysis is confined to a single procedure, the optimizer is forced to make worst case assumptions about the possible effects.
+IPA analyzes more of the code and feeds that to the other phases.
+Usually, the code is generated at link time.
+
+IPA features
+Inlining across source files
+Common block padding
+Constant propagation
+Dead function/variable elimination
+Library reference optimizations
+
+        </section> -->
+
+        <section id="end1">
+          <h1>THE END</h1>
+          <img class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015</h4s>
+        </section>
+
+      </div>
+
+    </div>
+
+    <script src="plugin/reveal/lib/js/head.min.js"></script>
+    <script src="plugin/reveal/js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: false,
+
+        width: 960,
+        height: 720,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'plugin/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
