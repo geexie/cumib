@@ -58,14 +58,12 @@
             <li>Compilation trajectory</li>
             <li>Compiler optimizations
               <ul>
+                <li>Obstacles</li>
                 <li>Taxonomy</li>
                 <li>Examples</li>
               </ul>
-            <li>Obstacles</li>
             <li>Flags and directives</li>
             <li>Helping the compiler</li>
-            <!-- <li>Dangerous optimizations: fast math</li> -->
-            <!-- <li>Pointer optimization</li> -->
             <li>Summary</li>
           </ul>
         </section>
@@ -165,7 +163,7 @@ Therefore, code generator assumes to have unlimited number of memory storage (re
               <li>language independent like three-address code (similar to classic RISC ISA).</li>
             </ul>
             <p>Three-Address Code (TAC)</p>
-            <table style="width:100%;">
+            <table style="width:100%;" class="simple">
               <colgroup>
                 <col style="width:50%;"></col>
                 <col></col>
@@ -173,7 +171,7 @@ Therefore, code generator assumes to have unlimited number of memory storage (re
               <tbody>
                 <tr>
                   <td>
-                    <pre><code class="cpp">a = b + c * d;</code>.</pre>
+                    <pre><code class="cpp">a = b + c * d;</code></pre>
                   </td>
                   <td>
                     <pre><code>r1 = c * d;
@@ -301,7 +299,7 @@ a = r3</code></pre>
             <blockquote>
               clang -Os -S -emit-llvm squere.c -o squere.ll; cat squere.ll
             </blockquote>
-            <table style="width:100%;">
+            <table style="width:100%;" class="simple">
               <colgroup>
                 <col style="width:50%;"></col>
                 <col></col>
@@ -325,79 +323,6 @@ ret i32 %1
             </table>
           </section>
         </section>
-<!--
-        <section>
-          <h2>GENERIC example</h2>
-          <pre><code class="cpp">struct A { A(); ~A(); };
- int i;
- int g();
- void f()
- {
-   A a;
-   int j = (--i, i ? 0 : 1);
-
-   for (int x = 42; x > 0; --x)
-     {
-       i += g()*4 + 32;
-     }
- }
-          </code></pre>
-          <pre><code class="cpp">void f()
-     {
-       int i.0;
-       int T.1;
-       int iftmp.2;
-       int T.3;
-       int T.4;
-       int T.5;
-       int T.6;
-
-       {
-         struct A a;
-         int j;
-
-         __comp_ctor (&a);
-         try
-           {
-             i.0 = i;
-             T.1 = i.0 - 1;
-             i = T.1;
-             i.0 = i;
-             if (i.0 == 0)
-               iftmp.2 = 1;
-             else
-               iftmp.2 = 0;
-             j = iftmp.2;
-             {
-               int x;
-
-               x = 42;
-               goto test;
-               loop:;
-
-               T.3 = g ();
-               T.4 = T.3 * 4;
-               i.0 = i;
-               T.5 = T.4 + i.0;
-               T.6 = T.5 + 32;
-               i = T.6;
-               x = x - 1;
-
-               test:;
-               if (x > 0)
-                 goto loop;
-               else
-                 goto break_;
-               break_:;
-             }
-           }
-         finally
-           {
-             __comp_dtor (&a);
-           }
-       }
-     }</code></pre>
-        </section> -->
 
         <section>
           <h2>Towards a compiler</h2>
@@ -416,7 +341,7 @@ ret i32 %1
         <section>
           <section>
             <h2>Optimization obstacles: pointer aliasing</h2>
-              <table style="width:100%;">
+              <table style="width:100%;"  class="simple">
                 <colgroup>
                   <col style="width:50%;"></col>
                   <col></col>
@@ -448,7 +373,7 @@ ret i32 %1
 
           <section>
             <h2>Optimization obstacles: pointer aliasing</h2>
-              <table style="width:100%;">
+              <table style="width:100%;" class="simple">
                 <colgroup>
                   <col style="width:50%;"></col>
                   <col></col>
@@ -501,19 +426,25 @@ int main (void)
   return 0;
 
 }</code></pre>
-          <p><code style="background-color:black;">gcc -O1 cast.c -o cast3 ; ./cast3</code> results in <b>6</b></p>
-          <p><code style="background-color:black;">gcc -O2 cast.c -o cast3 ; ./cast3</code> results in <b>5</b></p>
+          <p><code style="background-color:black;">gcc -O1 test.c -o test ; ./test</code> results in <b>6</b></p>
+          <p><code style="background-color:black;">gcc -O2 test.c -o test ; ./test</code> results in <b>5</b></p>
           </section>
 
-<!--           <section>
-            <h2>Limited optimizations</h2>
-          </section> -->
+          <section>
+            <h2>Pointer aliasing: missed opportunities</h2>
+            <ul>
+              <li>compiler freely schedule arithmetic, but preserves order of memory dereferencing</li>
+              <li>compiler limited in redundancy elimination</li>
+              <li>compiler limited in unrolling</li>
+              <li>compiler limited in auto-vectorization</li>
+            </ul>
+          </section>
         </section>
 
         <section>
           <section>
             <h2>Optimization obstacles: functional calls</h2>
-              <table style="width:100%;">
+              <table style="width:100%;" class="simple">
                 <colgroup>
                   <col style="width:50%;"></col>
                   <col></col>
@@ -548,7 +479,7 @@ int caller()
 
           <section>
             <h2>Optimization obstacles: functional calls</h2>
-              <table style="width:100%;">
+              <table style="width:100%;" class="simple">
                 <colgroup>
                   <col style="width:50%;"></col>
                   <col></col>
@@ -630,21 +561,36 @@ int caller()
           </section>
         </section>
 
-        <section>
-          <section>
-            <h2>Optimization obstacles: Exceptions</h2>
-          </section>
-        </section>
+<!--         <section>
+          <h2>Optimization obstacles: Branches, Calls, Exceptions</h2>
+        </section> -->
+
+<!--         <section>
+          <h2>Optimization obstacles: Storage type global variables</h2>
+        </section> -->
 
         <section>
           <section>
-            <h2>Optimization obstacles: Storage type global variables</h2>
-          </section>
-        </section>
+            <h2>Optimization obstacles: Floating point math</h2>
+            <ul>
+              <li>Compiler much more conservative on floating point rather than integer math.</li>
+              <li>Floating point arithmetics is not associative so <b>A+(B+C) != (A+B)+C</b></li>
+            </ul>
+            <pre><code class="cpp">
+void associativityCheck (void)
+{
+  double x = 3.1415926535897931;
+  double a = 1.0e15;
+  double b = -(1.0e15 - 1.0);
 
-        <section>
-          <section>
-            <h2>Optimization obstacles: Floating point</h2>
+  printf("%f %f\n", x*(a + b), x*a + x*b );
+}
+</code></pre>
+          <pre><code>
+$ gcc check.c -o check ; ./check
+3.141593 3.000000
+
+</code></pre>
           </section>
         </section>
 
@@ -826,10 +772,10 @@ options enabled:
           </small>
         </section>
 
-        <section>
+<!--         <section>
           <h2>Optimization levels</h2>
           example how optimization level effects the performance
-        </section>
+        </section> -->
 
         <section>
           <h2>Auto-vectorization</h2>
@@ -847,360 +793,169 @@ options enabled:
         </section>
 
         <section>
-          <h2>Compiler optimization reports</h2>
-          <p style="color:red;">optimizer reports form specific compilers (get report from hexagon scheduling!!!)</p>
+          <section>
+            <h2>Compiler feedback</h2>
+            <ul>
+              <li>Wall-time of you application</li>
+              <li>Dumps of assembly and intermediate language</li>
+              <li>Compiler optimization reports
+                <ul>
+                  <li>All compilers have some support for them</li>
+                  <li>Some of them able to generate very detailed reports<br>
+                  about loop unrolling, auto-vectorization, VLIW slots packaging, e.t.c</li>
+                </ul>
+              </li>
+            </ul>
+            <p>gcc feedback example</p>
+            <ul>
+              <li><strong>-fopt-info</strong></li>
+              <li>-fopt-info-options</li>
+              <li>-fopt-info-options=filename</li>
+              <li>-fopt-info -fsched-verbose=n</li>
+              <li>-ftree-vectorizer-verbose=n (analogy to icc -vec-report)</li>
+            </ul>
+          </section>
+        </section>
+<!--     ‘optimized’
+        Print information when an optimization is successfully applied. It is up to a pass to decide which information is relevant. For example, the vectorizer passes print the source location of loops which got successfully vectorized.
+    ‘missed’
+        Print information about missed optimizations. Individual passes control which information to include in the output. For example,
+
+                       gcc -O2 -ftree-vectorize -fopt-info-vec-missed
+
+        will print information about missed optimization opportunities from vectorization passes on stderr.
+    ‘note’
+        Print verbose information about optimizations, such as certain transformations, more detailed messages about decisions etc.
+    ‘all’
+        Print detailed optimization information. This includes optimized, missed, and note.
+
+    The second set of options describes a group of optimizations and may include one or more of the following.
+
+    ‘ipa’
+        Enable dumps from all interprocedural optimizations.
+    ‘loop’
+        Enable dumps from all loop optimizations.
+    ‘inline’
+        Enable dumps from all inlining optimizations.
+    ‘vec’
+        Enable dumps from all vectorization optimizations.
+    ‘optall’
+        Enable dumps from all optimizations. This is a superset of the optimization groups listed above. -->
+
+        <section>
+          <h2>Compiler feedback example</h2>
+          <pre><code class="bash">
+./src/box.cc:193:9: note: loop vectorized
+./src/box.cc:193:9: note: loop versioned for vectorization because of possible aliasing
+./src/box.cc:193:9: note: loop peeled for vectorization to enhance alignment
+./src/box.cc:96:9: note: loop vectorized
+./src/box.cc:96:9: note: loop peeled for vectorization to enhance alignment
+./src/box.cc:51:9: note: loop vectorized
+./src/box.cc:51:9: note: loop peeled for vectorization to enhance alignment
+./src/box.cc:193:9: note: loop with 7 iterations completely unrolled
+./src/box.cc:32:13: note: loop with 7 iterations completely unrolled
+./src/box.cc:96:9: note: loop with 15 iterations completely unrolled
+./src/box.cc:51:9: note: loop with 15 iterations completely unrolled
+./src/box.cc:584:9: note: loop vectorized
+./src/box.cc:584:9: note: loop versioned for vectorization because of possible aliasing
+./src/box.cc:584:9: note: loop peeled for vectorization to enhance alignment
+./src/box.cc:482:9: note: loop vectorized
+./src/box.cc:482:9: note: loop peeled for vectorization to enhance alignment
+./src/box.cc:463:5: note: loop vectorized
+./src/box.cc:463:5: note: loop versioned for vectorization because of possible aliasing
+./src/box.cc:463:5: note: loop peeled for vectorization to enhance alignment</code></pre>
         </section>
 
+        <section>
+          <section>
+            <h2>Compiler optimizations taxonomy</h2>
+            <ul>
+              <li>High­-level optimizations
+                <ul>
+                  <li>Loop optimizations</li>
+                  <li>Interprocedural optimization</li>
+                </ul>
+              </li>
+              <li>Global optimizations</li>
+              <li>Local optimizations</li>
+              <li>Processor­ dependent optimizations
+                <ul>
+                  <li>Register allocation</li>
+                  <li>Peephole optimizations</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h2>Compiler optimizations taxonomy</h2>
+            <img src="images/popt/opt_machine_independent.png" alt="machine independent optimizations" style="padding:15px; background:white">
+          </section>
+          <section>
+            <h2>Compiler optimizations taxonomy</h2>
+            <img src="images/popt/opt_machine_dependent.png" alt="machine dependent optimizations" style="padding:15px; background:white">
+          </section>
+        </section>
 <!--         <section>
           <h2>profile-guided optimization (PGO)</h2>
         </section> -->
 
-        <section>
-          <section>
-            <h2>Hints: Aligning Data</h2>
-            <ul>
-              <li>Specifying alignment eliminates manual padding</li>
-              <li>Helps with auto-vectorization as well</li>
-            </ul>
-            <pre><code class="cpp">
-/* GCC, align to 16 bytes */
-unsigned long lock __attribute__ ((aligned(16)));
-            </code></pre>
-            <pre><code class="cpp">
-/* Intel, align to 16 bytes */
-__declspec(align(16)) unsigned long lock;
-            </code></pre>
-          </section>
-          <section>
-            <h2>Hints: prefetching</h2>
+        <!-- <section> -->
+          <!-- <section> -->
+            <!-- <h2>Hints: Aligning Data</h2> -->
+            <!-- <ul> -->
+              <!-- <li>Specifying alignment eliminates manual padding</li> -->
+              <!-- <li>Helps with auto-vectorization as well</li> -->
+            <!-- </ul> -->
+            <!-- <pre><code class="cpp"> -->
+<!-- /* GCC, align to 16 bytes */ -->
+<!-- unsigned long lock __attribute__ ((aligned(16))); -->
+            <!-- </code></pre> -->
+            <!-- <pre><code class="cpp"> -->
+<!-- /* Intel, align to 16 bytes */ -->
+<!-- __declspec(align(16)) unsigned long lock; -->
+            <!-- </code></pre> -->
+          <!-- </section> -->
+          <!-- <section> -->
+            <!-- <h2>Hints: prefetching</h2> -->
 <!-- GCC: __builtin_prefetch() -->
-          </section>
-        </section>
+          <!-- </section> -->
+        <!-- </section> -->
 
-        <section>
-          <h2>False optimizations</h2>
-        </section>
-
-        <section>
+<!--         <section>
           <h2>Software pipelining</h2>
-          <!-- https://en.wikipedia.org/wiki/Software_pipelining -->
+          https://en.wikipedia.org/wiki/Software_pipelining
         </section>
-
-        <section>
+ -->
+<!--         <section>
           <h2></h2>
           font and optimizations: constant folding
           intermediate representations
           backend optimizations
-        </section>
+        </section> -->
 
-        <section>
-          <h2>IPA: Interprocedural optimization</h2>
+        <!-- <section> -->
+          <!-- <h2>IPA: Interprocedural optimization</h2> -->
           <!-- https://gcc.gnu.org/onlinedocs/gccint/IPA.html -->
           <!-- https://en.wikipedia.org/wiki/Interprocedural_optimization -->
-        </section>
+        <!-- </section> -->
 
         <section>
           <h2>Link-Time Code Generation</h2>
           When LTCG is enabled (by specifying the /GL compiler switch), the compiler driver (cl.exe)
-          goggle about gcc analogy
-          C Inter­mediate Language (CIL)
-           GCC 4.8 will feature a few improvements when it comes to LTO, a.k.a. Link-Time Optimization
+          <!-- C Inter­mediate Language (CIL) -->
+           GCC 4.8 feature a few improvements when it comes to LTO, a.k.a. Link-Time Optimization
            <!-- https://gcc.gnu.org/onlinedocs/gccint/LTO-Overview.html -->
            <!-- http://gcc-python-plugin.readthedocs.org/en/latest/lto.html -->
         </section>
 
-        <section>
+<!--         <section>
           <h2>Register allocation</h2>
           <p>CSO (common subexpression optimization) and register allocation</p>
           <p>16-32 registers are optimal register number for the compiler</p>
-        </section>
-
-        <section>
-          <h2>Compilers for DSP</h2>
-          <p>Compilers are more important for low-power especially VLIW targets</p>
-        </section>
-
-<!--         <section>
-          int sum(int x) {
-  int result = 0;
-  int count = 0;
-  for (int i = 1; i <= x; ++i) {
-    ++count;
-    result += i;
-  }
-  printf("%d", count);
-  return result;
-}
-
-#include <math.h> // sqrt.
-#include <stdbool.h> // bool, true and false.
-#include "Source2.h"
-int cube(int x) { return x*x*x; }
-int sum(int x) {
-  int result = 0;
-  for (int i = 1; i <= x; ++i) result += i;
-  return result;
-}
-int sumOfCubes(int x) {
-  int result = 0;
-  for (int i = 1; i <= x; ++i) result += cube(i);
-  return result;
-}
-static
-bool isPrime(int x) {
-  for (int i = 2; i <= (int)sqrt(x); ++i) {
-    if (x % i == 0) return false;
-  }
-  return true;
-}
-int getPrime(int x) {
-  int count = 0;
-  int candidate = 2;
-  while (count != x) {
-    if (isPrime(candidate))
-      ++count;
-  }
-  return candidate;
-}
-
-#include <stdio.h> // scanf_s and printf.
-#include "Source2.h"
-int square(int x) { return x*x; }
-main() {
-  int n = 5, m;
-  scanf_s("%d", &m);
-  printf("The square of %d is %d.", n, square(n));
-  printf("The square of %d is %d.", m, square(m));
-  printf("The cube of %d is %d.", n, cube(n));
-  printf("The sum of %d is %d.", n, sum(n));
-  printf("The sum of cubes of %d is %d.", n, sumOfCubes(n));
-  printf("The %dth prime number is %d.", n, getPrime(n));
-}
-        </section>
-
-        <section>
-          do
-{
-   item = 10;
-   value = value + item;
-} while(value<100);
-
-This code involves repeated assignment of the identifier item, which if we put this way:
-
-Item = 10;
-do
-{
-   value = value + item;
-} while(value<100);
         </section> -->
 
-<!--
-There is only -ftree-vectorizer-verbose=N currently and the various dump-files
-the individual passes produce (-fdump-tree-all[-subflags]
--fdump-rtl-all[-subflags]).
-
-        <section>
-          pointer optimization
-          evil?
-          reduction of levels of indirection usually helps
-          -ftree-vectorizer-verbose=n
-          -fdump-rtl-loop2
-          -fdump-ipa-all
-
-
--ftree-vectorizer-verbose is analogous to the icc -vec-report option (included in -opt-report).
-Among the questions not answered by -opt-report are those associated with application (or not) of -complex-limited-range (gcc -fcx-limited-range).
--opt-report3 I believe turns on reporting of software prefetch application, which is important but difficult to follow.
-It's nearly impossible to compare icc and gcc optimization other than by examining assembly and using a profiler which shows paths taken.
-        </section>
-
-        <section>
-          IPO/IPA
-Interprocedural Optimization/Analysis
-Generates intermediate code at compile time.
-Generates object code during final link.
-Compiler can move, optimize, restructure and delete
-code between procedures and files.
-
-As with SWP, exposes more opportunities to
-optimization passes.
-Stronger typing of pointers, arguments and data
-structures can vastly increase effectiveness.
-
-Software Pipelining
-Consider more than one iteration of a loop.
-To use it, the compiler must predict:
-Keep more intermediate results in registers and
-cache.
-Loop count
-Inter-iteration dependencies
-Aliasing
-Optimization can be a trade off.
-Loop set up and tear down can be costly.
-40Pointer Aliasing
-The most efficient optimization is deletion.
-Compilers must assume that memory (by pointers) has changed or overlaps.
-Especially loads and stores!
-Unless you help it to conclude otherwise.
-This is called the pointer aliasing problem. It is really bad in C and C++.
-Can be controlled on command line and through keywords.
-
-42Profile Directed Feedback
-●
-●
-a.k.a Feedback Directed Optimization
-Collect data about what the code really does and
-then adapt.
-–
-●
-Important for:
-–
-–
-●
-Old idea, but (still) not very well developed.
-Branches (I-cache/ITLB misses, BP misprediction)
-Loop bounds (unroll, SWP, jam, etc)
-Future will be to make most decisions based on
-real data.
-NOTUR2009
-Philip Mucci, Multicore Optimization
-43Compiler Flags
-●
-All compilers support the -O(n) flag.
-–
-●
-This flag actually turns on lots of other optimizations.
-Better to start at -O(big) and disable
-optimizations rather than other way around.
-–
-–
-NOTUR2009
-Develop your knowledge of what to turn off.
-Compiler documentation is usually clear about
-which n can result in wrong answers.
-Philip Mucci, Multicore Optimization
-44GNU Compiler Flags
-●
--O3 -ffast-math -funroll-all-loops
--msse3 -fomit-frame-pointer
--march=native -mtune=native
-–
-●
-Sometimes you need -fno-strict-aliasing
-to get correct results.
-–
-●
--Q --help=optimizers
--O2 and higher assume strict aliasing.
-Feedback directed optimization:
-–
-–
-NOTUR2009
-First time use -fprofile-generate
-Subsequent times use -fprofile-use
-Philip Mucci, Multicore Optimization
-45PathScale Compiler Flags
-●
--Ofast is equivalent to:
-–
-●
-●
-Takes most of the same flags as GCC.
-To find out what the compiler is doing:
-–
-–
-●
--O3 -ipa -OPT:Ofast -ffast-math -fno-
-math-errno -fomit-frame-pointer
--LNO:vintr_verbose=1
--LNO:simd_verbose=1
-Feedback directed optimization:
-–
-–
-NOTUR2009
-First time use -fb_create fbdata
-Subsequent times use -fb_opt fbdata
-Philip Mucci, Multicore Optimization
-46Intel Compiler Flags
-●
--fast equals -O3 -ipo -xT -static
--no-prec-div
-–
-–
-●
-To find out what the compiler is doing:
-–
-●
--ip is subset of -ipo for single files
--shared-intel to allow tools to work
--opt-report [0123], -opt-report-file f
-Feedback directed optimization
-–
-–
-NOTUR2009
-First time use -prof-gen
-Subsequent times use -prof-use
-Philip Mucci, Multicore Optimization
-Loop Split
-–
-
-Limiting Aliasing
-●
-restrict keyword
-–
-–
-Part of the C99 standard (-std=c99 with GCC)
-A pointer refers to unique memory.
-●
-–
-●
-Writes through this pointer will not affect anyone else.
-Allows very good optimization!
--fstrict-aliasing allows aliasing only for
-pointers of the same type.
-–
-For GCC and many compilers, auto when >= -O2
-
-Important C/C++ Keywords
-static In global scope, used only in this file.
-const – Data or location never changes.
-volatile - Data may change from an alias outside of scope.
-inline – Inline all the time.
-        </section>
-
-        <section>
-
-Compiler flags
-Many optimizations can be controlled separately from -O<big>
-If possible, it's better to selectively disable optimizations rather than reduce the level of global optimization.
-
-Exceptions
-Numerical computations resulting in undefined results or requiring assistance.
-Exception is generated by the processor.
-Handled in software by the Operating System.
-DENORM's are the worst.
-
-Pointer Aliasing
-The compiler needs to assume that any 2 pointers can point to the same region of memory.
-This removes many optimization opportunities.
-Programmer knows much more about pointer usage than compiler, try to express it with directives.
-
-Software Pipelining
-Different iterations of a loop are overlapped in time in an attempt to keep all the functional units busy.
-Data needs to be in cache for this to work well.
-
-Interprocedural Analysis
-When analysis is confined to a single procedure, the optimizer is forced to make worst case assumptions about the possible effects.
-IPA analyzes more of the code and feeds that to the other phases.
-Usually, the code is generated at link time.
-
-IPA features
-Inlining across source files
-Common block padding
-Constant propagation
-Dead function/variable elimination
-Library reference optimizations
-
+<!--         <section>
+          <h2>False optimizations</h2>
         </section> -->
 
         <section id="end1">
