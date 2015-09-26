@@ -193,6 +193,10 @@ body {
     border-right: 4px double gray;
 }
 
+.reveal table.simple col {
+    border-right: 0 none;
+}
+
 .reveal table col:last-child {
     border-right: 0 none;
 }
