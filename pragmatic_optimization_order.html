@@ -60,7 +60,7 @@
             <li>Pragmatic approach</li>
             <li>Place of optimization in a project life cycle</li>
             <li>Ordering optimization techniques</li>
-            <li>Overview of optimization stages</li>
+            <li>Overview of optimization steps</li>
           </ul>
         </section>
 
@@ -168,8 +168,8 @@
             <dd style="margin-left: 5em;">is the electrical energy over time which is supplied to complete a task.</dd>
             <br/>
             <dt><b>processor time</b></dt>
-            <dd style="margin-left: 5em;">is the total execution time or runtime for which a processor was dedicated
-            to a task (used for processing instructions of that task).</dd>
+            <dd style="margin-left: 5em;">is the total execution time (or runtime) for which a processor was dedicated
+            to a task (i.e. used for processing instructions of that task).</dd>
           </dl>
         </section>
 
@@ -186,6 +186,11 @@
               <small>-Donald Knuth, Structured Programming With go to Statements</small>
             </div>
           </blockquote>
+          <br/>
+          <ol>
+            <li>You ought to find what to start with (3%)</li>
+            <li>You ought to know where to stop (97%)</li>
+          </ol>
         </section>
 
         <section>
@@ -425,8 +430,9 @@
               </dd>
             </dl>
           </section>
+
           <section>
-            <h2>>Step #3: optimize memory access patterns</h2>
+            <h2>Step #3: optimize memory access patterns</h2>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -440,7 +446,7 @@ for (int j = 0; j &lt; img.height; j++)
 {
     for (int i = 0; i &lt; img.width; i++)
     {
-        if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
+        if (img[j * img.width + i] &gt; 0)
         {
             count++;
         }
@@ -454,7 +460,7 @@ for (int i = 0; i &lt; img.width; i++)
 {
     for (int j = 0; j &lt; img.height; j++)
     {
-        if (img.at&lt;uint8_t&gt;(j, i) &gt; 0)
+        if (img[j * img.width + i] &gt; 0)
         {
             count++;
         }
@@ -467,14 +473,57 @@ for (int i = 0; i &lt; img.width; i++)
             <br/>
             <h3>Which is more optimal for conventional CPU processor?</h3>
           </section>
+          <section>
+            <h2>Step #3: optimize memory access patterns</h2>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre style="border: 3px double #FF8D14;"><code class="cpp">
+for (int j = 0; j &lt; img.height; j++)
+{
+    for (int i = 0; i &lt; img.width; i++)
+    {
+        if (img[j * img.width + i] &gt; 0)
+        {
+            count++;
+        }
+    }
+}
+                    </code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="cpp">
+for (int i = 0; i &lt; img.width; i++)
+{
+    for (int j = 0; j &lt; img.height; j++)
+    {
+        if (img[j * img.width + i] &gt; 0)
+        {
+            count++;
+        }
+    }
+}
+                    </code></pre>
+                  </td>
+              </tbody>
+            </table>
+            <br/>
+          </section>
         </section>
 
         <section>
           <section>
             <h2>Step #4: minimize number of operations</h2>
-            <blockquote>Reducing in the number of program operations does not necessarily decrease its running time, but it is
-  a good heuristic though.</blockquote>
-            <p>A Compiler is good in local optimizations.<br/>So they usually helps a lot here:</p>
+            <blockquote>Reducing a program in the number of operations
+            <br/> does not necessarily decrease its running time,
+            <br/>but it is a good heuristic, though.</blockquote>
+            <br/>
+            <p>A Compiler is good in local optimizations, so it usually helps a lot here:</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -483,7 +532,7 @@ for (int i = 0; i &lt; img.width; i++)
               <tbody>
                 <tr>
                   <td  style="padding-left:1.5em;" width="50%">
-                    Machine-independent optimizations
+                    <b>Machine-independent optimizations</b>
                     <ul>
                       <li>Eliminating common sub-expressions</li>
                       <li>Constant propagation</li>
@@ -492,7 +541,7 @@ for (int i = 0; i &lt; img.width; i++)
                     </ul>
                   </td>
                   <td>
-                    Machine-dependent optimizations
+                    <b>Machine-dependent optimizations</b>
                     <ul>
                       <li>Register allocation</li>
                       <li>InstrucIon selecIon</li>
@@ -506,33 +555,57 @@ for (int i = 0; i &lt; img.width; i++)
           </section>
           <section>
             <h2>Step #4: minimize number of operations</h2>
-            <p>Unfortunately, sometimes it fails one of optimization steps<br/>and harms the performance by
+            <img src="images/popt/g2rgba.svg" class="simple" width="60%" />
+            <pre><code class="cpp">
+uint32_t gray2rgba_v1(uint8_t c)
+{
+  return c + (c<<8) + (c<<16) + (c<<24);
+}
+            </code></pre>
+            <pre><code class="cpp">
+uint32_t gray2rgba_v2(uint8_t c)
+{
+  return c * 0x01010101;
+}
+            </code></pre>
+            <h3>Are they same?</h3>
+          </section>
+          <section>
+            <h2>Step #4: minimize number of operations</h2>
+            <pre><code class="asm">
+gray2rgba_v1:
+.LFB0:
+  .cfi_startproc
+  movzbl  %dil, %eax
+  imull $16843009, %eax, %eax
+  ret
+  .cfi_endproc
+
+            </code></pre>
+            <pre><code class="asm">
+gray2rgba_v2:
+.LFB2:
+  .cfi_startproc
+  movzbl  %dil, %eax
+  imull $16843009, %eax, %eax
+  ret
+  .cfi_endproc
+
+            </code></pre>
+            <h3>Are they same?</h3>
+            <code>gcc -O2  -S 1.c -o 1.s ; cat 1.s</code>
+          </section>
+          <section>
+            <h2>Step #4: minimize number of operations</h2>
+            <p>Unfortunately, sometimes a compiler fails some optimization steps<br/>and harms the performance by
             introducing redundant operations.</p>
             <p>More often failed steps are:</p>
             <ul>
               <li>Register allocation</li>
               <li>Scalarization</li>
             </ul>
-            <p>Starting from this optimization step it is worth to <b>look at the assembly code</b> to check
-             whether the compiler is actually automating a particular optimization.</p>
-          </section>
-          <section>
-            <h2>Step #4: minimize number of operations</h2>
-            <pre><code class="cpp">
-    // original code
-    unsigned foo(unsigned char i)
-    { // 3x shifts, 3x or
-        return i | (i<<8) | (i<<16) | (i<<24);
-    }
-            </code></pre>
-            <pre><code class="cpp">
-    // what compiler did
-    unsigned foo(unsigned char i)
-    { // 1x multiply
-        return i*0x01010101;
-    }
-            </code></pre>
-            <h3>Are they same?</h3>
+            <p><blockquote><strong>Starting from this optimization step it is worth to <b>look at the assembly code</b> to check
+             whether the compiler is actually automating a particular optimization.</strong></blockquote></p>
           </section>
         </section>
 
@@ -551,6 +624,7 @@ for (int i = 0; i &lt; img.width; i++)
             </code></pre>
             <h3>What is the critical path of this code line?</h3>
             <p></p>
+
         </section>
 
         <section>
@@ -565,20 +639,26 @@ for (int i = 0; i &lt; img.width; i++)
 
         <section>
           <h2>Step #7: dive into assembly</h2>
-          <p>Assembler is very often used to check the compiler<br/>and rarely used to write low-level code.</p>
+          <blockquote>Assembler is very often used to check the compiler<br/>and rarely used to write low-level code.</blockquote>
           <p>Raw assembly make sense to:</p>
           <ul>
             <li>Overcome compiler bugs & optimization limitations
               <ul>
-                <li>additional instructions</li>
+                <li>addition of redundant instructions</li>
                 <li>suboptimal register allocation</li>
               </ul>
             </li>
+            <br/>
             <li>Use specific hardware features
               <ul>
                 <li>which are not expressed in higher level ISA</li>
               </ul>
             </li>
+          </ul>
+          <p>Keep in mind that:</p>
+          <ul>
+            <li>Hand-written assembly is the least portable optimization</li>
+            <li>In-line assembly insertions limit compiler abilities for further optimizations</li>
           </ul>
         </section>
 
