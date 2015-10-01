@@ -73,24 +73,28 @@
           <section>
             <h2>Executable generation phases</h2>
             <ul>
-              <li>Pre-processing
+              <li><b>Pre-processing.</b> Pre-process, but don't compile.
                 <ul>
-                  <li><code>gcc -E test.cc</code>, <code>cl /E test.cc</code> Pre-process, but don't compile.</li>
+                  <li><strong><code>gcc -E test.cc</code></strong></li>
+                  <li><strong><code>cl /E test.cc</code></strong></li>
                 </ul>
               </li>
-              <li>Compilation
+              <li><b>Compilation</b> Compile but don't assemble.
                 <ul>
-                  <li><code>gcc -S test.cc</code>, <code>cl /FA test.cc</code> Compile but don't assemble.</li>
+                  <li><strong><code>gcc -S test.cc</code></strong></li>
+                  <li><strong><code>cl /FA test.cc</code></strong></li>
                 </ul>
               </li>
-              <li>Assembly
+              <li><b>Assembly.</b> Assemble but don't link.
                 <ul>
-                  <li><code>gcc -c test.cc</code>, <code>cl /c test.cc</code> Assemble but don't link.</li>
+                  <li><strong><code>gcc -c test.cc</code></strong></li>
+                  <li><strong><code>cl /c test.cc</code></strong></li>
                 </ul>
               </li>
-              <li>Linking
+              <li><b>Linking.</b> Link object files and generate the executable.
                 <ul>
-                  <li><code>gcc test.cc</code>, <code>cl test.cc</code> Link object files and generate the executable.</li>
+                  <li><strong><code>gcc test.cc</code></strong></li>
+                  <li><strong><code>cl test.cc</code></strong></li>
                 </ul>
               </li>
             </ul>
@@ -232,6 +236,7 @@ a = r3</code></pre>
                   </tbody>
                 </table>
               </li>
+              <br/>
               <li>Triples or Indirect triples has three fields : op, arg1, and arg2.
                 <table>
                   <colgroup>
@@ -350,7 +355,7 @@ ret i32 %1
                   <tr>
                     <td>
                       <pre><code class="cpp">
-  void twiddle(int *xp, int *yp)
+  void twiddle1(int *xp, int *yp)
   {
       *xp += *yp;
       *xp += *yp;
@@ -359,7 +364,7 @@ ret i32 %1
                     </td>
                     <td>
                       <pre><code class="cpp">
-  void twiddle(int *xp, int *yp)
+  void twiddle2(int *xp, int *yp)
   {
       *xp += 2* *yp;
   }
@@ -369,6 +374,54 @@ ret i32 %1
                 </tbody>
               </table>
             <h3>Are they equal?</h3>
+          </section>
+
+          <section>
+            <h2>Optimization obstacles: pointer aliasing</h2>
+              <table style="width:100%;"  class="simple">
+                <colgroup>
+                  <col style="width:50%;"></col>
+                  <col></col>
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td>
+                      <pre><code class="cpp">
+  void twiddle1(int *xp, int *yp)
+  {
+      *xp += *yp;
+      *xp += *yp;
+  }
+                      </code></pre>
+                    </td>
+                    <td>
+                      <pre><code class="cpp">
+  void twiddle2(int *xp, int *yp)
+  {
+      *xp += 2* *yp;
+  }
+                      </code></pre>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <pre style="width:50%"><code class="cpp">
+int main(int argc, char** argv)
+{
+    int i = 5, j = 5;
+
+    twiddle1(&i, &i);
+    twiddle2(&j, &j);
+
+    printf("twiddle1 result is %d\n", i);
+    printf("twiddle2 result is %d\n", j);
+}
+            </code></pre>
+          <p><code>
+twiddle1 result is 20<br/>
+twiddle2 result is 15
+
+          </code></p>
           </section>
 
           <section>
