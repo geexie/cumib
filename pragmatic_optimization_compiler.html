@@ -59,12 +59,11 @@
             <li>Compiler optimizations
               <ul>
                 <li>Obstacles</li>
+                <li>Flags and directives</li>
                 <li>Taxonomy</li>
                 <li>Examples</li>
               </ul>
-            <li>Flags and directives</li>
-            <li>Helping the compiler</li>
-            <li>Summary</li>
+            <!-- <li>Summary</li> -->
           </ul>
         </section>
 
@@ -102,11 +101,8 @@
 
           <section>
             <h2>Compiler trajectory</h2>
-            <img width="40%" src="images/popt/compiler_phases.jpg">
-          </section>
-
-          <section>
-            <h2>Compiler trajectory</h2>
+            <img class="simple" src="images/popt/compiler_phases.svg">
+            <br/><br/>
             <dl>
               <dt><b>Lexical Analysis</b></dt>
               <dd>scans the source code as a stream of characters &amp; converts it into lexemes (tokens).</dd>
@@ -115,6 +111,13 @@
                 Source code grammar (syntactical correctness) is checked here.</dd>
               <dt><b>Semantic Analysis</b></dt>
               <dd>checks whether the syntax tree constructed follows the rules of language (eg, type checks).</dd>
+          </section>
+
+          <section>
+            <h2>Compiler trajectory</h2>
+            <img class="simple" src="images/popt/compiler_phases.svg">
+            <br/><br/>
+            <dl>
               <dt><b>Intermediate Code Generation</b></dt>
               <dd>represents a program for some abstract machine. It is in between the high-level language and the
                 machine language.</dd>
@@ -126,19 +129,19 @@
           </section>
 
           <section>
-            <h2>Fontend and backend</h2>
-            <img src="images/popt/Compiler_design_IPL.png">
+            <h2>Frontend and backend</h2>
+            <img src="images/popt/front-back.svg" class="simple">
             <ul>
               <li>No requirement for a full native compiler for each new target or programming language</li>
               <li>Only backend part needed to support every new machine</li>
-              <li>Only fontend part needed to support every new programming language</li>
+              <li>Only frontend part needed to support every new programming language</li>
               <li>Most of optimization resemble for all targets and could be applied in between font end and backend.</li>
             </ul>
           </section>
 
           <section>
             <h2>Intermediate language</h2>
-            <img src="images/popt/intermediate_code.jpg"/>
+            <img src="images/popt/intermediate_code.svg" class="simple" width="60%">
             <p>It becomes easier to apply code optimization techniques on the intermediate code. Modern compiler usually
             use 2 levels of intermediate representation (IR).</p>
             <dl>
@@ -333,13 +336,13 @@ ret i32 %1
           <h2>Towards a compiler</h2>
           <ul>
             <li>Correctness is always emphasized over performance</li>
-            <li>For typical constructs the compiler will usually do a better job than programmer</li>
-            <li>A compiler is not aware of semantics of your program</li>
-            <li>Learn a compiler well and stick with it</li>
+            <li>For typical constructs the compiler will usually do a better job than a programmer</li>
+            <li>A compiler is not aware of your program semantics</li>
+            <li>Learn a compiler well and stick to it</li>
             <li>Express your intentions to the compiler clearly</li>
             <li>Compiler optimization is a multi-phase iterative process</li>
-            <li>Performing one optimization enables others </li>
-            <li>Most optimizations need to be applied in order</li>
+            <li>Performing one optimization enables a compiler to perform other ones </li>
+            <li>Most optimizations need to be applied to code in order</li>
           </ul>
         </section>
 
@@ -455,15 +458,15 @@ void twiddle(int *xp, int *yp)
               </table>
               <blockquote>
                  <b>Aliasing</b>
-                 refers to the situation where the same memory location can be accessed using different names.
+                 refers to the situation where the same memory location can be accessed by using different names.
               </blockquote>
           </section>
 
           <section>
             <h2>Strict aliasing assumption</h2>
-            <p>Strict aliasing is an assumption, made by the C (or C++) compiler, that dereferencing pointers to objects
+            <p>Strict aliasing is an assumption, made by a C (or C++) compiler, that dereferencing pointers to objects
             of different types will never refer to the same memory location.</p>
-            <p>This assumption enables much more optimization, but programmer should follow strict aliasing rules
+            <p>This assumption enables much more optimization, but a programmer should follow strict aliasing rules
             to get code working correctly.</p>
             <pre><code class="cpp">void check(int32_t *h, int64_t *k)
 {
@@ -583,7 +586,7 @@ int caller()
             <h2>Pure functions</h2>
             <dl>
               <dt><b>Pure function</b></dt>
-              <dd>is a function if both below statements hold about the function:
+              <dd>is a function for which both of the following statements are true:
                 <ul>
                   <li>The function always evaluates the same result value given the same argument value(s). The function
                   result value cannot depend on any hidden information or state that may change while program execution
@@ -597,7 +600,7 @@ int caller()
             </dl>
             <p>Pure functions are much easy to optimize:</p>
             <ul>
-              <li>Use <b>static</b> keyword to help the compiler to deduces whether the function is pure</li>
+              <li>Use <b>static</b> keyword to help the compiler to deduce whether the function is pure</li>
               <li>Use <b>constexpr</b> keyword for c++11 to hint a compiler that function could be evaluated in compile time</li>
               <li>Most functions from math.h are not pure.</li>
             </ul>
@@ -615,13 +618,12 @@ int caller()
         </section>
 
 <!--         <section>
-          <h2>Optimization obstacles: Branches, Calls, Exceptions</h2>
-        </section> -->
-
-<!--         <section>
-          <h2>Optimization obstacles: Storage type global variables</h2>
-        </section> -->
-
+          <h2>Optimization obstacles</h2>
+          <p>Branches</p>
+          <p>Exceptions</p>
+          <p>Storage type global variables</p>
+        </section>
+ -->
         <section>
           <section>
             <h2>Optimization obstacles: Floating point math</h2>
@@ -645,6 +647,9 @@ $ gcc check.c -o check ; ./check
 
 </code></pre>
           </section>
+<!--           <section>
+            <h2>Optimization obstacles: Floating point math</h2>
+          </section> -->
         </section>
 
         <section>
@@ -831,21 +836,6 @@ options enabled:
         </section> -->
 
         <section>
-          <h2>Auto-vectorization</h2>
-          <ul>
-            <li>Machine code generation that takes advantage of vector instructions.</li>
-            <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
-              <ul>
-                <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
-                <li>AltiVec, VSX</li>
-                <li>ASIMD (NEON), MSA</li>
-              </ul>
-            </li>
-            <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
-          </ul>
-        </section>
-
-        <section>
           <section>
             <h2>Compiler feedback</h2>
             <ul>
@@ -920,6 +910,15 @@ options enabled:
         </section>
 
         <section>
+          <h2>Link-Time Code Generation</h2>
+          When LTCG is enabled (by specifying the /GL compiler switch), the compiler driver (cl.exe)
+          <!-- C Inter­mediate Language (CIL) -->
+           GCC 4.8 feature a few improvements when it comes to LTO, a.k.a. Link-Time Optimization
+           <!-- https://gcc.gnu.org/onlinedocs/gccint/LTO-Overview.html -->
+           <!-- http://gcc-python-plugin.readthedocs.org/en/latest/lto.html -->
+        </section>
+
+        <section>
           <section>
             <h2>Compiler optimizations taxonomy</h2>
             <ul>
@@ -947,6 +946,21 @@ options enabled:
             <h2>Compiler optimizations taxonomy</h2>
             <img src="images/popt/opt_machine_dependent.png" alt="machine dependent optimizations" style="padding:15px; background:white">
           </section>
+        </section>
+
+        <section>
+          <h2>Auto-vectorization</h2>
+          <ul>
+            <li>Machine code generation that takes advantage of vector instructions.</li>
+            <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
+              <ul>
+                <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
+                <li>AltiVec, VSX</li>
+                <li>ASIMD (NEON), MSA</li>
+              </ul>
+            </li>
+            <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
+          </ul>
         </section>
 <!--         <section>
           <h2>profile-guided optimization (PGO)</h2>
@@ -992,23 +1006,10 @@ options enabled:
           <!-- https://en.wikipedia.org/wiki/Interprocedural_optimization -->
         <!-- </section> -->
 
-        <section>
-          <h2>Link-Time Code Generation</h2>
-          When LTCG is enabled (by specifying the /GL compiler switch), the compiler driver (cl.exe)
-          <!-- C Inter­mediate Language (CIL) -->
-           GCC 4.8 feature a few improvements when it comes to LTO, a.k.a. Link-Time Optimization
-           <!-- https://gcc.gnu.org/onlinedocs/gccint/LTO-Overview.html -->
-           <!-- http://gcc-python-plugin.readthedocs.org/en/latest/lto.html -->
-        </section>
-
 <!--         <section>
           <h2>Register allocation</h2>
           <p>CSO (common subexpression optimization) and register allocation</p>
           <p>16-32 registers are optimal register number for the compiler</p>
-        </section> -->
-
-<!--         <section>
-          <h2>False optimizations</h2>
         </section> -->
 
         <section id="end1">
