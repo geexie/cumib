@@ -56,51 +56,53 @@
           <h2>Outline</h2>
           <ul>
             <li>Compilation trajectory</li>
-            <li>Compiler optimizations
+            <li>Intermediate language</li>
+            <li>Compiler optimizations obstacles
               <ul>
-                <li>Obstacles</li>
-                <li>Flags and directives</li>
-                <li>Taxonomy</li>
-                <li>Examples</li>
+                <li>Pointer aliasing</li>
+                <li>Functional calls</li>
+                <li>Floating point math</li>
               </ul>
-            <!-- <li>Summary</li> -->
+            </li>
+            <li>Optimization levels</li>
+            <li>Optimization feedback</li>
+            <li>Summary</li>
           </ul>
         </section>
 
         <section>
+          <h2>Executable generation phases</h2>
+          <ul>
+            <li><b>Pre-processing.</b> Pre-process, but don't compile.
+              <ul>
+                <li><strong><code>gcc -E test.cc</code></strong></li>
+                <li><strong><code>cl /E test.cc</code></strong></li>
+              </ul>
+            </li>
+            <li><b>Compilation</b> Compile but don't assemble.
+              <ul>
+                <li><strong><code>gcc -S test.cc</code></strong></li>
+                <li><strong><code>cl /FA test.cc</code></strong></li>
+              </ul>
+            </li>
+            <li><b>Assembly.</b> Assemble but don't link.
+              <ul>
+                <li><strong><code>gcc -c test.cc</code></strong></li>
+                <li><strong><code>cl /c test.cc</code></strong></li>
+              </ul>
+            </li>
+            <li><b>Linking.</b> Link object files and generate the executable.
+              <ul>
+                <li><strong><code>gcc test.cc</code></strong></li>
+                <li><strong><code>cl test.cc</code></strong></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
 
+        <section>
           <section>
-            <h2>Executable generation phases</h2>
-            <ul>
-              <li><b>Pre-processing.</b> Pre-process, but don't compile.
-                <ul>
-                  <li><strong><code>gcc -E test.cc</code></strong></li>
-                  <li><strong><code>cl /E test.cc</code></strong></li>
-                </ul>
-              </li>
-              <li><b>Compilation</b> Compile but don't assemble.
-                <ul>
-                  <li><strong><code>gcc -S test.cc</code></strong></li>
-                  <li><strong><code>cl /FA test.cc</code></strong></li>
-                </ul>
-              </li>
-              <li><b>Assembly.</b> Assemble but don't link.
-                <ul>
-                  <li><strong><code>gcc -c test.cc</code></strong></li>
-                  <li><strong><code>cl /c test.cc</code></strong></li>
-                </ul>
-              </li>
-              <li><b>Linking.</b> Link object files and generate the executable.
-                <ul>
-                  <li><strong><code>gcc test.cc</code></strong></li>
-                  <li><strong><code>cl test.cc</code></strong></li>
-                </ul>
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2>Compiler trajectory</h2>
+            <h2>Compilation trajectory</h2>
             <img class="simple" src="images/popt/compiler_phases.svg">
             <br/><br/>
             <dl>
@@ -111,10 +113,11 @@
                 Source code grammar (syntactical correctness) is checked here.</dd>
               <dt><b>Semantic Analysis</b></dt>
               <dd>checks whether the syntax tree constructed follows the rules of language (eg, type checks).</dd>
+            </dl>
           </section>
 
           <section>
-            <h2>Compiler trajectory</h2>
+            <h2>Compilation trajectory</h2>
             <img class="simple" src="images/popt/compiler_phases.svg">
             <br/><br/>
             <dl>
@@ -138,7 +141,9 @@
               <li>Most of optimization resemble for all targets and could be applied in between font end and backend.</li>
             </ul>
           </section>
+        </section>
 
+        <section>
           <section>
             <h2>Intermediate language</h2>
             <img src="images/popt/intermediate_code.svg" class="simple" width="60%">
@@ -330,20 +335,6 @@ ret i32 %1
               </tbody>
             </table>
           </section>
-        </section>
-
-        <section>
-          <h2>Towards a compiler</h2>
-          <ul>
-            <li>Correctness is always emphasized over performance</li>
-            <li>For typical constructs the compiler will usually do a better job than a programmer</li>
-            <li>A compiler is not aware of your program semantics</li>
-            <li>Learn a compiler well and stick to it</li>
-            <li>Express your intentions to the compiler clearly</li>
-            <li>Compiler optimization is a multi-phase iterative process</li>
-            <li>Performing one optimization enables a compiler to perform other ones </li>
-            <li>Most optimizations need to be applied to code in order</li>
-          </ul>
         </section>
 
         <section>
@@ -607,8 +598,8 @@ int caller()
           </section>
 
           <section>
-            <h2>Function body inlining</h2>
-            <p>Replacing a subroutine call with the code from the original function.</p>
+            <h2>Functional calls: missed opportunities</h2>
+            <p>Function body inlining is replacing a subroutine call with the code from the original function.</p>
             <ul>
               <li>Enables other optimizations (including auto-vectorization)</li>
               <li>Eliminates overhead of function calls</li>
@@ -617,13 +608,6 @@ int caller()
           </section>
         </section>
 
-<!--         <section>
-          <h2>Optimization obstacles</h2>
-          <p>Branches</p>
-          <p>Exceptions</p>
-          <p>Storage type global variables</p>
-        </section>
- -->
         <section>
           <section>
             <h2>Optimization obstacles: Floating point math</h2>
@@ -650,6 +634,15 @@ $ gcc check.c -o check ; ./check
 <!--           <section>
             <h2>Optimization obstacles: Floating point math</h2>
           </section> -->
+        </section>
+
+        <section>
+          <h2>More optimization obstacles</h2>
+          <ul>
+            <li>Branches inside a loop</li>
+            <li>Exceptions</li>
+            <li>Accesses to storage type global variables</li>
+          </ul>
         </section>
 
         <section>
@@ -837,19 +830,32 @@ options enabled:
 
         <section>
           <section>
-            <h2>Compiler feedback</h2>
-            <ul>
-              <li>Wall-time of you application</li>
-              <li>Dumps of assembly and intermediate language</li>
-              <li>Compiler optimization reports
+            <h2>How to get a feedback?</h2>
+            <ul style="width:80%">
+              <li><b>Check wall-time of you application</b>
                 <ul>
-                  <li>All compilers have some support for them</li>
-                  <li>Some of them able to generate very detailed reports<br>
-                  about loop unrolling, auto-vectorization, VLIW slots packaging, e.t.c</li>
+                <li>If a compiler did its job well, you'll see performance improvements</li>
+                </ul>
+              </li>
+              <br>
+              <li><b>Dump an assembly of your code</b> (or/and intermediate language)
+                <ul>
+                  <li>Ensure instruction and register scheduling</li>
+                  <li>Check for extra operations and register spills.</li>
+                </ul>
+              </li>
+              <br>
+              <li><b>See compiler optimization report</b>
+                <ul>
+                  <li>All the compilers have some support for it</li>
+                  <li>Some of them are able to generate very detailed reports
+                  about loop unrolling, auto-vectorization, VLIW slots scheduling, etc</li>
                 </ul>
               </li>
             </ul>
-            <p>gcc feedback example</p>
+          </section>
+          <section>
+            <h2>GCC feedback options</h2>
             <ul>
               <li><strong>-fopt-info</strong></li>
               <li>-fopt-info-options</li>
@@ -857,8 +863,6 @@ options enabled:
               <li>-fopt-info -fsched-verbose=n</li>
               <li>-ftree-vectorizer-verbose=n (analogy to icc -vec-report)</li>
             </ul>
-          </section>
-        </section>
 <!--     ‘optimized’
         Print information when an optimization is successfully applied. It is up to a pass to decide which information is relevant. For example, the vectorizer passes print the source location of loops which got successfully vectorized.
     ‘missed’
@@ -884,29 +888,30 @@ options enabled:
         Enable dumps from all vectorization optimizations.
     ‘optall’
         Enable dumps from all optimizations. This is a superset of the optimization groups listed above. -->
-
-        <section>
-          <h2>Compiler feedback example</h2>
-          <pre><code class="bash">
-./src/box.cc:193:9: note: loop vectorized
-./src/box.cc:193:9: note: loop versioned for vectorization because of possible aliasing
-./src/box.cc:193:9: note: loop peeled for vectorization to enhance alignment
-./src/box.cc:96:9: note: loop vectorized
-./src/box.cc:96:9: note: loop peeled for vectorization to enhance alignment
-./src/box.cc:51:9: note: loop vectorized
-./src/box.cc:51:9: note: loop peeled for vectorization to enhance alignment
-./src/box.cc:193:9: note: loop with 7 iterations completely unrolled
-./src/box.cc:32:13: note: loop with 7 iterations completely unrolled
-./src/box.cc:96:9: note: loop with 15 iterations completely unrolled
-./src/box.cc:51:9: note: loop with 15 iterations completely unrolled
-./src/box.cc:584:9: note: loop vectorized
-./src/box.cc:584:9: note: loop versioned for vectorization because of possible aliasing
-./src/box.cc:584:9: note: loop peeled for vectorization to enhance alignment
-./src/box.cc:482:9: note: loop vectorized
-./src/box.cc:482:9: note: loop peeled for vectorization to enhance alignment
-./src/box.cc:463:5: note: loop vectorized
-./src/box.cc:463:5: note: loop versioned for vectorization because of possible aliasing
-./src/box.cc:463:5: note: loop peeled for vectorization to enhance alignment</code></pre>
+          </section>
+          <section>
+            <h2>GCC feedback example</h2>
+            <pre><code class="bash">
+  ./src/box.cc:193:9: note: loop vectorized
+  ./src/box.cc:193:9: note: loop versioned for vectorization because of possible aliasing
+  ./src/box.cc:193:9: note: loop peeled for vectorization to enhance alignment
+  ./src/box.cc:96:9: note: loop vectorized
+  ./src/box.cc:96:9: note: loop peeled for vectorization to enhance alignment
+  ./src/box.cc:51:9: note: loop vectorized
+  ./src/box.cc:51:9: note: loop peeled for vectorization to enhance alignment
+  ./src/box.cc:193:9: note: loop with 7 iterations completely unrolled
+  ./src/box.cc:32:13: note: loop with 7 iterations completely unrolled
+  ./src/box.cc:96:9: note: loop with 15 iterations completely unrolled
+  ./src/box.cc:51:9: note: loop with 15 iterations completely unrolled
+  ./src/box.cc:584:9: note: loop vectorized
+  ./src/box.cc:584:9: note: loop versioned for vectorization because of possible aliasing
+  ./src/box.cc:584:9: note: loop peeled for vectorization to enhance alignment
+  ./src/box.cc:482:9: note: loop vectorized
+  ./src/box.cc:482:9: note: loop peeled for vectorization to enhance alignment
+  ./src/box.cc:463:5: note: loop vectorized
+  ./src/box.cc:463:5: note: loop versioned for vectorization because of possible aliasing
+  ./src/box.cc:463:5: note: loop peeled for vectorization to enhance alignment</code></pre>
+          </section>
         </section>
 
         <section>
@@ -919,98 +924,20 @@ options enabled:
         </section>
 
         <section>
-          <section>
-            <h2>Compiler optimizations taxonomy</h2>
-            <ul>
-              <li>High­-level optimizations
-                <ul>
-                  <li>Loop optimizations</li>
-                  <li>Interprocedural optimization</li>
-                </ul>
-              </li>
-              <li>Global optimizations</li>
-              <li>Local optimizations</li>
-              <li>Processor­ dependent optimizations
-                <ul>
-                  <li>Register allocation</li>
-                  <li>Peephole optimizations</li>
-                </ul>
-              </li>
-            </ul>
-          </section>
-          <section>
-            <h2>Compiler optimizations taxonomy</h2>
-            <img src="images/popt/opt_machine_independent.png" alt="machine independent optimizations" style="padding:15px; background:white">
-          </section>
-          <section>
-            <h2>Compiler optimizations taxonomy</h2>
-            <img src="images/popt/opt_machine_dependent.png" alt="machine dependent optimizations" style="padding:15px; background:white">
-          </section>
-        </section>
-
-        <section>
-          <h2>Auto-vectorization</h2>
+          <h2>Summary: Toward a compiler</h2>
           <ul>
-            <li>Machine code generation that takes advantage of vector instructions.</li>
-            <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
-              <ul>
-                <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
-                <li>AltiVec, VSX</li>
-                <li>ASIMD (NEON), MSA</li>
-              </ul>
-            </li>
-            <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
+            <li>Correctness is always emphasized over performance</li>
+            <li>For typical constructs a compiler will usually does better job than a programmer</li>
+            <li>A compiler is not aware of your program semantics</li>
+            <li>Compiler optimization is a multi-phase iterative process</li>
+            <li>Performing one optimization enables a compiler to perform other ones </li>
+            <li>Most optimizations need to be applied to code in order</li>
+            <br/>
+            <li>Learn a compiler well and stick to it</li>
+            <li>Express your intentions to the compiler clearly</li>
+            <li>Check for a compiler feedback</li>
           </ul>
         </section>
-<!--         <section>
-          <h2>profile-guided optimization (PGO)</h2>
-        </section> -->
-
-        <!-- <section> -->
-          <!-- <section> -->
-            <!-- <h2>Hints: Aligning Data</h2> -->
-            <!-- <ul> -->
-              <!-- <li>Specifying alignment eliminates manual padding</li> -->
-              <!-- <li>Helps with auto-vectorization as well</li> -->
-            <!-- </ul> -->
-            <!-- <pre><code class="cpp"> -->
-<!-- /* GCC, align to 16 bytes */ -->
-<!-- unsigned long lock __attribute__ ((aligned(16))); -->
-            <!-- </code></pre> -->
-            <!-- <pre><code class="cpp"> -->
-<!-- /* Intel, align to 16 bytes */ -->
-<!-- __declspec(align(16)) unsigned long lock; -->
-            <!-- </code></pre> -->
-          <!-- </section> -->
-          <!-- <section> -->
-            <!-- <h2>Hints: prefetching</h2> -->
-<!-- GCC: __builtin_prefetch() -->
-          <!-- </section> -->
-        <!-- </section> -->
-
-<!--         <section>
-          <h2>Software pipelining</h2>
-          https://en.wikipedia.org/wiki/Software_pipelining
-        </section>
- -->
-<!--         <section>
-          <h2></h2>
-          font and optimizations: constant folding
-          intermediate representations
-          backend optimizations
-        </section> -->
-
-        <!-- <section> -->
-          <!-- <h2>IPA: Interprocedural optimization</h2> -->
-          <!-- https://gcc.gnu.org/onlinedocs/gccint/IPA.html -->
-          <!-- https://en.wikipedia.org/wiki/Interprocedural_optimization -->
-        <!-- </section> -->
-
-<!--         <section>
-          <h2>Register allocation</h2>
-          <p>CSO (common subexpression optimization) and register allocation</p>
-          <p>16-32 registers are optimal register number for the compiler</p>
-        </section> -->
 
         <section id="end1">
           <h1>THE END</h1>
@@ -1019,7 +946,6 @@ options enabled:
         </section>
 
       </div>
-
     </div>
 
     <script src="plugin/reveal/lib/js/head.min.js"></script>

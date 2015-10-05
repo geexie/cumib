@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Pragmatic optimization in modern programming</title>
+    <meta name="description" content="Pragmatic optimization in modern programming - Introduction">
+    <meta name="author" content="Marina Kolpakova (cuda.geek)">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="plugin/reveal/css/reveal.css">
+    <link rel="stylesheet" href="plugin/reveal/css/theme/geek.css" id="theme">
+    <link rel="stylesheet" href="css/colors-orange.css">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'plugin/reveal/css/print/pdf.css' : 'plugin/reveal/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="plugin/reveal/lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h1>Pragmatic optimization</h1>
+          <h2>in modern programming</h2>
+          <h3>Mastering compiler optimizations</h3>
+          <br>
+          <br>
+          <br>
+          <small>Created by
+            <a href="http://github.com/cuda-geek">Marina Kolpakova</a>
+            for
+            <a href="http://www.unn.ru/eng/">UNN</a>
+          </small>
+        </section>
+
+        <section>
+          <h2>Outline</h2>
+          <ul>
+            <li>Taxonomy of compiler optimizations</li>
+            <li>Case studies
+              <ol>
+                <li>Function body inlining</li>
+                <li>Loop counter elimination</li>
+                <li>Loop peeling</li>
+                <li>Loop unrolling</li>
+                <li>Scalarization</li>
+                <li>Auto-vectorization</li>
+              </ol>
+            </li>
+            <li>Self-study</li>
+          </ul>
+        </section>
+
+        <section>
+          <section>
+            <h2>Compiler optimizations taxonomy</h2>
+            <ul>
+              <li>High­-level optimizations
+                <ul>
+                  <li>Loop optimizations</li>
+                  <li>Interprocedural optimization</li>
+                </ul>
+              </li>
+              <li>Global optimizations</li>
+              <li>Local optimizations</li>
+              <li>Processor­ dependent optimizations
+                <ul>
+                  <li>Register allocation</li>
+                  <li>Peephole optimizations</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h2>Compiler optimizations taxonomy</h2>
+            <img src="images/popt/opt_machine_independent.png" alt="machine independent optimizations" style="padding:15px; background:white">
+          </section>
+          <section>
+            <h2>Compiler optimizations taxonomy</h2>
+            <img src="images/popt/opt_machine_dependent.png" alt="machine dependent optimizations" style="padding:15px; background:white">
+          </section>
+        </section>
+
+        <section>
+          <h2>#1: Function body inlining</h2>
+        </section>
+
+        <section>
+          <h2>#2: Loop counter elimination</h2>
+        </section>
+
+        <section>
+          <h2>#3: Loop peeling</h2>
+        </section>
+
+        <section>
+          <h2>#4: Loop unrolling</h2>
+        </section>
+
+        <section>
+          <h2>#5: Scalarization</h2>
+        </section>
+
+        <section>
+          <h2>#6: Auto-vectorization</h2>
+          <ul>
+            <li>Machine code generation that takes advantage of vector instructions.</li>
+            <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
+              <ul>
+                <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
+                <li>AltiVec, VSX</li>
+                <li>ASIMD (NEON), MSA</li>
+              </ul>
+            </li>
+            <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
+          </ul>
+        </section>
+<!--         <section>
+          <h2>profile-guided optimization (PGO)</h2>
+        </section> -->
+
+        <!-- <section> -->
+          <!-- <section> -->
+            <!-- <h2>Hints: Aligning Data</h2> -->
+            <!-- <ul> -->
+              <!-- <li>Specifying alignment eliminates manual padding</li> -->
+              <!-- <li>Helps with auto-vectorization as well</li> -->
+            <!-- </ul> -->
+            <!-- <pre><code class="cpp"> -->
+<!-- /* GCC, align to 16 bytes */ -->
+<!-- unsigned long lock __attribute__ ((aligned(16))); -->
+            <!-- </code></pre> -->
+            <!-- <pre><code class="cpp"> -->
+<!-- /* Intel, align to 16 bytes */ -->
+<!-- __declspec(align(16)) unsigned long lock; -->
+            <!-- </code></pre> -->
+          <!-- </section> -->
+          <!-- <section> -->
+            <!-- <h2>Hints: prefetching</h2> -->
+<!-- GCC: __builtin_prefetch() -->
+          <!-- </section> -->
+        <!-- </section> -->
+
+<!--         <section>
+          <h2>Software pipelining</h2>
+          https://en.wikipedia.org/wiki/Software_pipelining
+        </section>
+ -->
+<!--         <section>
+          <h2></h2>
+          font and optimizations: constant folding
+          intermediate representations
+          backend optimizations
+        </section> -->
+
+        <!-- <section> -->
+          <!-- <h2>IPA: Interprocedural optimization</h2> -->
+          <!-- https://gcc.gnu.org/onlinedocs/gccint/IPA.html -->
+          <!-- https://en.wikipedia.org/wiki/Interprocedural_optimization -->
+        <!-- </section> -->
+
+<!--         <section>
+          <h2>Register allocation</h2>
+          <p>CSO (common subexpression optimization) and register allocation</p>
+          <p>16-32 registers are optimal register number for the compiler</p>
+        </section> -->
+
+        <section id="end1">
+          <h1>THE END</h1>
+          <img class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015</h4s>
+        </section>
+
+      </div>
+
+    </div>
+
+    <script src="plugin/reveal/lib/js/head.min.js"></script>
+    <script src="plugin/reveal/js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: false,
+
+        width: 960,
+        height: 720,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'plugin/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
