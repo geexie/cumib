@@ -56,12 +56,15 @@
           <h2>Outline</h2>
           <ul>
             <!-- <li>This course and its goals</li> -->
+            <li>How to learn optimization?</li>
+            <li>Recommended literature</li>
             <li>What is optimization?</li>
             <li>Pragmatic approach</li>
             <li>Place of optimization in a project life cycle</li>
-            <li>Ordering optimization techniques</li>
+            <li>From whence get the performance?</li>
+            <li>Top-Down (High-low) approach</li>
             <li>Overview of optimization steps</li>
-            <!-- <li>Summary</li> -->
+            <li>Summary</li>
           </ul>
         </section>
 
@@ -102,7 +105,6 @@
             </li>
           </ul>
         </section> -->
-<!-- style="margin-left: 5em;" -->
         <section>
           <h2>How to learn optimization?</h2>
           <p><strong>Optimization is a <b>craft</b> more than a <b>science</b></strong>. Thereupon,</p>
@@ -563,6 +565,7 @@ uint32_t gray2rgba_v1(uint8_t c)
   return c + (c<<8) + (c<<16) + (c<<24);
 }
             </code></pre>
+            <!-- <p>c + (c<<8) + (c<<16) + (c<<24) = c + c*(1<<8) + c*(1<<16) + c*(1<<24) = c*(1 + 1<<8 + 1<<16 + 1<<24)</p> -->
             <pre><code class="cpp">
 uint32_t gray2rgba_v2(uint8_t c)
 {
@@ -687,13 +690,15 @@ r10 = shl(r9, 2)     // 11
 
         <section>
           <h2>Step #6: perform HW specific optimizations</h2>
-          <p>Require comprehensive understanding of target HW,<br/> that are usually beyond of compiler abilities</p>
+          <p>Require comprehensive understanding of the target HW,<br/> that are usually beyond of compiler abilities</p>
           <ul>
-            <li>Using instructions, which are specific for concrete hardware</li>
             <li>Using special hardware capabilities</li>
             <li>Overcoming micro-architecture weakness</li>
+            <li>Using instructions, which are specific for concrete hardware</li>
+            <li>balancing use of different instruction types</li>
           </ul>
-          <p>A classical example here is <strong>recompute or get from the memory</strong>.</p>
+          <br/>
+          <p>A classical example here is <strong>recompute temporal or get from the memory</strong>.</p>
         </section>
 
         <section>
@@ -718,6 +723,21 @@ r10 = shl(r9, 2)     // 11
           <ul>
             <li>Hand-written assembly is the least portable optimization</li>
             <li>In-line assembly insertions limit compiler abilities for further optimizations</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+          <ul>
+            <li>Practice more, look what other people do and dig into an architecture</li>
+            <li>Wall(-clock) time is the most important metric to optimize</li>
+            <li>The main task of optimizer is to find critical part of the code.</li>
+            <li>Optimizer's mastership is to know where to stop.</li>
+            <li>Knowledge about the code, the compiler and the platform is must have</li>
+            <li>Optimization is a measure-analyze-optimize-check cycle</li>
+            <li>Stick to high-to-low approach</li>
+            <li>Get the performance from the algorithmic and data structure chooses first, then go deeper</li>
+            <li>Ensure memory access patterns next, then go deeper</li>
           </ul>
         </section>
 
