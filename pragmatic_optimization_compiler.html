@@ -290,25 +290,21 @@ a = r3</code></pre>
             <h2>Intermediate language</h2>
             <p>Provide font-end independent code representation.</p>
             <dl>
-              <dt>GENERIC and GIMPLE</dt>
+              <dt><a href="https://gcc.gnu.org/onlinedocs/gccint/GENERIC.html#GENERIC">GENERIC</a>
+              and <a href="https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html">GIMPLE</a></dt>
               <dd>GNU Compiler Collection gcc
                 <small style="vertical-align:middle;">(
                   <code>-fdump-tree-all -fdump-tree-ssa -fdump-tree-optimized -fdump-rtl-all</code>)
                 </small>
               </dd>
-              <!-- ftp://gcc.gnu.org/pub/gcc/summit/2003/GENERIC%20and%20GIMPLE.pdf -->
-              <!-- https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html -->
-              <dt>LLWM IL</dt>
+              <dt><a href="http://llvm.org/docs/LangRef.html">LLWM IL</a></dt>
               <dd>clang and other LLWM based compilers <small  style="vertical-align:middle;">(
                 <code>-emit-llvm</code>)
                 </small>
               </dd>
-              <!-- http://llvm.org/docs/LangRef.html -->
               <dt>CIL (C Intermediate Language)</dt>
               <dd>Visual Studio cl.exe</dd>
             </dl>
-            <!-- https://en.wikipedia.org/wiki/Static_single_assignment_form -->
-            <!-- https://idea.popcount.org/2013-07-24-ir-is-better-than-assembly/ -->
             <blockquote>
               clang -Os -S -emit-llvm squere.c -o squere.ll; cat squere.ll
             </blockquote>
@@ -480,10 +476,10 @@ int main (void)
           <section>
             <h2>Pointer aliasing: missed opportunities</h2>
             <ul>
-              <li>compiler freely schedule arithmetic, but preserves order of memory dereferencing</li>
-              <li>compiler limited in redundancy elimination</li>
-              <li>compiler limited in unrolling</li>
-              <li>compiler limited in auto-vectorization</li>
+              <li>Compiler freely schedule arithmetic,<br/>but preserves order of memory dereferencing</li>
+              <li>Compiler is limited in redundancy elimination</li>
+              <li>Compiler is limited in loop unrolling</li>
+              <li>Compiler is limited in auto-vectorization</li>
             </ul>
           </section>
         </section>
@@ -599,11 +595,20 @@ int caller()
 
           <section>
             <h2>Functional calls: missed opportunities</h2>
-            <p>Function body inlining is replacing a subroutine call with the code from the original function.</p>
+            <p>Inlining the function body is replacing a subroutine call with the code from the original function.
+            Inlining is crucial for functional calls from loops.</p>
+            <p>If a compiler failed to inline a function body:</p>
             <ul>
-              <li>Enables other optimizations (including auto-vectorization)</li>
-              <li>Eliminates overhead of function calls</li>
-              <!-- <li>Has potential to bloat code and stack</li> -->
+              <li>it is limited in redundancy elimination</li>
+              <li>there are some overhead on function calls</li>
+              <li>many other optimizations
+                <ul>
+                  <li>loop unrolling</li>
+                  <li>auto-vectorization</li>
+                  <li>etc</li>
+                </ul>
+              </li>
+              <li>potential bloating of code and stack</li>
             </ul>
           </section>
         </section>
