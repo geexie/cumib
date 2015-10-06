@@ -79,19 +79,19 @@
                 <li><strong><code>cl /E test.cc</code></strong></li>
               </ul>
             </li>
-            <li><b>Compilation</b> Compile but don't assemble.
+            <li><b>Compilation</b> Compile, but don't assemble.
               <ul>
                 <li><strong><code>gcc -S test.cc</code></strong></li>
                 <li><strong><code>cl /FA test.cc</code></strong></li>
               </ul>
             </li>
-            <li><b>Assembly.</b> Assemble but don't link.
+            <li><b>Assembly.</b> Assemble, but don't link.
               <ul>
                 <li><strong><code>gcc -c test.cc</code></strong></li>
                 <li><strong><code>cl /c test.cc</code></strong></li>
               </ul>
             </li>
-            <li><b>Linking.</b> Link object files and generate the executable.
+            <li><b>Linking.</b> Link object files to generate the executable.
               <ul>
                 <li><strong><code>gcc test.cc</code></strong></li>
                 <li><strong><code>cl test.cc</code></strong></li>
@@ -174,26 +174,12 @@ Therefore, code generator assumes to have unlimited number of memory storage (re
               </li>
               <li>language independent like three-address code (similar to classic RISC ISA).</li>
             </ul>
+            <pre style="width:50%"><code class="cpp">a = b + c * d;</code></pre>
             <p>Three-Address Code (TAC)</p>
-            <table style="width:100%;" class="simple">
-              <colgroup>
-                <col style="width:50%;"></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td>
-                    <pre><code class="cpp">a = b + c * d;</code></pre>
-                  </td>
-                  <td>
-                    <pre><code>r1 = c * d;
+            <pre style="width:50%"><code>r1 = c * d;
 r2 = b + r1;
 r3 = r2 + r1;
 a = r3</code></pre>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
             <p>Here <strong>r1, r2</strong>, etc are as abstract registers.</p>
           </section>
 
@@ -647,33 +633,34 @@ $ gcc check.c -o check ; ./check
             <li>Branches inside a loop</li>
             <li>Exceptions</li>
             <li>Accesses to storage type global variables</li>
+            <li>Inline assembly</li>
           </ul>
         </section>
 
         <section>
-          <h2>Optimization levels</h2>
-          <dl>
-            <dt><b>-O0</b> (the default)</dt>
-            <dd>No optimization; generates unoptimized code but has the fastest compilation time.</dd>
-            <dt><b>-O1</b></dt>
-            <dd>Moderate optimization; optimizes reasonably well but does not degrade compilation time significantly.</dd>
-            <dt><b>-O2</b></dt>
-            <dd>Full optimization; generates highly optimized code and has the slowest compilation time.</dd>
-            <dt><b>-O3</b></dt>
-            <dd>Full optimization as in `-O2'; also uses more aggressive automatic inlining of subprograms within a unit
-              (Inlining of Subprograms) and attempts to vectorize loops.</dd>
-            <dt><b>-Os</b></dt>
-            <dd>Optimize space usage (code and data) of resulting program.</dd>
-          </dl>
-          <!-- http://www-01.ibm.com/support/docview.wss?uid=swg27005174&aid=1 -->
-        </section>
+          <section>
+            <h2>Optimization levels</h2>
+            <dl>
+              <dt><b>-O0</b> (the default)</dt>
+              <dd>No optimization; generates unoptimized code but has the fastest compilation time.</dd>
+              <dt><b>-O1</b></dt>
+              <dd>Moderate optimization; optimizes reasonably well but does not degrade compilation time significantly.</dd>
+              <dt><b>-O2</b></dt>
+              <dd>Full optimization; generates highly optimized code and has the slowest compilation time.</dd>
+              <dt><b>-O3</b></dt>
+              <dd>Full optimization as in `-O2'; also uses more aggressive automatic inlining of subprograms within a unit
+                (Inlining of Subprograms) and attempts to vectorize loops.</dd>
+              <dt><b>-Os</b></dt>
+              <dd>Optimize space usage (code and data) of resulting program.</dd>
+            </dl>
+          </section>
 
-        <section>
-        <h2>enabled optimizations: GCC -O3 </h2>
-        <p>GNU C (Ubuntu 4.9.2-0ubuntu1~14.04) version 4.9.2 (x86_64-linux-gnu)</p>
-        <pre style="width:70%;"><code class="bash"> touch empty.c && gcc -O3 -S -fverbose-asm empty.c</code></pre>
-          <small>
-            <blockquote>
+          <section>
+          <h2>enabled optimizations: GCC -O3 </h2>
+          <p>GNU C (Ubuntu 4.9.2-0ubuntu1~14.04) version 4.9.2 (x86_64-linux-gnu)</p>
+          <pre style="width:70%;"><code class="bash"> touch empty.c && gcc -O3 -S -fverbose-asm empty.c</code></pre>
+            <small>
+              <blockquote>
 options enabled:
 -faggressive-loop-optimizations
 -fasynchronous-unwind-tables
@@ -824,14 +811,307 @@ options enabled:
 -msse2
 -mtls-direct-seg-refs
 -mvzeroupper
-            </blockquote>
-          </small>
-        </section>
+              </blockquote>
+            </small>
+          </section>
 
-<!--         <section>
-          <h2>Optimization levels</h2>
-          example how optimization level effects the performance
-        </section> -->
+          <section>
+            <h2>Optimization levels example: floating point</h2>
+            <table style="width:100%;" class="simple">
+              <colgroup>
+                <col style="width:50%;"></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code style="padding-left:2em;" class="cpp">#include &lt;stdio.h&gt;
+#include &lt;limits.h&gt;
+
+double power (double d, unsigned n)
+{
+  double x = 1.0;
+  unsigned j;
+
+  for (j = 1; j <= n; j++)
+    x *= d;
+
+  return x;
+}</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="cpp" style="padding-left:2em;">int main (void)
+{
+  double sum = 0.0;
+  unsigned i;
+
+  for (i = 1; i <= INT_MAX; i++)
+  {
+    sum += power(i, i % 8);
+  }
+
+  printf ("sum = %g\n", sum);
+  return 0;
+}</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Compile it <b>without</b> optimization:<br/>
+              <strong><code>gcc -Wall -O0 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+            </p>
+            <pre style="width:30%"><code class="bash">sum = 7.06739e+72
+real  0m23.229s</code></pre>
+          </section>
+
+          <section>
+            <h2>Optimization levels example: floating point</h2>
+            <ul>
+              <li>
+                <p>Compile it with <b>the first</b> optimization level: <b>~2.78 speedup</b><br/>
+                  <strong><code>gcc -Wall -O1 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+                </p>
+                <pre style="width:30%"><code class="bash">sum = 7.06739e+72
+real  0m8.342s</code></pre>
+              </li>
+              <li>
+                <p>Compile it with <b>the second</b> optimization level: <b>~1.55 speedup</b><br/>
+                  <strong><code>gcc -Wall -O2 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+                </p>
+                <pre style="width:30%"><code class="bash">sum = 7.06739e+72
+real  0m5.371s</code></pre>
+              </li>
+              <li>
+                <p>Compile it with <b>the third</b> optimization level:  <b>~1.025 speedup</b><br/>
+                  <strong><code>gcc -Wall -O3 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+                </p>
+                <pre style="width:30%"><code class="bash">sum = 7.06739e+72
+real  0m5.240s</code></pre>
+              </li>
+              <li><b>Total speedup is ~4.43</b></li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Optimization levels example: integer</h2>
+            <table style="width:100%;" class="simple">
+              <colgroup>
+                <col style="width:50%;"></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code style="padding-left:2em;" class="cpp">#include &lt;stdio.h&gt;
+#include &lt;limits.h&gt;
+
+int power(int d, unsigned n)
+{
+  int x = 1;
+  unsigned j;
+
+  for (j = 1; j <= n; j++)
+    x *= d;
+
+  return x;
+}</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="cpp" style="padding-left:2em;">int main()
+{
+  int sum = 0.0;
+  unsigned i = 1;
+
+  for (; i <= INT_MAX-8; i++)
+  {
+    sum += power(i, i % 8);
+  }
+
+  printf ("sum = %d\n", sum);
+  return 0;
+}</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Compile it w/o optimization:</p>
+            <p><strong><code>gcc -Wall -O0  test.c -o test-flags && time ./test-flags</code></strong></p>
+            <pre style="width:30%"><code class="bash">sum = -805306349
+real  0m19.025s
+</code></pre>
+          </section>
+
+          <section>
+            <h2>Optimization levels example: integer</h2>
+            <ul>
+              <li>
+                <p>Compile it with <b>the first</b> optimization level: <b>~2.92 speedup</b><br/>
+                  <strong><code>gcc -Wall -O1 test.c -o test-flags && time ./test-flags</code></strong>
+                </p>
+                <pre style="width:30%"><code class="bash">sum = -805306349
+real  0m6.526s
+</code></pre>
+              </li>
+              <li>
+                <p>Compile it with <b>the second</b> optimization level: <b>~0.93 speedup</b><br/>
+                  <strong><code>gcc -Wall -O2 test.c -o test-flags && time ./test-flags</code></strong>
+                </p>
+                <pre style="width:30%"><code class="bash">sum = -805306349
+real  0m6.950s</code></pre>
+              </li>
+              <li>
+                <p>Compile it with <b>the third</b> optimization level:  <b>~1.00 speedup</b><br/>
+                  <strong><code>gcc -Wall -O3 test.c -o test-flags && time ./test-flags</code></strong>
+                </p>
+                <pre style="width:30%"><code class="bash">sum = -805306349
+real  0m6.918s
+</code></pre>
+              </li>
+              <li><h3>What causes performance degradation?</h3></li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Optimization levels example: integer</h2>
+            <table style="width:100%;" class="simple">
+              <colgroup>
+                <col style="width:33%;"></col>
+                <col style="width:33%;"></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="border-right: 3px double #F0E7D5;">
+                    <pre><code style="padding-left:2em;" class="x86asm">  movl  $1, %r8d
+  movl  $0, %edx
+.L4:
+  movl  %r8d, %edi
+  movl  %r8d, %esi
+  andl  $7, %esi
+  je  .L5
+  movl  $1, %eax
+  movl  $1, %ecx
+.L3:
+  imull %edi, %ecx
+  addl  $1, %eax
+  cmpl  %eax, %esi
+  jae .L3
+  jmp .L2
+.L5:
+  movl  $1, %ecx
+.L2:
+  addl  %ecx, %edx
+  addl  $1, %r8d
+  jns .L4</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="x86asm" style="padding-left:2em;">  movl  $1, %esi
+  movl  $1, %r8d
+  xorl  %edx, %edx
+  .p2align 4,,10
+  .p2align 3
+.L4:
+  movl  %r8d, %edi
+  andl  $7, %edi
+  je  .L5
+  movl  $1, %eax
+  movl  $1, %ecx
+  .p2align 4,,10
+  .p2align 3
+.L3:
+  addl  $1, %eax
+  imull %esi, %ecx
+  cmpl  %eax, %edi
+  jae .L3</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="x86asm" style="padding-left:2em;">addl  $1, %r8d
+  addl  %ecx, %edx
+  testl %r8d, %r8d
+  movl  %r8d, %esi
+  jns .L4
+.L10:
+@ printing is here
+.L5:
+  addl  $1, %r8d
+  movl  $1, %ecx
+  addl  %ecx, %edx
+  testl %r8d, %r8d
+  movl  %r8d, %esi
+  jns .L4
+  jmp .L10</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Compiler overdone unrolling of other loop</p>
+          </section>
+
+          <section>
+            <h2>Optimization: helping a compiler</h2>
+            <p>Compiler usually apples optimization to inner loops. In this example number of iterations in inner
+            loop depends on number loop induction variable
+            of outer loop. Let's help the compiler</p>
+            <pre><code class="cpp">int main (void)
+{
+  double sum = 0.0;
+  unsigned i;
+
+  for (i = 1; i <= INT_MAX-8; i += 8)
+  {
+    sum += power(i+0, 0);
+    sum += power(i+1, 1);
+    sum += power(i+2, 2);
+    sum += power(i+3, 3);
+    sum += power(i+4, 4);
+    sum += power(i+5, 5);
+    sum += power(i+6, 6);
+    sum += power(i+7, 7);
+  }
+
+  printf ("sum = %g\n", sum);
+  return 0;
+}</code></pre>
+            <p>
+              <strong><code>gcc -Wall -O3 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+              <b>Speedup is ~3.16x.</b>
+            </p>
+            <pre style="width:30%"><code class="bash">sum = 7.06739e+72
+real  0m1.660s</code></pre>
+          </section>
+
+          <section>
+            <h2>Optimization: helping a compiler</h2>
+            <p>Let's try it for integers</p>
+            <pre><code class="cpp">int main (void)
+{
+  int sum = -1;
+  unsigned i;
+
+  for (i = 0; i <= INT_MAX-8-8; i += 8)
+  {
+    sum += power(i+0, 0);
+    sum += power(i+1, 1);
+    sum += power(i+2, 2);
+    sum += power(i+3, 3);
+    sum += power(i+4, 4);
+    sum += power(i+5, 5);
+    sum += power(i+6, 6);
+    sum += power(i+7, 7);
+  }
+
+  printf ("sum = %g\n", sum);
+  return 0;
+}</code></pre>
+            <p>
+              <strong><code>gcc -Wall -O3 test.c -o test-flags && time ./test-flags</code></strong>
+              <b>Speedup is ~5.14x.</b>
+            </p>
+            <pre style="width:30%"><code class="bash">sum = -805306349
+real  0m1.269s</code></pre>
+          </section>
+
+        </section>
 
         <section>
           <section>
