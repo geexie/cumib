@@ -105,7 +105,21 @@
         </section>
 
         <section>
-          <h2>#2: Loop counter elimination</h2>
+          <h2>#2: Loop-induction variable elimination</h2>
+          <pre><code>
+            int arr[10000];
+void Binky() {
+ int i;
+   for (i=0; i < 10000; i++)
+       arr[i] = 1;
+}
+          </code></pre>
+          <pre><code>int arr[10000];
+void Winky() {
+  register int *p;
+  for (p = arr; p < arr + 10000; p++)
+      *p = 1;
+}</code></pre>
         </section>
 
         <section>
@@ -121,18 +135,29 @@
         </section>
 
         <section>
-          <h2>#6: Auto-vectorization</h2>
-          <ul>
-            <li>Machine code generation that takes advantage of vector instructions.</li>
-            <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
-              <ul>
-                <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
-                <li>AltiVec, VSX</li>
-                <li>ASIMD (NEON), MSA</li>
-              </ul>
-            </li>
-            <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
-          </ul>
+          <section>
+            <h2>#6: Auto-vectorization</h2>
+            <ul>
+              <li>Machine code generation that takes advantage of vector instructions.</li>
+              <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
+                <ul>
+                  <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
+                  <li>AltiVec, VSX</li>
+                  <li>ASIMD (NEON), MSA</li>
+                </ul>
+              </li>
+              <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
+            </ul>
+          </section>
+          <section>
+            <h2>#6: Auto-vectorization</h2>
+            <p>absdiff -03 or hand-written assembly</p>
+          </section>
+        </section>
+
+        <section>
+          <h2>Self-study</h2>
+          <p>Color conversion or filter 3-by-3</p>
         </section>
 <!--         <section>
           <h2>profile-guided optimization (PGO)</h2>

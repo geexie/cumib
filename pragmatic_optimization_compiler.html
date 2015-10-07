@@ -634,6 +634,7 @@ $ gcc check.c -o check ; ./check
             <li>Exceptions</li>
             <li>Accesses to storage type global variables</li>
             <li>Inline assembly</li>
+            <li><code>volatile</code> keyword</li>
           </ul>
         </section>
 
@@ -1140,40 +1141,46 @@ real  0m1.269s</code></pre>
             </ul>
           </section>
           <section>
-            <h2>GCC feedback options</h2>
+            <h2>Example: GCC feedback options</h2>
             <ul>
-              <li><strong>-fopt-info</strong></li>
-              <li>-fopt-info-options</li>
-              <li>-fopt-info-options=filename</li>
-              <li>-fopt-info -fsched-verbose=n</li>
-              <li>-ftree-vectorizer-verbose=n (analogy to icc -vec-report)</li>
+              <li>Option that enables optimization information printing
+              <strong><pre><code class="sh">-fopt-info</code></strong></pre>
+              <pre><code class="sh">-fopt-info-&lt;optimized/missed/note/all&gt;</code></pre>
+              <pre><code class="sh">-fopt-info-&lt;optimized/missed/note/all&gt;-&lt;ipa/loop/inline/vec/optall&gt;</code></pre>
+              <pre><code class="sh">-fopt-info=filename</code></pre>
+              </li>
+              <br/>
+              <li>Option that controls the amount of debugging output the scheduler prints. It is available only on targets
+              that use instruction scheduling.
+              <pre><code class="sh">-fopt-info -fsched-verbose=n</code></pre>
+              </li>
+              <br/>
+              <li>Option that controls the amount of debugging output the auto-vectorizer
+              prints. It is a analogy to icc -vec-report.
+              <pre><code class="sh">-ftree-vectorizer-verbose=n </code></pre></li>
             </ul>
-<!--     ‘optimized’
-        Print information when an optimization is successfully applied. It is up to a pass to decide which information is relevant. For example, the vectorizer passes print the source location of loops which got successfully vectorized.
-    ‘missed’
-        Print information about missed optimizations. Individual passes control which information to include in the output. For example,
-
-                       gcc -O2 -ftree-vectorize -fopt-info-vec-missed
-
-        will print information about missed optimization opportunities from vectorization passes on stderr.
-    ‘note’
-        Print verbose information about optimizations, such as certain transformations, more detailed messages about decisions etc.
-    ‘all’
-        Print detailed optimization information. This includes optimized, missed, and note.
-
-    The second set of options describes a group of optimizations and may include one or more of the following.
-
-    ‘ipa’
-        Enable dumps from all interprocedural optimizations.
-    ‘loop’
-        Enable dumps from all loop optimizations.
-    ‘inline’
-        Enable dumps from all inlining optimizations.
-    ‘vec’
-        Enable dumps from all vectorization optimizations.
-    ‘optall’
-        Enable dumps from all optimizations. This is a superset of the optimization groups listed above. -->
           </section>
+
+          <section>
+            <h2>Examples: GCC feedback options</h2>
+            <ul>
+              <li>
+                outputs all optimization info onto stderr.
+                <pre><code class="sh">gcc -O3 -fopt-info</code></pre>
+              </li>
+              <br/>
+              <li>
+                outputs missed optimization report from all the passes into missed.txt
+                <pre><code class="sh">gcc -O3 -fopt-info-missed=missed.txt</code></pre>
+              </li>
+              <br/>
+              <li>
+                outputs information about missed optimizations as well as optimized locations from all the inlining passes into inline.txt.
+                <pre><code class="sh">gcc -O3 -fopt-info-inline-optimized-missed=inline.txt</code></pre>
+              </li>
+            </ul>
+          </section>
+
           <section>
             <h2>GCC feedback example</h2>
             <pre><code class="bash">
@@ -1200,12 +1207,25 @@ real  0m1.269s</code></pre>
         </section>
 
         <section>
-          <h2>Link-Time Code Generation</h2>
-          When LTCG is enabled (by specifying the /GL compiler switch), the compiler driver (cl.exe)
-          <!-- C Inter­mediate Language (CIL) -->
-           GCC 4.8 feature a few improvements when it comes to LTO, a.k.a. Link-Time Optimization
-           <!-- https://gcc.gnu.org/onlinedocs/gccint/LTO-Overview.html -->
-           <!-- http://gcc-python-plugin.readthedocs.org/en/latest/lto.html -->
+          <section>
+            <h2>Link-Time Optimization (LTO)</h2>
+            <p>Perform inter procedural optimizations during linking.</p>
+            <img src="images/popt/lto.gif"/>
+            <p>Most compilers supported them:
+              <ul>
+                <li><strong>clang</strong> (-flto)</li>
+                <li><strong><a href="https://gcc.gnu.org/onlinedocs/gccint/LTO-Overview.html">gcc</a></strong>
+                 (-flto) stating with 4.9</li>
+                <li><strong>cl.exe</strong> (/GL, /LTCG)</li>
+                <li>etc</li>
+              </ul>
+            </p>
+          </section>
+
+          <section>
+            <h2>WHOPR: Whole program optimization</h2>
+            <img src="images/popt/whopr.png">
+          </section>
         </section>
 
         <section>
