@@ -109,10 +109,10 @@
               <dt><b>Lexical Analysis</b></dt>
               <dd>scans the source code as a stream of characters &amp; converts it into lexemes (tokens).</dd>
               <dt><b>Syntax Analysis</b></dt>
-              <dd>takes the token produced by lexical analysis as input and generates a syntax tree.
+              <dd>takes the tokens, produced by lexical analysis, as input and generates a syntax tree.
                 Source code grammar (syntactical correctness) is checked here.</dd>
               <dt><b>Semantic Analysis</b></dt>
-              <dd>checks whether the syntax tree constructed follows the rules of language (eg, type checks).</dd>
+              <dd>checks whether the syntax tree constructed follows the rules of the language (eg, type checks).</dd>
             </dl>
           </section>
 
@@ -138,7 +138,8 @@
               <li>No requirement for a full native compiler for each new target or programming language</li>
               <li>Only backend part needed to support every new machine</li>
               <li>Only frontend part needed to support every new programming language</li>
-              <li>Most of optimization resemble for all targets and could be applied in between font end and backend.</li>
+              <li>Most of optimizations resemble each other for all targets and could be applied in between font end
+              and backend.</li>
             </ul>
           </section>
         </section>
@@ -147,12 +148,12 @@
           <section>
             <h2>Intermediate language</h2>
             <img src="images/popt/intermediate_code.svg" class="simple" width="60%">
-            <p>It becomes easier to apply code optimization techniques on the intermediate code. Modern compiler usually
+            <p>It becomes easier to apply code optimization techniques on the intermediate code. Modern compilers usually
             use 2 levels of intermediate representation (IR).</p>
             <dl>
               <dt><b>High Level IR</b></dt>
               <dd>is close to the source and can be easily generated from the source code. Some code optimizations
-              are possible, is less preferred for target machine optimization.</dd>
+              are possible. It is not very suitable for target machine optimization.</dd>
               <dt><b>Low Level IR</b></dt>
               <dd>is close to the target machine and suitable for register allocation, instruction selection, peephole,
               etc, is used for machine-dependent optimizations.</dd>
@@ -169,10 +170,10 @@ Therefore, code generator assumes to have unlimited number of memory storage (re
             <ul>
               <li>Language-specific: it can be used for JIT compilation later:
                 <ul>
-                  <li>Java, Scala bute code; CLI for .NET languages like C#, F#, PTX for GPU shaders.</li>
+                  <li>Java, Scala byte code; CLI for .NET languages like C#, F#, PTX for GPU shaders.</li>
                 </ul>
               </li>
-              <li>language independent like three-address code (similar to classic RISC ISA).</li>
+              <li>language independent, like three-address code (similar to classic RISC ISA).</li>
             </ul>
             <pre style="width:50%"><code class="cpp">a = b + c * d;</code></pre>
             <p>Three-Address Code (TAC)</p>
@@ -180,7 +181,7 @@ Therefore, code generator assumes to have unlimited number of memory storage (re
 r2 = b + r1;
 r3 = r2 + r1;
 a = r3</code></pre>
-            <p>Here <strong>r1, r2</strong>, etc are as abstract registers.</p>
+            <p>Here <strong>r1, r2</strong>, etc. are as abstract registers.</p>
           </section>
 
           <section>
@@ -231,7 +232,7 @@ a = r3</code></pre>
                 </table>
               </li>
               <br/>
-              <li>Triples or Indirect triples has three fields : op, arg1, and arg2.
+              <li>Triples or Indirect triples have three fields : op, arg1, and arg2.
                 <table>
                   <colgroup>
                     <col></col>
@@ -274,7 +275,7 @@ a = r3</code></pre>
 
           <section>
             <h2>Intermediate language</h2>
-            <p>Provide font-end independent code representation.</p>
+            <p>Provides fontend independent code representation.</p>
             <dl>
               <dt><a href="https://gcc.gnu.org/onlinedocs/gccint/GENERIC.html#GENERIC">GENERIC</a>
               and <a href="https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html">GIMPLE</a></dt>
@@ -283,7 +284,7 @@ a = r3</code></pre>
                   <code>-fdump-tree-all -fdump-tree-ssa -fdump-tree-optimized -fdump-rtl-all</code>)
                 </small>
               </dd>
-              <dt><a href="http://llvm.org/docs/LangRef.html">LLWM IL</a></dt>
+              <dt><a href="http://llvm.org/docs/LangRef.html">LLVM IL</a></dt>
               <dd>clang and other LLWM based compilers <small  style="vertical-align:middle;">(
                 <code>-emit-llvm</code>)
                 </small>
@@ -462,7 +463,7 @@ int main (void)
           <section>
             <h2>Pointer aliasing: missed opportunities</h2>
             <ul>
-              <li>Compiler freely schedule arithmetic,<br/>but preserves order of memory dereferencing</li>
+              <li>Compiler freely schedules arithmetic,<br/>but preserves order of memory dereferencing</li>
               <li>Compiler is limited in redundancy elimination</li>
               <li>Compiler is limited in loop unrolling</li>
               <li>Compiler is limited in auto-vectorization</li>
@@ -603,7 +604,7 @@ int caller()
           <section>
             <h2>Optimization obstacles: Floating point math</h2>
             <ul>
-              <li>Compiler much more conservative on floating point rather than integer math.</li>
+              <li>A compiler is much more conservative on floating point rather than integer math.</li>
               <li>Floating point arithmetics is not associative so <b>A+(B+C) != (A+B)+C</b></li>
             </ul>
             <pre><code class="cpp">
@@ -1050,9 +1051,8 @@ real  0m6.918s
 
           <section>
             <h2>Optimization: helping a compiler</h2>
-            <p>Compiler usually apples optimization to inner loops. In this example number of iterations in inner
-            loop depends on number loop induction variable
-            of outer loop. Let's help the compiler</p>
+            <p>Compiler usually applies optimization to the inner loops. In this example number of iterations in the inner
+            loop depends on a value of an induction variable of the outer loop. Let's help the compiler</p>
             <pre><code class="cpp">int main (void)
 {
   double sum = 0.0;
@@ -1120,7 +1120,7 @@ real  0m1.269s</code></pre>
             <ul style="width:80%">
               <li><b>Check wall-time of you application</b>
                 <ul>
-                <li>If a compiler did its job well, you'll see performance improvements</li>
+                <li>If a compiler has done its job well, you'll see performance improvements</li>
                 </ul>
               </li>
               <br>
@@ -1209,7 +1209,7 @@ real  0m1.269s</code></pre>
         <section>
           <section>
             <h2>Link-Time Optimization (LTO)</h2>
-            <p>Perform inter procedural optimizations during linking.</p>
+            <p>Perform inter-procedural optimizations during linking.</p>
             <img src="images/popt/lto.gif"/>
             <p>Most compilers supported them:
               <ul>
