@@ -72,28 +72,37 @@
 
         <section>
           <section>
-            <h2>Compiler optimizations taxonomy</h2>
+            <h2>Classic taxonomy</h2>
             <ul>
-              <li>High­-level optimizations
-                <ul>
-                  <li>Loop optimizations</li>
-                  <li>Interprocedural optimization</li>
-                </ul>
+              <li>
+                <b>Machine independent transformations</b>
+                <ol>
+                  <li><strong>Applicable across a broad range of machines</strong></li>
+                  <li>Eliminate redundant computations</li>
+                  <li>Decrease ratio of overhead to real work</li>
+                  <li>Reduce running time or space</li>
+                  <li>Specialize code on a context</li>
+                  <li>Eliminate dead code</li>
+                  <li>Enable other optimizations</li>
+                </ol>
               </li>
-              <li>Global optimizations</li>
-              <li>Local optimizations</li>
-              <li>Processor­ dependent optimizations
-                <ul>
-                  <li>Register allocation</li>
-                  <li>Peephole optimizations</li>
-                </ul>
+              <li>
+                <b>Machine dependent transformations</b>
+                <ol>
+                  <li><strong>Capitalize on specific machine properties</strong></li>
+                  <li>Manage or hide latency</li>
+                  <li>Improve the mapping from IR to this machine</li>
+                  <li>Might use some exotic instructions (eg VLDM )</li>
+                </ol>
               </li>
             </ul>
           </section>
+
           <section>
             <h2>Compiler optimizations taxonomy</h2>
             <img src="images/popt/opt_machine_independent.png" alt="machine independent optimizations" style="padding:15px; background:white">
           </section>
+
           <section>
             <h2>Compiler optimizations taxonomy</h2>
             <img src="images/popt/opt_machine_dependent.png" alt="machine dependent optimizations" style="padding:15px; background:white">
@@ -101,42 +110,452 @@
         </section>
 
         <section>
+          <section>
+            <h2>Copy propagation</h2>
+            <ul>
+              <li>Before
+                <pre><code class="cpp">
+int x = y
+int z = 1 + x
+
+</code></pre>
+              </li>
+              <li>After
+                <pre><code class="cpp">
+int x = y
+int z = 1 + y
+
+</code></pre>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Constant folding</h2>
+            <ul>
+              <li>Before
+                <pre><code class="cpp">
+int add = 100;
+int aug = 200;
+int sum = add + aug;
+
+</code></pre>
+              </li>
+              <li>After
+                <pre><code class="cpp">
+int sum = 300;
+
+</code></pre>
+              </li>
+            </ul>
+            <p>Could be much more complicated</p>
+          </section>
+
+          <section>
+            <h2>Strength Reduction</h2>
+            <ul>
+              <li>Before
+                <pre><code class="cpp">
+double x = pow(y, 2.0);
+double a = c / 2.0;
+
+</code></pre>
+              </li>
+              <li>After
+                <pre><code class="cpp">
+double x = y * y;
+double a = c * 0.5;
+
+</code></pre>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Common Subexpression Elimination</h2>
+            <ul>
+              <li>Before
+                <pre><code class="cpp">
+double d = c * (a / b);
+double e = (a / b) * 2.0;
+
+</code></pre>
+              </li>
+              <li>After
+                <pre><code class="cpp">
+double adivb = a / b;
+
+double d = c * adivb;
+double e = adivb * 2.0;
+
+</code></pre>
+              </li>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h2>Scope taxonomy</h2>
+          <ul>
+            <li>High­-level optimizations
+              <ul>
+                <li>Loop optimizations</li>
+              </ul>
+            </li>
+            <li>Inter-procedural optimization</li>
+            <li>Intra-procedural optimization</li>
+            <li>Global optimizations</li>
+            <li>Local optimizations</li>
+            <li>Peephole optimizations</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Code Pattern taxonomy</h2>
+          <ul>
+            <li>Function class and sub-routines</li>
+            <li>Dependency chains (linear code)</li>
+            <li>Branches</li>
+            <li><strong>Loop bodies</strong></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>List of loop optimization</h2>
+          <ul>
+            <li><strong>Single loop (usually the inner)</strong>
+              <ul>
+                <li>Loop-induction variable elimination</li>
+                <li>Hoisting Loop Invariant Code</li>
+                <li>Loop unrolling</li>
+                <li>Loop unswitching</li>
+                <li>Strip mining</li>
+
+                <!-- <li>Loop skewing</li> -->
+                <!-- <li>Unroll-and-jam</li> -->
+                <!-- <li>Loop reversal</li> -->
+
+
+<!--
+    Scalarization
+    Loop peeling
+    Loop reversal
+ -->
+
+              </ul>
+            </li>
+            <li><strong>Multi-loop</strong>
+              <ul>
+                <li>Loop fusion/fission</li>
+                <li>Loop interchange</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
           <h2>#1: Function body inlining</h2>
+          <ul class="none">
+            <li>Before
+              <pre><code>
+DO i = 1, n
+  a(i) = func(i)
+END DO
+...
+REAL FUNCTION func (x)
+...
+  func = x * 3
+END FUNCTION func
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+DO i = 1, n
+  a(i) = i * 3
+END DO
+</code></pre>
+            </li>
+          </ul>
         </section>
 
         <section>
           <h2>#2: Loop-induction variable elimination</h2>
-          <pre><code>
-            int arr[10000];
-void Binky() {
- int i;
-   for (i=0; i < 10000; i++)
-       arr[i] = 1;
+          <ul class="none">
+            <li>Before
+              <pre><code>
+void function(int* arr, int len)
+{
+  for (int i = 0; i < len; i++)
+    arr[i] = 1;
 }
-          </code></pre>
-          <pre><code>int arr[10000];
-void Winky() {
-  register int *p;
-  for (p = arr; p < arr + 10000; p++)
+
+</code></pre>
+            </li>
+            <li>After
+          <pre><code>
+void function(int* arr, int len)
+{
+  for (int* p = arr; p < arr + 10000; p++)
       *p = 1;
-}</code></pre>
+}
+
+</code></pre>
+            </li>
+          </ul>
         </section>
 
         <section>
-          <h2>#3: Loop peeling</h2>
+          <h2>#3: Hoisting Loop Invariant Code</h2>
+          <p>The goal of <b>hoisting</b> — also called <b>loop-invariant code motion</b> — is to avoid recomputing
+          loop-invariant code each time through the body of a loop.</p>
+          <ul class="none">
+            <li>Before
+              <pre><code class="cpp">#include &lt;math.h&gt;
+
+void scale(double* X, double* Y, int len)
+{
+  for (int i = 0; i < len; i++)
+    Y[i] = X[i] * exp(sqrt(M_PI/2));
+}
+
+</code></pre>
+            </li>
+            <li>After
+              <pre><code class="cpp">#include &lt;math.h&gt;
+
+void scale(double* X, double *Y, int len)
+{
+  double factor = exp(sqrt(M_PI/2));
+
+  for (int i = 0; i < len; i++)
+    Y[i] = X[i] * factor;
+}
+</code></pre>
+            </li>
+          </ul>
         </section>
 
         <section>
           <h2>#4: Loop unrolling</h2>
+          <p>You generally shouldn’t unroll by hand. Compilers are much more reliable.</p>
+          <ul class="none:">
+            <li>Before
+              <pre><code>
+DO i = 1, n
+  a(i) = a(i)+b(i)
+END DO
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+DO i = 1, n, 4
+  a(i) = a(i) +b(i)
+  a(i+1) = a(i+1)+b(i+1)
+  a(i+2) = a(i+2)+b(i+2)
+  a(i+3) = a(i+3)+b(i+3)
+END DO
+</code></pre>
+            </li>
+          </ul>
         </section>
 
         <section>
-          <h2>#5: Scalarization</h2>
+          <h2>#5: Loop unswitching</h2>
+          <ul class="none:">
+            <li>Before
+              <pre><code>
+for (int i = 0; i < N; i++)
+{
+    if (a > 0)
+        X[i] = a;
+    else
+        X[i] = 0;
+}
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+if (a > 0)
+{
+    for (int i = 0; i < N; i++)
+        X[i] = a;
+}
+else
+{
+    for (int i = 0; i < N; i++)
+        X[i] = 0;
+}
+</code></pre>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Sentinels</h2>
+          <section>
+            <p>Sentinels are special dummy values placed in a data structure to simplify the logic of boundary conditions,
+and in particular, the handling of loop-exit tests.</p>
+
+            <ul class="none">
+              <li>Before
+                <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
+{
+  uint64_t sum = 0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    sum += A[i];
+    if (sum < A[i])
+      return true;
+  }
+  return  false;
+}</code></pre>
+              </li>
+              <li>After
+                <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
+{
+  A[n] = UINT64_MAX, A[n+1] = 0;
+  size_t i = 0; uint64_t sum = A[0];
+  while ( sum >= A[i])
+    sum += A[++i];
+
+  return (i < n);
+}</code></pre>
+              </li>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <h2>#6: Strip mining</h2>
+          <ul class="none:">
+            <li>Before
+              <pre><code>
+do I = 1, n
+  do J = 1, n
+    A(J,I) = B(J) ∗ C(I)
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+do II = 1, n, tile
+  do J = 1, n
+    do I = II, II + tile -1
+      A(J,I) = B(J) ∗ C(I)
+</code></pre>
+            </li>
+          </ul>
+        </section>
+
+<!--         <section>
+          <h2>#7: Scalarization</h2>
+          <ul class="none:">
+            <li>Before
+              <pre><code>
+for (int i = 0; i < N; i++)
+{
+    if (i>5 && i<100)
+        X[i] = a;
+    else
+        X[i] = 0;
+}
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+if (a > 0)
+{
+    for (int i = 0; i < N; i++)
+        X[i] = a;
+}
+else
+{
+    for (int i = 0; i < N; i++)
+        X[i] = 0;
+}
+</code></pre>
+            </li>
+          </ul>
+        </section> -->
+<!--
+        <section>
+int regular(int i) {
+if (i>5 && i<100)
+return 1;
+exit(0);
+}
+int clever(int i) {
+return (((unsigned)i) - 6 > 93);
+}
+foo:
+.LFB0:
+  .cfi_startproc
+  subl  $6, %edi
+  cmpl  $93, %edi
+  ja  .L2
+  movl  $1, %eax
+  ret
+
+        </section> -->
+
+        <section>
+          <h2>#8: Loop Interchange</h2>
+          <ul class="none">
+            <li>Before
+              <pre><code>
+DO j = 1, nj
+  DO i = 1, ni
+    a(i,j) = b(i,j)
+  END DO
+END DO
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+DO i = 1, ni
+  DO j = 1, nj
+    a(i,j) = b(i,j)
+  END DO
+END DO
+</code></pre>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>#9: Loop Fusion / Fission</h2>
+          <p>Fusion: fewer branches (combine with unrolling). fewer total memory references. <br/>
+          Fission: smaller cache footprint.</p>
+          <ul class="none">
+            <li>Before
+              <pre><code>
+DO i = 1, n
+  b(i) = a(i) + 1
+END DO
+
+DO i = 1, n
+  c(i) = b(i) / 2
+END DO
+
+DO i = 1, n
+  d(i) = 1.f / c(i)
+END DO
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+DO i = 1, n
+  b(i) = a(i) + 1
+  c(i) = b(i) / 2
+  d(i) = 1.f / c(i)
+END DO
+</code></pre>
+            </li>
+          </ul>
         </section>
 
         <section>
           <section>
-            <h2>#6: Auto-vectorization</h2>
+            <h2>#10: Auto-vectorization</h2>
             <ul>
               <li>Machine code generation that takes advantage of vector instructions.</li>
               <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
@@ -149,16 +568,22 @@ void Winky() {
               <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
             </ul>
           </section>
-          <section>
+<!--           <section>
             <h2>#6: Auto-vectorization</h2>
-            <p>absdiff -03 or hand-written assembly</p>
           </section>
+          <section>
+            <p>absdiff -03 or hand-written assembly</p>
+          </section> -->
         </section>
 
-        <section>
+<!--         <section>
+          <h2>Unable optimize example</h2>
+        </section> -->
+
+<!--         <section>
           <h2>Self-study</h2>
           <p>Color conversion or filter 3-by-3</p>
-        </section>
+        </section> -->
 <!--         <section>
           <h2>profile-guided optimization (PGO)</h2>
         </section> -->
