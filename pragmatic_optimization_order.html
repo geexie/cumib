@@ -53,6 +53,26 @@
         </section>
 
         <section>
+          <h2>Themes &amp; Contents</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
+              <ul>
+                <li><b>Ordering optimization approaches</b></li>
+                <li>Demystifying a compiler</li>
+                <li>Mastering compilation</li>
+              </ul>
+            </li>
+            <li><strong>Computer Architectures</strong>
+              <ul>
+                <li>Architecture of modern computers</li>
+                <li>SIMD extensions</li>
+                <li>Specific co-processors</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
           <h2>Outline</h2>
           <ul>
             <!-- <li>This course and its goals</li> -->
@@ -61,7 +81,7 @@
             <li>What is optimization?</li>
             <li>Pragmatic approach</li>
             <li>Place of optimization in a project life cycle</li>
-            <li>From whence get the performance?</li>
+            <li>Whence get the performance?</li>
             <li>Top-Down (High-low) approach</li>
             <li>Overview of optimization steps</li>
             <li>Summary</li>
@@ -78,42 +98,15 @@
           </ul>
         </section> -->
 
-<!--         <section>
-          <h2>Themes &amp; Contents</h2>
-          <ul>
-            <li><strong>Pragmatics</strong>
-              <ul>
-                <li>Ordering optimization approaches</li>
-                <li>Demystifying a compiler</li>
-                <li>Mastering optimization tools</li>
-              </ul>
-            </li>
-            <li><strong>Computer Architectures</strong>
-              <ul>
-                <li>Architecture of modern computers</li>
-                <li>Memory hierarchy</li>
-                <li>Pipelining</li>
-                <li>Latency vs Throughput architectures</li>
-              </ul>
-            </li>
-            <li><strong>Optimization technologies</strong>
-              <ul>
-                <li>Multi-core programming</li>
-                <li>SIMD extensions</li>
-                <li>Specific coprocessors</li>
-              </ul>
-            </li>
-          </ul>
-        </section> -->
         <section>
           <h2>How to learn optimization?</h2>
-          <p><strong>Optimization is a <b>craft</b> more than a <b>science</b></strong>. Thereupon,</p>
+          <p><strong>Optimization is a <b>craft</b> rather than a <b>science</b></strong>. Therefore,</p>
           <dl>
             <dt><b>Practice more</b></dt>
             <dd>do not make practical knowledge too theoretical.</dd>
             <br/>
             <dt><b>Look, what other people do</b></dt>
-            <dd>do find real use-cases of different optimization approaches and techniques.</dd>
+            <dd>do find real use cases of different optimization approaches and techniques.</dd>
             <br/>
             <dt><b>Dig into an architecture</b></dt>
             <dd>hardware evolves very fast hence today's devices are becoming obsolete very quickly. Comprehensive
@@ -164,14 +157,14 @@
           <dl>
             <dt ><b>Wall(-clock) time</b></dt>
             <dd style="margin-left: 5em;">
-              <strong>is a human perception of the passage of time from the start to the completion of a task.</strong>
+              <strong>is a human perception of the span of time from the start to the completion of a task.</strong>
             </dd>
             <br/>
             <dt><b>Power consumption</b></dt>
             <dd style="margin-left: 5em;">is the electrical energy over time which is supplied to complete a task.</dd>
             <br/>
             <dt><b>processor time</b></dt>
-            <dd style="margin-left: 5em;">is the total execution time (or runtime) for which a processor was dedicated
+            <dd style="margin-left: 5em;">is the total execution time (or runtime) during which a processor was dedicated
             to a task (i.e. used for processing instructions of that task).</dd>
           </dl>
         </section>
@@ -246,11 +239,11 @@
 
         <section>
           <section>
-            <h2>From whence get performance?</h2>
+            <h2>Whence get performance?</h2>
             <dl>
               <dt><b>Algorithm</b></dt>
-              <dd>Compilers are not aware about semantics of your code,<br>at this rate focus on algorithmic
-              aspect first.<br>
+              <dd>Compilers are not aware about semantics of your code,<br>taking this into account <b>focus
+              on algorithmic aspect first.</b><br>
                 <ul>
                   <li>Decrease big-O complexity</li>
                   <li>Use optimized libraries for sub-routines</li>
@@ -261,7 +254,7 @@
               </dd>
           </section>
           <section>
-            <h2>From whence get performance?</h2>
+            <h2>Whence get performance?</h2>
             <dl>
               <dt><b>Memory access patterns &amp; operations</b></dt>
               <dd>
@@ -269,7 +262,7 @@
                 <br/>
                 <ul>
                   <li>transforming loop bodies,</li>
-                  <li>in-lining local functions,</li>
+                  <li>inlining local functions,</li>
                   <li>simplifying arithmetic expressions</li>
                 </ul>
                 <br/>so help a compiler rather than try to outfox it.<br/><br/>
@@ -283,9 +276,9 @@
             </dl>
           </section>
           <section>
-            <h2>From whence get performance?</h2>
+            <h2>hence get performance?</h2>
             <dl>
-              <dt><b>HW specific optimizations</b></dt>
+              <dt><b>HW-specific optimizations</b></dt>
               <dd>
                 <ul>
                   <li>Utilize unique properties of the hardware</li>
@@ -336,8 +329,8 @@
             <li>Optimize memory access patterns</li>
             <li>Minimize number of operations</li>
             <br/>
-            <li>Shrink a critical path</li>
-            <li>Perform HW specific optimizations</li>
+            <li>Shrink the critical path</li>
+            <li>Perform HW-specific optimizations</li>
             <br/>
             <li>Dive into assembly</li>
           </ol>
@@ -547,7 +540,7 @@ for (int i = 0; i &lt; img.width; i++)
                     <b>Machine-dependent optimizations</b>
                     <ul>
                       <li>Register allocation</li>
-                      <li>InstrucIon selecIon</li>
+                      <li>Instruction selecIon</li>
                       <li>Instruction scheduling</li>
                       <li>Peephole opImizaIon</li>
                       <li>..</li>
@@ -690,7 +683,7 @@ r10 = shl(r9, 2)     // 11
 
         <section>
           <h2>Step #6: perform HW specific optimizations</h2>
-          <p>Require comprehensive understanding of the target HW,<br/> that are usually beyond of compiler abilities</p>
+          <p>Requires comprehensive understanding of the target HW,<br/> that are usually beyond the compiler abilities</p>
           <ul>
             <li>Using special hardware capabilities</li>
             <li>Overcoming micro-architecture weakness</li>
@@ -731,12 +724,12 @@ r10 = shl(r9, 2)     // 11
           <ul>
             <li>Practice more, look what other people do and dig into an architecture</li>
             <li>Wall(-clock) time is the most important metric to optimize</li>
-            <li>The main task of optimizer is to find critical part of the code.</li>
+            <li>The main task of an optimizer is to find critical part of the code.</li>
             <li>Optimizer's mastership is to know where to stop.</li>
             <li>Knowledge about the code, the compiler and the platform is must have</li>
             <li>Optimization is a measure-analyze-optimize-check cycle</li>
             <li>Stick to high-to-low approach</li>
-            <li>Get the performance from the algorithmic and data structure chooses first, then go deeper</li>
+            <li>Get the performance from the algorithmic and data structure choices first, then go deeper</li>
             <li>Ensure memory access patterns next, then go deeper</li>
           </ul>
         </section>

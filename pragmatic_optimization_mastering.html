@@ -53,6 +53,31 @@
         </section>
 
         <section>
+          <h2>Themes &amp; Contents</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
+              <ul>
+                <li>Ordering optimization approaches</li>
+                <li>Demystifying a compiler</li>
+                <li><b>Mastering compilation</b></li>
+              </ul>
+            </li>
+            <li><strong>Computer Architectures</strong>
+              <ul>
+                <li>Architecture of modern computers</li>
+                <li>SIMD extensions</li>
+                <li>Specific co-processors</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Do not optimize debug versions.</h2>
+          <p>Learn a compiler well and stick with it.</p>
+        </section>
+
+<!--         <section>
           <h2>Outline</h2>
           <ul>
             <li>Taxonomy of compiler optimizations</li>
@@ -68,7 +93,7 @@
             </li>
             <li>Self-study</li>
           </ul>
-        </section>
+        </section> -->
 
         <section>
           <section>
@@ -112,6 +137,7 @@
         <section>
           <section>
             <h2>Copy propagation</h2>
+            <p>Eliminates all copies of the variable. Simplifies intermediate representation.</p>
             <ul>
               <li>Before
                 <pre><code class="cpp">
@@ -132,6 +158,8 @@ int z = 1 + y
 
           <section>
             <h2>Constant folding</h2>
+            <p>Evaluates expressions from the constants in compile time. Expressions could be quite complicated,
+            but absence of side effect is always a concern.</p>
             <ul>
               <li>Before
                 <pre><code class="cpp">
@@ -148,11 +176,11 @@ int sum = 300;
 </code></pre>
               </li>
             </ul>
-            <p>Could be much more complicated</p>
           </section>
 
           <section>
             <h2>Strength Reduction</h2>
+            <p>Replaces complex expressions with more simple analogy.</p>
             <ul>
               <li>Before
                 <pre><code class="cpp">
@@ -173,6 +201,8 @@ double a = c * 0.5;
 
           <section>
             <h2>Common Subexpression Elimination</h2>
+            <p>Cache expression result into variable for future use. Sometimes you need to depict them in code, to help
+            the compiler detect them.</p>
             <ul>
               <li>Before
                 <pre><code class="cpp">
@@ -221,6 +251,30 @@ double e = adivb * 2.0;
         </section>
 
         <section>
+          <h2>Function body inlining</h2>
+          <p>Replace functional call to function body. <strong>Enables all further optimizations.</strong></p>
+          <ul class="none">
+            <li>Before
+              <pre><code class="cpp">
+int square(int x)
+{
+  return x*x;
+}
+
+for (int i = 0; i < N; i++)
+  a[i] = square(i);
+</code></pre>
+            </li>
+            <li>After
+              <pre><code>
+for (int i = 0; i < N; i++)
+  a[i] = i*i;
+</code></pre>
+            </li>
+          </ul>
+        </section>
+
+        <section>
           <h2>List of loop optimization</h2>
           <ul>
             <li><strong>Single loop (usually the inner)</strong>
@@ -229,6 +283,7 @@ double e = adivb * 2.0;
                 <li>Hoisting Loop Invariant Code</li>
                 <li>Loop unrolling</li>
                 <li>Loop unswitching</li>
+                <li>Scalarization</li>
                 <li>Strip mining</li>
 
                 <!-- <li>Loop skewing</li> -->
@@ -237,7 +292,6 @@ double e = adivb * 2.0;
 
 
 <!--
-    Scalarization
     Loop peeling
     Loop reversal
  -->
@@ -254,35 +308,12 @@ double e = adivb * 2.0;
         </section>
 
         <section>
-          <h2>#1: Function body inlining</h2>
+          <h2>#1: Loop-induction variable elimination</h2>
+          <p>In most cases compiler able to replace address arithmetics with pointer arithmetics. <strong>Most
+          hand-written pointer optimizations do not make sense with usage optimization levels hither than O0.</strong></p>
           <ul class="none">
             <li>Before
-              <pre><code>
-DO i = 1, n
-  a(i) = func(i)
-END DO
-...
-REAL FUNCTION func (x)
-...
-  func = x * 3
-END FUNCTION func
-</code></pre>
-            </li>
-            <li>After
-              <pre><code>
-DO i = 1, n
-  a(i) = i * 3
-END DO
-</code></pre>
-            </li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>#2: Loop-induction variable elimination</h2>
-          <ul class="none">
-            <li>Before
-              <pre><code>
+              <pre><code class="cpp">
 void function(int* arr, int len)
 {
   for (int i = 0; i < len; i++)
@@ -292,7 +323,7 @@ void function(int* arr, int len)
 </code></pre>
             </li>
             <li>After
-          <pre><code>
+          <pre><code class="cpp">
 void function(int* arr, int len)
 {
   for (int* p = arr; p < arr + 10000; p++)
@@ -305,7 +336,7 @@ void function(int* arr, int len)
         </section>
 
         <section>
-          <h2>#3: Hoisting Loop Invariant Code</h2>
+          <h2>#2: Hoisting Loop Invariant Code</h2>
           <p>The goal of <b>hoisting</b> — also called <b>loop-invariant code motion</b> — is to avoid recomputing
           loop-invariant code each time through the body of a loop.</p>
           <ul class="none">
@@ -336,35 +367,42 @@ void scale(double* X, double *Y, int len)
         </section>
 
         <section>
-          <h2>#4: Loop unrolling</h2>
-          <p>You generally shouldn’t unroll by hand. Compilers are much more reliable.</p>
+          <h2>#3: Loop unrolling</h2>
+          <p>Generates multiple copies of the code for the loop body, reduces number of branches and groups more
+          instructions together to enable more efficient instruction pipelining. Best candidates are innermost loops
+          with limited control flow.</p>
           <ul class="none:">
             <li>Before
-              <pre><code>
-DO i = 1, n
-  a(i) = a(i)+b(i)
-END DO
+              <pre><code class="cpp">
+for (int i = 0 ; i < N; i++)
+  h[p[i]]++;
+
 </code></pre>
             </li>
             <li>After
-              <pre><code>
-DO i = 1, n, 4
-  a(i) = a(i) +b(i)
-  a(i+1) = a(i+1)+b(i+1)
-  a(i+2) = a(i+2)+b(i+2)
-  a(i+3) = a(i+3)+b(i+3)
-END DO
+              <pre><code class="cpp">
+for (int i = 0 ; i <= N-4; i+=4)
+{
+  int idx0 = p[i+0]; int idx1 = p[i+1];
+  int idx2 = p[i+2]; int idx3 = p[i+3];
+
+  h[idx0]++; h[idx1]++;
+  h[idx2]++; h[idx3]++;
+}
+
 </code></pre>
             </li>
           </ul>
         </section>
 
         <section>
-          <h2>#5: Loop unswitching</h2>
-          <ul class="none:">
-            <li>Before
-              <pre><code>
-for (int i = 0; i < N; i++)
+          <section>
+            <h2>#4: Loop unswitching &amp; Scalarization</h2>
+            <p>Moves loop-invariant conditional constructs or switches which are independent of the loop index out of
+            the loop. Increases instruction level parallelism, enables further optimizations.</p>
+            <ul class="none:">
+              <li>Before
+                <pre><code class="cpp">for (int i = 0; i < N; i++)
 {
     if (a > 0)
         X[i] = a;
@@ -372,10 +410,9 @@ for (int i = 0; i < N; i++)
         X[i] = 0;
 }
 </code></pre>
-            </li>
-            <li>After
-              <pre><code>
-if (a > 0)
+              </li>
+              <li>After
+                <pre><code class="cpp">if (a > 0)
 {
     for (int i = 0; i < N; i++)
         X[i] = a;
@@ -386,15 +423,41 @@ else
         X[i] = 0;
 }
 </code></pre>
-            </li>
-          </ul>
-        </section>
+              </li>
+            </ul>
+          </section>
 
-        <section>
-          <h2>Sentinels</h2>
           <section>
+            <h2>Scalarization</h2>
+            <p>Both compiled to the same instruction sequence</p>
+            <ul class="none:">
+              <li>Before
+                <pre><code class="cpp">int regular(int i)
+{
+  if (i&gt;5 && i&lt;00)
+    return 1;
+  return 0;
+}
+</code></pre>
+              </li>
+              <li>After
+                <pre><code class="cpp">int clever(int i)
+{
+  return (((unsigned)i) - 6 > 93);
+}
+</code></pre>
+              </li>
+              <li>Assembly
+            <pre><code class="asm">subl  $6, %edi
+cmpl  $93, %edi</code></pre>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Advanced unswitching: Sentinels</h2>
             <p>Sentinels are special dummy values placed in a data structure to simplify the logic of boundary conditions,
-and in particular, the handling of loop-exit tests.</p>
+  and in particular, the handling of loop-exit tests.</p>
 
             <ul class="none">
               <li>Before
@@ -411,7 +474,7 @@ and in particular, the handling of loop-exit tests.</p>
 }</code></pre>
               </li>
               <li>After
-                <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
+                  <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
 {
   A[n] = UINT64_MAX, A[n+1] = 0;
   size_t i = 0; uint64_t sum = A[0];
@@ -424,9 +487,10 @@ and in particular, the handling of loop-exit tests.</p>
             </ul>
           </section>
         </section>
-
+<!--  -->
         <section>
-          <h2>#6: Strip mining</h2>
+          <h2>#5: Strip mining</h2>
+          <p></p>
           <ul class="none:">
             <li>Before
               <pre><code>
@@ -445,57 +509,6 @@ do II = 1, n, tile
             </li>
           </ul>
         </section>
-
-<!--         <section>
-          <h2>#7: Scalarization</h2>
-          <ul class="none:">
-            <li>Before
-              <pre><code>
-for (int i = 0; i < N; i++)
-{
-    if (i>5 && i<100)
-        X[i] = a;
-    else
-        X[i] = 0;
-}
-</code></pre>
-            </li>
-            <li>After
-              <pre><code>
-if (a > 0)
-{
-    for (int i = 0; i < N; i++)
-        X[i] = a;
-}
-else
-{
-    for (int i = 0; i < N; i++)
-        X[i] = 0;
-}
-</code></pre>
-            </li>
-          </ul>
-        </section> -->
-<!--
-        <section>
-int regular(int i) {
-if (i>5 && i<100)
-return 1;
-exit(0);
-}
-int clever(int i) {
-return (((unsigned)i) - 6 > 93);
-}
-foo:
-.LFB0:
-  .cfi_startproc
-  subl  $6, %edi
-  cmpl  $93, %edi
-  ja  .L2
-  movl  $1, %eax
-  ret
-
-        </section> -->
 
         <section>
           <h2>#8: Loop Interchange</h2>
@@ -555,7 +568,7 @@ END DO
 
         <section>
           <section>
-            <h2>#10: Auto-vectorization</h2>
+            <h2>Auto-vectorization</h2>
             <ul>
               <li>Machine code generation that takes advantage of vector instructions.</li>
               <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
@@ -568,59 +581,10 @@ END DO
               <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
             </ul>
           </section>
-<!--           <section>
-            <h2>#6: Auto-vectorization</h2>
-          </section>
           <section>
             <p>absdiff -03 or hand-written assembly</p>
           </section> -->
         </section>
-
-<!--         <section>
-          <h2>Unable optimize example</h2>
-        </section> -->
-
-<!--         <section>
-          <h2>Self-study</h2>
-          <p>Color conversion or filter 3-by-3</p>
-        </section> -->
-<!--         <section>
-          <h2>profile-guided optimization (PGO)</h2>
-        </section> -->
-
-        <!-- <section> -->
-          <!-- <section> -->
-            <!-- <h2>Hints: Aligning Data</h2> -->
-            <!-- <ul> -->
-              <!-- <li>Specifying alignment eliminates manual padding</li> -->
-              <!-- <li>Helps with auto-vectorization as well</li> -->
-            <!-- </ul> -->
-            <!-- <pre><code class="cpp"> -->
-<!-- /* GCC, align to 16 bytes */ -->
-<!-- unsigned long lock __attribute__ ((aligned(16))); -->
-            <!-- </code></pre> -->
-            <!-- <pre><code class="cpp"> -->
-<!-- /* Intel, align to 16 bytes */ -->
-<!-- __declspec(align(16)) unsigned long lock; -->
-            <!-- </code></pre> -->
-          <!-- </section> -->
-          <!-- <section> -->
-            <!-- <h2>Hints: prefetching</h2> -->
-<!-- GCC: __builtin_prefetch() -->
-          <!-- </section> -->
-        <!-- </section> -->
-
-<!--         <section>
-          <h2>Software pipelining</h2>
-          https://en.wikipedia.org/wiki/Software_pipelining
-        </section>
- -->
-<!--         <section>
-          <h2></h2>
-          font and optimizations: constant folding
-          intermediate representations
-          backend optimizations
-        </section> -->
 
         <!-- <section> -->
           <!-- <h2>IPA: Interprocedural optimization</h2> -->
