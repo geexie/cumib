@@ -59,7 +59,7 @@
               <ul>
                 <li>Ordering optimization approaches</li>
                 <li>Demystifying a compiler</li>
-                <li><b>Mastering compilation</b></li>
+                <li><b>Mastering compiler optimizations</b></li>
               </ul>
             </li>
             <li><strong>Computer Architectures</strong>
@@ -73,8 +73,9 @@
         </section>
 
         <section>
-          <h2>Do not optimize debug versions.</h2>
-          <p>Learn a compiler well and stick with it.</p>
+          <h2>Are you still optimizing debug versions?</h2>
+          <br/><br/><br/><br/>
+          <h3>Learn a compiler well and stick with it!</h3>
         </section>
 
 <!--         <section>
@@ -283,25 +284,29 @@ for (int i = 0; i < N; i++)
                 <li>Hoisting Loop Invariant Code</li>
                 <li>Loop unrolling</li>
                 <li>Loop unswitching</li>
+                <li>Loop Peeling</li>
                 <li>Scalarization</li>
                 <li>Strip mining</li>
 
+                <!-- out of scope -->
                 <!-- <li>Loop skewing</li> -->
                 <!-- <li>Unroll-and-jam</li> -->
                 <!-- <li>Loop reversal</li> -->
-
-
-<!--
-    Loop peeling
-    Loop reversal
- -->
-
+                <!-- <li>Prefetching</li> -->
+                <!-- <li>Test promotion in loops</li> -->
+                <!-- <li>Software pipelining</li> -->
+                <!-- <li>Array Initialization</li> -->
+                <!-- <li>Loop Defactorization</li> -->
+                <!-- <li>Outer Loop Unrolling</li> -->
+                <!--  -->
               </ul>
             </li>
-            <li><strong>Multi-loop</strong>
+            <li><strong>Multi-loop (nested or detached)</strong>
               <ul>
                 <li>Loop fusion/fission</li>
                 <li>Loop interchange</li>
+                <li>Stride Minimization</li>
+                <li>Loop collapse</li>
               </ul>
             </li>
           </ul>
@@ -397,7 +402,7 @@ for (int i = 0 ; i <= N-4; i+=4)
 
         <section>
           <section>
-            <h2>#4: Loop unswitching &amp; Scalarization</h2>
+            <h2>#4: Loop unswitching</h2>
             <p>Moves loop-invariant conditional constructs or switches which are independent of the loop index out of
             the loop. Increases instruction level parallelism, enables further optimizations.</p>
             <ul class="none:">
@@ -422,6 +427,31 @@ else
     for (int i = 0; i < N; i++)
         X[i] = 0;
 }
+</code></pre>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Loop peeling</h2>
+            <p>A small number of iterations from the beginning or end of a loop taken out of the loop and executed
+            separately which eliminates if-statements and makes the loop more suitable for vectorization</p>
+            <ul class="none:">
+              <li>Before
+                <pre><code class="cpp">for (int i = 0; i&lt;N; i++)
+{
+  if (i==0 || i==(N-1))
+    b[i] = a[i];
+  else
+    b[i] = b[i+1] + a[i-1];
+}
+</code></pre>
+              </li>
+              <li>After
+                <pre><code class="cpp">b[0] = a[0];
+for (int i = 0; i&lt;N; i++)
+  [i] = b[i+1] + a[i-1];
+b[N-1] = a[N-1];
 </code></pre>
               </li>
             </ul>
@@ -490,80 +520,145 @@ cmpl  $93, %edi</code></pre>
 <!--  -->
         <section>
           <h2>#5: Strip mining</h2>
-          <p></p>
+          <p>Also called as blocking or tiling.</p>
           <ul class="none:">
             <li>Before
               <pre><code>
-do I = 1, n
-  do J = 1, n
-    A(J,I) = B(J) ∗ C(I)
+for (int i = 0; i < N; i++)
+{
+  for (int j = 0; j < N; j++)
+  {
+    A[i][j] = A[i][j] + B[j][i];
+  }
+}
 </code></pre>
             </li>
             <li>After
               <pre><code>
-do II = 1, n, tile
-  do J = 1, n
-    do I = II, II + tile -1
-      A(J,I) = B(J) ∗ C(I)
+for (int i = 0; i < N; i += block_size)
+{
+  for (int j = 0; j < N; j += block_size)
+  {
+    for (int ii = i; ii < i + block_size; ii++)
+    {
+      for (int jj = j; jj < j + block_size; jj++)
+      {
+        A[ii][jj] = A[ii][jj] + B[jj][ii];
+      }
+    }
+  }
+}
 </code></pre>
             </li>
           </ul>
         </section>
 
         <section>
-          <h2>#8: Loop Interchange</h2>
+          <h2>#6: Loop Interchange</h2>
+            <p>It is usually done for stride Minimization</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code class="cpp">
+for (int j = 0; j &lt; height; j++)
+{
+  for (int i = 0; i &lt; width; i++)
+  {
+    if (img[j * width + i] &gt; 0)
+    {
+      count++;
+    }
+  }
+}
+                    </code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="cpp">
+for (int i = 0; i &lt; width; i++)
+{
+  for (int j = 0; j &lt; height; j++)
+  {
+    if (img[j * width + i] &gt; 0)
+    {
+      count++;
+    }
+  }
+}
+                    </code></pre>
+                  </td>
+              </tbody>
+            </table>
+        </section>
+
+        <section>
+          <h2>#7: Loop Fusion / Fission</h2>
           <ul class="none">
-            <li>Before
-              <pre><code>
-DO j = 1, nj
-  DO i = 1, ni
-    a(i,j) = b(i,j)
-  END DO
-END DO
+            <li>Loop <b>fission</b> breaks up a complicated loop into multiple smaller loops, iterating over the same
+            index range which may help to achieve better locality of reference and reduce register pressure. Fission
+            results in smaller cache footprint.
+              <pre><code class="cpp">for (size_t i = 0; i < n; ++i)
+  b[i] = a[i] + 1.f;
+
+for (size_t i = 0; i < n; ++i)
+  c[i] = b[i] / 2.f;
+
+for (size_t i = 0; i < n; ++i)
+  d[i] = 1.f / c[i];
 </code></pre>
             </li>
-            <li>After
-              <pre><code>
-DO i = 1, ni
-  DO j = 1, nj
-    a(i,j) = b(i,j)
-  END DO
-END DO
+            <li>Loop <b>fusion</b> combines multiple loops operating over the same index range into one single loop
+            which may lead to better locality of reference, but it may increase register pressure as well. Fusion results
+            in fewer total memory references.
+              <pre><code class="cpp">for (size_t i = 0; i < n; ++i)
+{
+  b[i] = a[i] + 1.f;
+  c[i] = b[i] / 2.f;
+  d[i] = 1.f / c[i];
+}
 </code></pre>
             </li>
           </ul>
         </section>
 
         <section>
-          <h2>#9: Loop Fusion / Fission</h2>
-          <p>Fusion: fewer branches (combine with unrolling). fewer total memory references. <br/>
-          Fission: smaller cache footprint.</p>
-          <ul class="none">
-            <li>Before
-              <pre><code>
-DO i = 1, n
-  b(i) = a(i) + 1
-END DO
-
-DO i = 1, n
-  c(i) = b(i) / 2
-END DO
-
-DO i = 1, n
-  d(i) = 1.f / c(i)
-END DO
-</code></pre>
-            </li>
-            <li>After
-              <pre><code>
-DO i = 1, n
-  b(i) = a(i) + 1
-  c(i) = b(i) / 2
-  d(i) = 1.f / c(i)
-END DO
-</code></pre>
-            </li>
-          </ul>
+          <h2>#8: Loop collapse</h2>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code class="cpp">
+for (int j = 0; j &lt; height; j++)
+{
+  for (int i = 0; i &lt; width; i++)
+  {
+    if (img[j * width + i] &gt; 0)
+    {
+      count++;
+    }
+  }
+}
+                    </code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="cpp">
+for (int j = 0; j &lt; height * width; j++)
+{
+  if (img[j] &gt; 0)
+    count++;
+}
+                    </code></pre>
+                  </td>
+              </tbody>
+            </table>
         </section>
 
         <section>
@@ -581,22 +676,10 @@ END DO
               <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
             </ul>
           </section>
-          <section>
+<!--           <section>
             <p>absdiff -03 or hand-written assembly</p>
           </section> -->
         </section>
-
-        <!-- <section> -->
-          <!-- <h2>IPA: Interprocedural optimization</h2> -->
-          <!-- https://gcc.gnu.org/onlinedocs/gccint/IPA.html -->
-          <!-- https://en.wikipedia.org/wiki/Interprocedural_optimization -->
-        <!-- </section> -->
-
-<!--         <section>
-          <h2>Register allocation</h2>
-          <p>CSO (common subexpression optimization) and register allocation</p>
-          <p>16-32 registers are optimal register number for the compiler</p>
-        </section> -->
 
         <section id="end1">
           <h1>THE END</h1>
