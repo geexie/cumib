@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
 
-    <title>Pragmatic optimization in modern programming</title>
+    <title>Pragmatic optimization in modern programming - Demystifying the Compiler</title>
     <meta name="description" content="Pragmatic optimization in modern programming - Introduction">
     <meta name="author" content="Marina Kolpakova (cuda.geek)">
 
@@ -48,7 +48,7 @@
           <small>Created by
             <a href="http://github.com/cuda-geek">Marina Kolpakova</a>
             for
-            <a href="http://www.unn.ru/eng/">UNN</a>
+            <a href="http://www.unn.ru/eng/">UNN</a> / 2015
           </small>
         </section>
 
@@ -82,10 +82,13 @@
                 <li>Pointer aliasing</li>
                 <li>Functional calls</li>
                 <li>Floating point math</li>
+                <li>...</li>
               </ul>
             </li>
             <li>Optimization levels</li>
+            <li>Case study </li>
             <li>Optimization feedback</li>
+            <li>Link time optimization</li>
             <li>Summary</li>
           </ul>
         </section>
@@ -329,7 +332,7 @@ a = r3</code></pre>
 }</code></pre>
                   </td>
                   <td>
-                    <pre><code>define i32 @square(i32 %a) #0 {
+                    <pre><code class="scala">define i32 @square(i32 %a) #0 {
 %1 = mul nsw i32 %a, %a
 ret i32 %1
 }</code></pre>
@@ -651,11 +654,11 @@ $ gcc check.c -o check ; ./check
         <section>
           <h2>More optimization obstacles</h2>
           <ul>
-            <li>Branches inside a loop</li>
-            <li>Exceptions</li>
-            <li>Accesses to storage type global variables</li>
-            <li>Inline assembly</li>
-            <li><code>volatile</code> keyword</li>
+            <li><h3>Branches inside a loop</h3></li>
+            <li><h3>Exceptions</h3></li>
+            <li><h3>Accesses to storage type global variables</h3></li>
+            <li><h3>Inline assembly</h3></li>
+            <li><h3><code>volatile</code> keyword</h3></li>
           </ul>
         </section>
 
@@ -1230,21 +1233,31 @@ real  0m1.269s</code></pre>
           <section>
             <h2>Link-Time Optimization (LTO)</h2>
             <p>Perform inter-procedural optimizations during linking.</p>
-            <img src="images/popt/lto.gif"/>
-            <p>Most compilers supported them:
+            <img class="simple" src="images/popt/lto.svg"/>
+            <p>Most compilers support this feature:
               <ul>
-                <li><strong>clang</strong> (-flto)</li>
+                <li><strong><a href="http://llvm.org/docs/LinkTimeOptimization.html">clang</a></strong> (-flto)</li>
                 <li><strong><a href="https://gcc.gnu.org/onlinedocs/gccint/LTO-Overview.html">gcc</a></strong>
                  (-flto) stating with 4.9</li>
-                <li><strong>cl.exe</strong> (/GL, /LTCG)</li>
-                <li>etc</li>
+                <li><strong><a href="https://msdn.microsoft.com/en-us/library/0zza0de8.aspx">cl.exe</a></strong> (/GL, /LTCG)</li>
+                <li>...</li>
               </ul>
             </p>
           </section>
 
           <section>
             <h2>WHOPR: Whole program optimization</h2>
-            <img src="images/popt/whopr.png">
+            <ol>
+              <li>Compile each source file separately, add extra information to the object file</li>
+              <li>Analyze information collected from all object files</li>
+              <li>Perform second optimization phase to generate object file</li>
+              <li>Link the final binary</li>
+            </ol>
+            <img class="simple" src="images/popt/wpo.svg">
+            <ul>
+              <li>Eliminate even more redundant code</li>
+              <li>Compilations is better optimized for multi-core systems</li>
+            </ul>
           </section>
         </section>
 
