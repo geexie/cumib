@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
 
-    <title>Pragmatic optimization in modern programming</title>
+    <title>Pragmatic optimization in modern programming - Ordering optimization approaches</title>
     <meta name="description" content="Pragmatic optimization in modern programming - Introduction">
     <meta name="author" content="Marina Kolpakova (cuda.geek)">
 
@@ -48,7 +48,7 @@
           <small>Created by
             <a href="http://github.com/cuda-geek">Marina Kolpakova</a>
             for
-            <a href="http://www.unn.ru/eng/">UNN</a>
+            <a href="http://www.unn.ru/eng/">UNN</a> / 2015
           </small>
         </section>
 
@@ -75,28 +75,42 @@
         <section>
           <h2>Outline</h2>
           <ul>
-            <!-- <li>This course and its goals</li> -->
+            <li>What is optimization?</li>
             <li>How to learn optimization?</li>
             <li>Recommended literature</li>
-            <li>What is optimization?</li>
             <li>Pragmatic approach</li>
-            <li>Place of optimization in a project life cycle</li>
+            <li>Knowledge which is required</li>
+            <li>Optimization life cycle</li>
             <li>Whence get the performance?</li>
             <li>Top-Down (High-low) approach</li>
+            <li>Optimization tread-offs</li>
             <li>Overview of optimization steps</li>
             <li>Summary</li>
           </ul>
         </section>
 
-<!--         <section>
-          <h2>Course goals</h2>
-          <ul>
-            <li>Master common optimization approaches</li>
-            <li>Understand architecture details and trends</li>
-            <li>Emphasize critical HW features to look on</li>
-            <li>Highlight possible pitfalls</li>
-          </ul>
-        </section> -->
+        <section>
+          <h2>What is optimization?</h2>
+          <blockquote>In computing, <b>optimization</b> is the process of modifying a system to make some aspect of it
+            work more efficiently or use fewer resources.
+            <br/> In particular, this is a process of transforming a piece of code to make it
+            <b>more efficient without changing its output</b>.
+          </blockquote>
+          <p>Metrics which are commonly considered:</p>
+          <dl>
+            <dt ><b>Wall(-clock) time</b></dt>
+            <dd style="margin-left: 5em;">
+              <strong>is a human perception of the span of time from the start to the completion of a task.</strong>
+            </dd>
+            <br/>
+            <dt><b>Power consumption</b></dt>
+            <dd style="margin-left: 5em;">is the electrical energy over time which is supplied to complete a task.</dd>
+            <br/>
+            <dt><b>processor time</b></dt>
+            <dd style="margin-left: 5em;">is the total execution time (or runtime) during which a processor was dedicated
+            to a task (i.e. used for processing instructions of that task).</dd>
+          </dl>
+        </section>
 
         <section>
           <h2>How to learn optimization?</h2>
@@ -144,29 +158,15 @@
               <a href="http://www.rdrop.com/~paulmck/">Paul E. McKenney</a>
             </p>
           </section>
-        </section>
 
-        <section>
-          <h2>What is optimization?</h2>
-          <blockquote>In computing, <b>optimization</b> is the process of modifying a system to make some aspect of it
-            work more efficiently or use fewer resources.
-            <br/> In particular, this is a process of transforming a piece of code to make it
-            <b>more efficient without changing its output</b>.
-          </blockquote>
-          <p>Metrics which are commonly considered:</p>
-          <dl>
-            <dt ><b>Wall(-clock) time</b></dt>
-            <dd style="margin-left: 5em;">
-              <strong>is a human perception of the span of time from the start to the completion of a task.</strong>
-            </dd>
-            <br/>
-            <dt><b>Power consumption</b></dt>
-            <dd style="margin-left: 5em;">is the electrical energy over time which is supplied to complete a task.</dd>
-            <br/>
-            <dt><b>processor time</b></dt>
-            <dd style="margin-left: 5em;">is the total execution time (or runtime) during which a processor was dedicated
-            to a task (i.e. used for processing instructions of that task).</dd>
-          </dl>
+          <section>
+              <h2>Recommended literature</h2>
+              <img width="30%" src="images/popt/ec.jpg">
+              <p><a href="http://www.amazon.com/Engineering-Compiler-Second-Edition-Cooper/dp/012088478X">
+              Engineering a Compiler</a><br/> by
+              <a href="http://www.cs.rice.edu/~keith/">Keith Cooper</a> and <a href="http://www.cs.rice.edu/~linda/">Linda Torczon</a>
+            </p>
+          </section>
         </section>
 
         <section>
@@ -184,8 +184,8 @@
           </blockquote>
           <br/>
           <ol>
-            <li>You ought to find what to start with (3%)</li>
-            <li>You ought to know where to stop (97%)</li>
+            <li><strong>You ought to find what to start with (3%)</strong></li>
+            <li><strong>You ought to know where to stop (97%)</strong></li>
           </ol>
         </section>
 
@@ -221,25 +221,13 @@
         </section>
 
         <section>
-          <section>
-            <h2>Project life cycle</h2>
-            <img class="simple" src="images/popt/pdl.svg"/>
-          </section>
-
-          <section>
-            <h2>Project life cycle</h2>
-            <img class="simple" src="images/popt/pdl2.svg"/>
-          </section>
-        </section>
-
-        <section>
           <h2>Optimization cycle</h2>
           <img class="simple" src="images/popt/opt_cycle.svg"/>
         </section>
 
         <section>
           <section>
-            <h2>Whence get performance?</h2>
+            <h2>Whence get the performance?</h2>
             <dl>
               <dt><b>Algorithm</b></dt>
               <dd>Compilers are not aware about semantics of your code,<br>taking this into account <b>focus
@@ -254,7 +242,7 @@
               </dd>
           </section>
           <section>
-            <h2>Whence get performance?</h2>
+            <h2>Whence get the performance?</h2>
             <dl>
               <dt><b>Memory access patterns &amp; operations</b></dt>
               <dd>
@@ -276,7 +264,7 @@
             </dl>
           </section>
           <section>
-            <h2>hence get performance?</h2>
+            <h2>Whence get the performance?</h2>
             <dl>
               <dt><b>HW-specific optimizations</b></dt>
               <dd>
@@ -296,7 +284,7 @@
             </dl>
           </section>
           <section>
-            <h2>From whence get performance?</h2>
+            <h2>Whence get the performance?</h2>
             <br/><br/>
             <table style="font-size:1.5em;">
               <colgroup>
@@ -322,6 +310,19 @@
         </section>
 
         <section>
+          <h2>Optimization tread-offs</h2>
+          <ul>
+            <li>Code portability decreases when we go deeper</li>
+            <li>Performance portability decreases when we go deeper</li>
+            <li>The cost of maintenance &amp; extendability increases when we go deeper</li>
+            <li>Optimizations are often not reusable</li>
+            <li>Optimizations become obsolete very quickly</li>
+          </ul>
+          <br/><br/>
+          <strong>...but still performance is a crucial requirement for most applications.</strong>
+        </section>
+
+        <section>
           <h2>Top-Down (High-low) approach</h2>
           <ol style="font-size:1.5em;">
             <li>Use appropriate algorithms</li>
@@ -334,19 +335,6 @@
             <br/>
             <li>Dive into assembly</li>
           </ol>
-        </section>
-
-        <section>
-          <h2>Optimization tread-offs</h2>
-          <ul>
-            <li>Code portability decreases when we go deeper</li>
-            <li>Performance portability decreases when we go deeper</li>
-            <li>The cost of maintenance &amp; extendability increases when we go deeper</li>
-            <li>Optimizations are often not reusable</li>
-            <li>Optimizations become obsolete very quickly</li>
-          </ul>
-          <br/><br/>
-          <strong>...but still performance is a crucial requirement for most applications.</strong>
         </section>
 
         <section>
@@ -437,12 +425,12 @@
               <tbody>
                 <tr>
                   <td>
-                    <pre><code class="cpp">
-for (int j = 0; j &lt; img.height; j++)
+                    <pre><code style="padding:0.5em 1.5em;" class="cpp">
+for (int j = 0; j &lt; height; j++)
 {
-    for (int i = 0; i &lt; img.width; i++)
+    for (int i = 0; i &lt; width; i++)
     {
-        if (img[j * img.width + i] &gt; 0)
+        if (img[j * width + i] &gt; 0)
         {
             count++;
         }
@@ -451,12 +439,12 @@ for (int j = 0; j &lt; img.height; j++)
                     </code></pre>
                   </td>
                   <td>
-                    <pre><code class="cpp">
-for (int i = 0; i &lt; img.width; i++)
+                    <pre><code style="padding:0.5em 1.5em;" class="cpp">
+for (int i = 0; i &lt; width; i++)
 {
-    for (int j = 0; j &lt; img.height; j++)
+    for (int j = 0; j &lt; height; j++)
     {
-        if (img[j * img.width + i] &gt; 0)
+        if (img[j * width + i] &gt; 0)
         {
             count++;
         }
@@ -479,12 +467,12 @@ for (int i = 0; i &lt; img.width; i++)
               <tbody>
                 <tr>
                   <td>
-                    <pre style="border: 3px double #FF8D14;"><code class="cpp">
-for (int j = 0; j &lt; img.height; j++)
+                    <pre style="border: 3px double #FF8D14;"><code style="padding:0.5em 1.5em;" class="cpp">
+for (int j = 0; j &lt; height; j++)
 {
-    for (int i = 0; i &lt; img.width; i++)
+    for (int i = 0; i &lt; width; i++)
     {
-        if (img[j * img.width + i] &gt; 0)
+        if (img[j * width + i] &gt; 0)
         {
             count++;
         }
@@ -493,12 +481,12 @@ for (int j = 0; j &lt; img.height; j++)
                     </code></pre>
                   </td>
                   <td>
-                    <pre><code class="cpp">
-for (int i = 0; i &lt; img.width; i++)
+                    <pre><code style="padding:0.5em 1.5em;" class="cpp">
+for (int i = 0; i &lt; width; i++)
 {
-    for (int j = 0; j &lt; img.height; j++)
+    for (int j = 0; j &lt; height; j++)
     {
-        if (img[j * img.width + i] &gt; 0)
+        if (img[j * width + i] &gt; 0)
         {
             count++;
         }
@@ -508,7 +496,6 @@ for (int i = 0; i &lt; img.width; i++)
                   </td>
               </tbody>
             </table>
-            <br/>
           </section>
         </section>
 
@@ -696,26 +683,25 @@ r10 = shl(r9, 2)     // 11
 
         <section>
           <h2>Step #7: dive into assembly</h2>
-          <blockquote>Assembler is very often used to check the compiler<br/>and rarely used to write low-level code.</blockquote>
-          <p>Raw assembly make sense to:</p>
+          <blockquote>Assembler is very often used to check the compile and rarely used to write low-level code.</blockquote>
+          <p><strong>Raw assembly make sense to:</strong></p>
           <ul>
-            <li>Overcome compiler bugs & optimization limitations
+            <li><b>Overcome compiler bugs & optimization limitations</b>
               <ul>
                 <li>addition of redundant instructions</li>
                 <li>suboptimal register allocation</li>
               </ul>
             </li>
-            <br/>
-            <li>Use specific hardware features
+            <li><b>Use specific hardware features</b>
               <ul>
                 <li>which are not expressed in higher level ISA</li>
               </ul>
             </li>
           </ul>
-          <p>Keep in mind that:</p>
+          <p><strong>Keep in mind that:</strong></p>
           <ul>
             <li>Hand-written assembly is the least portable optimization</li>
-            <li>In-line assembly insertions limit compiler abilities for further optimizations</li>
+            <li>In-line assembly insertions limit compiler optimizations abilities</li>
           </ul>
         </section>
 
@@ -729,7 +715,7 @@ r10 = shl(r9, 2)     // 11
             <li>Knowledge about the code, the compiler and the platform is must have</li>
             <li>Optimization is a measure-analyze-optimize-check cycle</li>
             <li>Stick to high-to-low approach</li>
-            <li>Get the performance from the algorithmic and data structure choices first, then go deeper</li>
+            <li>Get the performance from the algorithmic and data structure choices first</li>
             <li>Ensure memory access patterns next, then go deeper</li>
           </ul>
         </section>
