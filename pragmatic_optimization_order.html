@@ -428,13 +428,13 @@
                     <pre><code style="padding:0.5em 1.5em;" class="cpp">
 for (int j = 0; j &lt; height; j++)
 {
-    for (int i = 0; i &lt; width; i++)
+  for (int i = 0; i &lt; width; i++)
+  {
+    if (img[j * width + i] &gt; 0)
     {
-        if (img[j * width + i] &gt; 0)
-        {
-            count++;
-        }
+      count++;
     }
+  }
 }
                     </code></pre>
                   </td>
@@ -442,13 +442,13 @@ for (int j = 0; j &lt; height; j++)
                     <pre><code style="padding:0.5em 1.5em;" class="cpp">
 for (int i = 0; i &lt; width; i++)
 {
-    for (int j = 0; j &lt; height; j++)
+  for (int j = 0; j &lt; height; j++)
+  {
+    if (img[j * width + i] &gt; 0)
     {
-        if (img[j * width + i] &gt; 0)
-        {
-            count++;
-        }
+      count++;
     }
+  }
 }
                     </code></pre>
                   </td>
@@ -470,13 +470,13 @@ for (int i = 0; i &lt; width; i++)
                     <pre style="border: 3px double #FF8D14;"><code style="padding:0.5em 1.5em;" class="cpp">
 for (int j = 0; j &lt; height; j++)
 {
-    for (int i = 0; i &lt; width; i++)
+  for (int i = 0; i &lt; width; i++)
+  {
+    if (img[j * width + i] &gt; 0)
     {
-        if (img[j * width + i] &gt; 0)
-        {
-            count++;
-        }
+      count++;
     }
+  }
 }
                     </code></pre>
                   </td>
@@ -484,13 +484,13 @@ for (int j = 0; j &lt; height; j++)
                     <pre><code style="padding:0.5em 1.5em;" class="cpp">
 for (int i = 0; i &lt; width; i++)
 {
-    for (int j = 0; j &lt; height; j++)
+  for (int j = 0; j &lt; height; j++)
+  {
+    if (img[j * width + i] &gt; 0)
     {
-        if (img[j * width + i] &gt; 0)
-        {
-            count++;
-        }
+      count++;
     }
+  }
 }
                     </code></pre>
                   </td>
