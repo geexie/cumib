@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
 
-    <title>Pragmatic optimization in modern programming</title>
+    <title>Pragmatic optimization in modern programming - Mastering compiler optimizations</title>
     <meta name="description" content="Pragmatic optimization in modern programming - Introduction">
     <meta name="author" content="Marina Kolpakova (cuda.geek)">
 
@@ -34,6 +34,8 @@
     <![endif]-->
   </head>
 
+  <!-- http://booksite.elsevier.com/9780120884780/Graduate_Lecture_Slides/index.html -->
+
   <body>
     <div class="reveal">
       <div class="slides">
@@ -48,7 +50,7 @@
           <small>Created by
             <a href="http://github.com/cuda-geek">Marina Kolpakova</a>
             for
-            <a href="http://www.unn.ru/eng/">UNN</a>
+            <a href="http://www.unn.ru/eng/">UNN</a> / 2015
           </small>
         </section>
 
@@ -73,15 +75,12 @@
         </section>
 
         <section>
-          <h2>Are you still optimizing debug versions?</h2>
-          <br/><br/><br/><br/>
-          <h3>Learn a compiler well and stick with it!</h3>
-        </section>
-
-<!--         <section>
           <h2>Outline</h2>
           <ul>
-            <li>Taxonomy of compiler optimizations</li>
+            <li>Classic taxonomy</li>
+            <li>Scope taxonomy</li>
+            <li>Code pattern taxonomy</li>
+            <!--  -->
             <li>Case studies
               <ol>
                 <li>Function body inlining</li>
@@ -94,7 +93,7 @@
             </li>
             <li>Self-study</li>
           </ul>
-        </section> -->
+        </section>
 
         <section>
           <section>
@@ -102,63 +101,151 @@
             <ul>
               <li>
                 <b>Machine independent transformations</b>
-                <ol>
+                <ul style="list-style:none;">
                   <li><strong>Applicable across a broad range of machines</strong></li>
+                </ul>
+                <ol>
                   <li>Eliminate redundant computations</li>
                   <li>Decrease ratio of overhead to real work</li>
-                  <li>Reduce running time or space</li>
-                  <li>Specialize code on a context</li>
                   <li>Eliminate dead code</li>
+                  <li>Reduce running time or/and space</li>
+                  <li>Specialize code on a context</li>
                   <li>Enable other optimizations</li>
                 </ol>
               </li>
+              <br/>
               <li>
                 <b>Machine dependent transformations</b>
-                <ol>
+                <ul style="list-style:none;">
                   <li><strong>Capitalize on specific machine properties</strong></li>
+                </ul>
+                <ol>
                   <li>Manage or hide latency</li>
+                  <li>Manage resources (registers, stack)</li>
                   <li>Improve the mapping from IR to this machine</li>
-                  <li>Might use some exotic instructions (eg VLDM )</li>
+                  <li>Use some exotic instructions (eg VLDM )</li>
                 </ol>
               </li>
             </ul>
           </section>
 
+<!--           <section>
+            <h2>Machine (in-)dependent transformations</h2>
+            <ul>
+              <li>
+                <b>Machine independent transformations</b>
+                <ul>
+                </ul>
+              </li>
+              <br/>
+              <li>
+                <b>Machine dependent transformations</b>
+                <ul>
+                  <li>Strength reduction – e.g., replace multiply by a constant with adds and shifts</li>
+                  <li>Pipeline scheduling – reorder instructions to improve pipeline performance</li>
+                </ul>
+              </li>
+            </ul>
+          </section> -->
+
           <section>
-            <h2>Compiler optimizations taxonomy</h2>
-            <img src="images/popt/opt_machine_independent.png" alt="machine independent optimizations" style="padding:15px; background:white">
+            <h2>Scope taxonomy</h2>
+            <dl>
+              <dt><strong>Inter</strong>procedural optimizations</dt>
+              <dd>consider whole translation unit, involve analysis of data-flow and dependency graphs.</dd>
+              <br/>
+              <dt><strong>Intra</strong>procedural optimizations</dt>
+              <dd>consider whole procedure, involve analysis of data-flow and dependency graphs.</dd>
+              <br/>
+              <dt>Global optimizations</dt>
+              <dd>consider inter-most code block with the context. Most loop optimizations are belongs to this group </dd>
+              <br/>
+              <dt>Local optimizations</dt>
+              <dd>limited to straight-line code (code block)</dd>
+              <br/>
+              <dt>Peephole optimizations</dt>
+              <dd>map one or more consecutiveness operators from IR to machine code</dd>
+              <br/>
+            </dl>
           </section>
 
           <section>
-            <h2>Compiler optimizations taxonomy</h2>
-            <img src="images/popt/opt_machine_dependent.png" alt="machine dependent optimizations" style="padding:15px; background:white">
+            <h2>Interprocedural optimizations (IPO)</h2>
+            <p>Looks at all routines and tries to make optimizations <strong>across routine boundaries</strong>,
+              including but not limited to <i>inlining</i> and <i>cloning</i>. It is referred as
+              <strong>Interprocedural Analysis (IPA)</strong>, too.</p>
+            <ul>
+              <li>Compiler can move, optimize, restructure and delete code between procedures and files</li>
+              <li><strong>Inlining</strong> &mdash; replacing a subprogram call with the replicated code of the subprogram</li>
+              <li><strong>Cloning</strong> &mdash; optimizing logic in the copied routine for the particular call</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Code Pattern taxonomy</h2>
+            <ul>
+              <li>Dependency chains (linear code)</li>
+              <li>Branches</li>
+              <li><strong>Loop bodies</strong>
+                <ul>
+                  <li>Single loop</li>
+                  <li>Loop + branch</li>
+                  <li>Multi-loop</li>
+                </ul>
+              </li>
+              <li>Functional calls to sub-routines</li>
+            </ul>
           </section>
         </section>
 
         <section>
           <section>
-            <h2>Copy propagation</h2>
-            <p>Eliminates all copies of the variable. Simplifies intermediate representation.</p>
+            <h2>Machine independent transformations</h2>
+            <h3>Copy propagation</h3>
             <ul>
-              <li>Before
-                <pre><code class="cpp">
+              <li>Eliminates all copies of the variable with the initial value</li>
+              <li>Simplifies intermediate representation and as the result<br/> shrinks problem size for further IR
+              transformations</li>
+              <li>Creates opportunities for death code elimination</li>
+            </ul>
+            <br/><br/>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="33%">
+                    <pre><code class="cpp">
 int x = y
 int z = 1 + x
 
 </code></pre>
-              </li>
-              <li>After
-                <pre><code class="cpp">
+                  </td>
+                  <td width="33%">
+                    <pre><code class="cpp">
 int x = y
 int z = 1 + y
 
 </code></pre>
-              </li>
-            </ul>
+                  </td>
+                  <td>
+                    <pre><code class="cpp">
+int z = 1 + y
+
+
+</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Applicable to any scope and code pattern</p>
           </section>
 
           <section>
-            <h2>Constant folding</h2>
+            <h2>Machine independent transformations</h2>
+            <h3>Constant folding</h3>
             <p>Evaluates expressions from the constants in compile time. Expressions could be quite complicated,
             but absence of side effect is always a concern.</p>
             <ul>
@@ -180,24 +267,58 @@ int sum = 300;
           </section>
 
           <section>
-            <h2>Strength Reduction</h2>
+            <h2>Machine independent transformations</h2>
+            <h3>Strength Reduction</h3>
             <p>Replaces complex expressions with more simple analogy.</p>
-            <ul>
-              <li>Before
-                <pre><code class="cpp">
-double x = pow(y, 2.0);
-double a = c / 2.0;
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="cpp">double usePow(double x)
+{
+  return pow(x, 2.0);
+}
 
 </code></pre>
-              </li>
-              <li>After
-                <pre><code class="cpp">
-double x = y * y;
-double a = c * 0.5;
+                  </td>
+                  <td>
+                    <pre><code class="armasm">usePow:
+  fmdrr d16, r0, r1
+  fmuld d16, d16, d16
+  fmrrd r0, r1, d16
+  bx  lr
+</code></pre>
+                  </td>
+                </tr>
+                <tr style="background-color:rgba(0,0,0,0);">
+                  <td width="50%">
+                    <pre><code class="cpp">float usePowf(float x)
+{
+  return powf(x, 2.f);
+}
 
 </code></pre>
-              </li>
-            </ul>
+                  </td>
+                  <td>
+                    <pre><code class="armasm">usePowf:
+  fmsr  s15, r0
+  fmuls s15, s15, s15
+  fmrs  r0, s15
+  bx  lr</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
+          </section>
+
+          <section>
+            <h2>Machine independent transformations</h2>
+            <h3>Strength Reduction (advanced)</h3>
           </section>
 
           <section>
@@ -223,32 +344,6 @@ double e = adivb * 2.0;
               </li>
             </ul>
           </section>
-        </section>
-
-        <section>
-          <h2>Scope taxonomy</h2>
-          <ul>
-            <li>High­-level optimizations
-              <ul>
-                <li>Loop optimizations</li>
-              </ul>
-            </li>
-            <li>Inter-procedural optimization</li>
-            <li>Intra-procedural optimization</li>
-            <li>Global optimizations</li>
-            <li>Local optimizations</li>
-            <li>Peephole optimizations</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Code Pattern taxonomy</h2>
-          <ul>
-            <li>Function class and sub-routines</li>
-            <li>Dependency chains (linear code)</li>
-            <li>Branches</li>
-            <li><strong>Loop bodies</strong></li>
-          </ul>
         </section>
 
         <section>
@@ -398,6 +493,39 @@ for (int i = 0 ; i <= N-4; i+=4)
 </code></pre>
             </li>
           </ul>
+        </section>
+
+        <section>
+          <h2>Outer Loop unrolling</h2>
+          <p>Usually it is used to reduce number of loads and stores on inner loops with invariants, introduce reuse of
+          loaded values which are kept in registers or caches. Complicated for compilers</p>
+          <p>dot product example - process 2 lines</p>
+          <p>test-flags example</p>
+<!--           <p>Generates multiple copies of the code for the loop body, reduces number of branches and groups more
+          instructions together to enable more efficient instruction pipelining. Best candidates are innermost loops
+          with limited control flow.</p>
+          <ul class="none:">
+            <li>Before
+              <pre><code class="cpp">
+for (int i = 0 ; i < N; i++)
+  h[p[i]]++;
+
+</code></pre>
+            </li>
+            <li>After
+              <pre><code class="cpp">
+for (int i = 0 ; i <= N-4; i+=4)
+{
+  int idx0 = p[i+0]; int idx1 = p[i+1];
+  int idx2 = p[i+2]; int idx3 = p[i+3];
+
+  h[idx0]++; h[idx1]++;
+  h[idx2]++; h[idx3]++;
+}
+
+</code></pre>
+            </li>
+          </ul> -->
         </section>
 
         <section>
@@ -627,6 +755,7 @@ for (size_t i = 0; i < n; ++i)
 
         <section>
           <h2>#8: Loop collapse</h2>
+            <p>Reduces loop nesting and overhead on address computations, helps auto-vectorization.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -663,6 +792,121 @@ for (int j = 0; j &lt; height * width; j++)
 
         <section>
           <section>
+            <h2>Filling and copying memory blocks</h2>
+            <p>Uses the library functions <code>memset</code> and <code>memcpy</code> to initialize and copy memory blocks.</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <pre><code class="cpp">static char a[100000];
+static char b[100000];
+
+static int at(int idx, char val)
+{
+  if (idx&gt;=0 &amp;&amp; idx&lt;100000)
+    a[idx] = val;
+}
+
+int main()
+{
+  int i;
+  for (i=0; i&lt;100000; ++i) a[i]=42;
+  for (i=0; i&lt;100000; ++i) at(i,-1);
+  for (i=0; i&lt;100000; ++i) b[i] = a[i];
+}
+                    </code></pre>
+                  </td>
+                  <td>
+                    <pre><code style="padding-left:20px;" class="x86asm">main:
+.LFB1:
+  .cfi_startproc
+  subq  $8, %rsp
+  .cfi_def_cfa_offset 16
+  movl  $100000, %edx
+  movl  $42, %esi
+  movl  $a, %edi
+  call  memset
+  movl  $100000, %edx
+  movl  $255, %esi
+  movl  $a, %edi
+  call  memset
+  movl  $100000, %edx
+  movl  $a, %esi
+  movl  $b, %edi
+  call  memcpy
+  addq  $8, %rsp
+  .cfi_def_cfa_offset 8
+  ret
+  .cfi_endproc</code></pre>
+                  </td>
+                </tbody>
+              </table>
+            </tr>
+          </section>
+
+          <section>
+            <h2>Filling and copying memory blocks</h2>
+            <p>The same picture, if the code is compiled for ARM target.</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <pre><code class="cpp">static char a[100000];
+static char b[100000];
+
+static int at(int idx, char val)
+{
+  if (idx&gt;=0 &amp;&amp; idx&lt;100000)
+    a[idx] = val;
+}
+
+int main()
+{
+  int i;
+  for (i=0; i&lt;100000; ++i) a[i]=42;
+  for (i=0; i&lt;100000; ++i) at(i,-1);
+  for (i=0; i&lt;100000; ++i) b[i] = a[i];
+}
+                    </code></pre>
+                  </td>
+                  <td>
+                    <pre><code style="padding-left:20px;" class="x86asm">main:
+  ldr r3, .L3
+  mov r1, #42
+  stmfd sp!, {r4, lr}
+  add r3, pc, r3
+  movw  r4, #34464
+  movt  r4, 1
+  mov r0, r3
+  mov r2, r4
+  bl  memset(PLT)
+  mov r2, r4
+  mov r1, #255
+  bl  memset(PLT)
+  mov r2, r4
+  mov r3, r0
+  ldr r0, .L3+4
+  mov r1, r3
+  add r0, pc, r0
+  add r0, r0, #1792
+  bl  memcpy(PLT)
+  ldmfd sp!, {r4, pc}</code></pre>
+                  </td>
+                </tbody>
+              </table>
+          </section>
+        </section>
+
+        <section>
+          <section>
             <h2>Auto-vectorization</h2>
             <ul>
               <li>Machine code generation that takes advantage of vector instructions.</li>
@@ -679,6 +923,12 @@ for (int j = 0; j &lt; height * width; j++)
 <!--           <section>
             <p>absdiff -03 or hand-written assembly</p>
           </section> -->
+        </section>
+
+        <section>
+          <h2>Are you still optimizing debug versions?</h2>
+          <br/><br/><br/><br/>
+          <h3>Learn a compiler well and stick with it!</h3>
         </section>
 
         <section id="end1">
