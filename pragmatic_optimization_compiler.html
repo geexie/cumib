@@ -878,12 +878,15 @@ double power (double d, unsigned n)
   printf ("sum = %g\n", sum);
   return 0;
 }</code></pre>
+                    <small style="float:right;">
+                      <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-c">test-flags-dp.c</a>
+                    </small>
                   </td>
                 </tr>
               </tbody>
             </table>
             <p>Compile it <b>without</b> optimization:<br/>
-              <strong><code>gcc -Wall -O0 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+              <strong><code>gcc -Wall -O0 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
             </p>
             <pre style="width:30%"><code class="bash">sum = 7.06739e+72
 real  0m23.229s</code></pre>
@@ -894,21 +897,21 @@ real  0m23.229s</code></pre>
             <ul>
               <li>
                 <p>Compile it with <b>the first</b> optimization level: <b>~2.78 speedup</b><br/>
-                  <strong><code>gcc -Wall -O1 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+                  <strong><code>gcc -Wall -O1 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = 7.06739e+72
 real  0m8.342s</code></pre>
               </li>
               <li>
                 <p>Compile it with <b>the second</b> optimization level: <b>~1.55 speedup</b><br/>
-                  <strong><code>gcc -Wall -O2 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+                  <strong><code>gcc -Wall -O2 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = 7.06739e+72
 real  0m5.371s</code></pre>
               </li>
               <li>
                 <p>Compile it with <b>the third</b> optimization level:  <b>~1.025 speedup</b><br/>
-                  <strong><code>gcc -Wall -O3 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+                  <strong><code>gcc -Wall -O3 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = 7.06739e+72
 real  0m5.240s</code></pre>
@@ -955,12 +958,15 @@ int power(int d, unsigned n)
   printf ("sum = %d\n", sum);
   return 0;
 }</code></pre>
+                    <small style="float:right;">
+                      <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-c">test-flags.c</a>
+                    </small>
                   </td>
                 </tr>
               </tbody>
             </table>
-            <p>Compile it w/o optimization:</p>
-            <p><strong><code>gcc -Wall -O0  test.c -o test-flags && time ./test-flags</code></strong></p>
+            <p>Compile it w/o optimization:<br/>
+            <strong><code>gcc -Wall -O0  test-flags.c -o test-flags && time ./test-flags</code></strong></p>
             <pre style="width:30%"><code class="bash">sum = -805306349
 real  0m19.025s
 </code></pre>
@@ -971,7 +977,7 @@ real  0m19.025s
             <ul>
               <li>
                 <p>Compile it with <b>the first</b> optimization level: <b>~2.92 speedup</b><br/>
-                  <strong><code>gcc -Wall -O1 test.c -o test-flags && time ./test-flags</code></strong>
+                  <strong><code>gcc -Wall -O1 test-flags.c -o test-flags && time ./test-flags</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = -805306349
 real  0m6.526s
@@ -979,14 +985,14 @@ real  0m6.526s
               </li>
               <li>
                 <p>Compile it with <b>the second</b> optimization level: <b>~0.93 speedup</b><br/>
-                  <strong><code>gcc -Wall -O2 test.c -o test-flags && time ./test-flags</code></strong>
+                  <strong><code>gcc -Wall -O2 test-flags.c -o test-flags && time ./test-flags</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = -805306349
 real  0m6.950s</code></pre>
               </li>
               <li>
                 <p>Compile it with <b>the third</b> optimization level:  <b>~1.00 speedup</b><br/>
-                  <strong><code>gcc -Wall -O3 test.c -o test-flags && time ./test-flags</code></strong>
+                  <strong><code>gcc -Wall -O3 test-flags.c -o test-flags && time ./test-flags</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = -805306349
 real  0m6.918s
@@ -1006,7 +1012,7 @@ real  0m6.918s
               </colgroup>
               <tbody>
                 <tr>
-                  <td style="border-right: 3px double #F0E7D5;">
+                  <td style="border-right: 3px double #F0E7D5;">Optimization level: -O1
                     <pre><code style="padding-left:2em;" class="x86asm">  movl  $1, %r8d
   movl  $0, %edx
 .L4:
@@ -1029,7 +1035,7 @@ real  0m6.918s
   addl  $1, %r8d
   jns .L4</code></pre>
                   </td>
-                  <td>
+                  <td>Optimization level: -O2
                     <pre><code class="x86asm" style="padding-left:2em;">  movl  $1, %esi
   movl  $1, %r8d
   xorl  %edx, %edx
@@ -1049,7 +1055,7 @@ real  0m6.918s
   cmpl  %eax, %edi
   jae .L3</code></pre>
                   </td>
-                  <td>
+                  <td><br/>
                     <pre><code class="x86asm" style="padding-left:2em;">addl  $1, %r8d
   addl  %ecx, %edx
   testl %r8d, %r8d
@@ -1075,12 +1081,13 @@ real  0m6.918s
           <section>
             <h2>Optimization: helping a compiler</h2>
             <p>Compiler usually applies optimization to the inner loops. In this example number of iterations in the inner
-            loop depends on a value of an induction variable of the outer loop. Let's help the compiler</p>
+            loop depends on a value of an induction variable of the outer loop. Let's help the compiler (
+            <small style="vertical-align:middle;">
+              <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-tuned-c">test-flags-dp-tuned.c</a>
+            </small>)</p>
             <pre><code class="cpp">int main (void)
 {
-  double sum = 0.0;
-  unsigned i;
-
+  double sum = 0.0; unsigned i;
   for (i = 1; i <= INT_MAX-8; i += 8)
   {
     sum += power(i+0, 0);
@@ -1092,12 +1099,11 @@ real  0m6.918s
     sum += power(i+6, 6);
     sum += power(i+7, 7);
   }
-
   printf ("sum = %g\n", sum);
   return 0;
 }</code></pre>
             <p>
-              <strong><code>gcc -Wall -O3 test.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+              <strong><code>gcc -Wall -O3 test-flags-dp-tuned.c -o test-flags-dp && time ./test-flags-dp</code></strong>
               <b>Speedup is ~3.16x.</b>
             </p>
             <pre style="width:30%"><code class="bash">sum = 7.06739e+72
@@ -1106,12 +1112,14 @@ real  0m1.660s</code></pre>
 
           <section>
             <h2>Optimization: helping a compiler</h2>
-            <p>Let's try it for integers</p>
+            <p>Let's try it for integers (
+              <small style="vertical-align:middle;">
+                <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-tuned-c">test-flags-tuned.c</a>
+              </small>)
+            </p>
             <pre><code class="cpp">int main (void)
 {
-  int sum = -1;
-  unsigned i;
-
+  int sum = -1; unsigned i;
   for (i = 0; i <= INT_MAX-8-8; i += 8)
   {
     sum += power(i+0, 0);
@@ -1123,13 +1131,12 @@ real  0m1.660s</code></pre>
     sum += power(i+6, 6);
     sum += power(i+7, 7);
   }
-
   printf ("sum = %g\n", sum);
   return 0;
 }</code></pre>
             <p>
-              <strong><code>gcc -Wall -O3 test.c -o test-flags && time ./test-flags</code></strong>
-              <b>Speedup is ~5.14x.</b>
+              <strong><code>gcc -Wall -O3 test-flags-tuned.c -o test-flags && time ./test-flags</code></strong>
+              <br/><b>Speedup is ~5.14x.</b>
             </p>
             <pre style="width:30%"><code class="bash">sum = -805306349
 real  0m1.269s</code></pre>
