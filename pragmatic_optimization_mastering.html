@@ -81,17 +81,6 @@
             <li>Scope taxonomy</li>
             <li>Code pattern taxonomy</li>
             <!--  -->
-            <li>Case studies
-              <ol>
-                <li>Function body inlining</li>
-                <li>Loop counter elimination</li>
-                <li>Loop peeling</li>
-                <li>Loop unrolling</li>
-                <li>Scalarization</li>
-                <li>Auto-vectorization</li>
-              </ol>
-            </li>
-            <li>Self-study</li>
           </ul>
         </section>
 
@@ -151,19 +140,19 @@
           <section>
             <h2>Scope taxonomy</h2>
             <dl>
-              <dt><strong>Inter</strong>procedural optimizations</dt>
-              <dd>consider whole translation unit, involve analysis of data-flow and dependency graphs.</dd>
+              <dt><b>Interprocedural optimizations</b></dt>
+              <dd>consider whole translation unit, involve analysis of dataflow and dependency graphs.</dd>
               <br/>
-              <dt><strong>Intra</strong>procedural optimizations</dt>
-              <dd>consider whole procedure, involve analysis of data-flow and dependency graphs.</dd>
+              <dt><b>Intraprocedural optimizations</b></dt>
+              <dd>consider whole procedure, involve analysis of dataflow and dependency graphs.</dd>
               <br/>
-              <dt>Global optimizations</dt>
+              <dt><b>Global optimizations</b></dt>
               <dd>consider inter-most code block with the context. Most loop optimizations are belongs to this group </dd>
               <br/>
-              <dt>Local optimizations</dt>
-              <dd>limited to straight-line code (code block)</dd>
+              <dt><b>Local optimizations</b></dt>
+              <dd>consider single code block, limited to straight-line code</dd>
               <br/>
-              <dt>Peephole optimizations</dt>
+              <dt><b>Peephole optimizations</b></dt>
               <dd>map one or more consecutiveness operators from IR to machine code</dd>
               <br/>
             </dl>
@@ -172,10 +161,10 @@
           <section>
             <h2>Interprocedural optimizations (IPO)</h2>
             <p>Looks at all routines and tries to make optimizations <strong>across routine boundaries</strong>,
-              including but not limited to <i>inlining</i> and <i>cloning</i>. It is referred as
+              including but not limited to <i>inlining</i> and <i>cloning</i>.It is referred as
               <strong>Interprocedural Analysis (IPA)</strong>, too.</p>
             <ul>
-              <li>Compiler can move, optimize, restructure and delete code between procedures and files</li>
+              <li>Compiler can move, optimize, restructure and delete code between procedures (and files, if LTO is enabled)</li>
               <li><strong>Inlining</strong> &mdash; replacing a subprogram call with the replicated code of the subprogram</li>
               <li><strong>Cloning</strong> &mdash; optimizing logic in the copied routine for the particular call</li>
             </ul>
@@ -189,7 +178,7 @@
               <li><strong>Loop bodies</strong>
                 <ul>
                   <li>Single loop</li>
-                  <li>Loop + branch</li>
+                  <li>Loop and branch</li>
                   <li>Multi-loop</li>
                 </ul>
               </li>
@@ -211,6 +200,7 @@
             <br/><br/>
             <table class="simple">
               <colgroup>
+                <col></col>
                 <col></col>
                 <col></col>
               </colgroup>
@@ -248,22 +238,33 @@ int z = 1 + y
             <h3>Constant folding</h3>
             <p>Evaluates expressions from the constants in compile time. Expressions could be quite complicated,
             but absence of side effect is always a concern.</p>
-            <ul>
-              <li>Before
-                <pre><code class="cpp">
-int add = 100;
-int aug = 200;
-int sum = add + aug;
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="cpp">
+int a = 37;
+int b = (int)log(float(1<<7)*M_PI);
+int c = a + b;
 
 </code></pre>
-              </li>
-              <li>After
-                <pre><code class="cpp">
-int sum = 300;
+                  </td>
+                  <td width="50%">
+                    <pre><code class="cpp">
+int c = 42;
+
+
 
 </code></pre>
-              </li>
-            </ul>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Applicable to any scope and code pattern</p>
           </section>
 
           <section>
@@ -319,10 +320,102 @@ int sum = 300;
           <section>
             <h2>Machine independent transformations</h2>
             <h3>Strength Reduction (advanced)</h3>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="33%">
+                    <pre><code class="cpp">float useManyPowf(
+    float a, float b, float c,
+    float d, float e, float f,
+    float x)
+{
+  return a * powf(x, 5.f) +
+         b * powf(x, 4.f) +
+         c * powf(x, 3.f) +
+         d * powf(x, 2.f) +
+         e * x            +
+         f;
+}</code></pre>
+                  </td>
+                  <td width="33%">
+                    <pre><code class="armasm">useManyPowf:
+  push  {r3, lr}
+  fstmfdd sp!,{d8,d9,d10,d11,d12}
+  flds  s17, [sp, #56]
+  fmsr  s24, r1
+  movs  r1, #0
+  fmsr  s22, r0
+  movt  r1, 16544
+  fmrs  r0, s17
+  fmsr  s21, r2
+  fmsr  s20, r3
+  flds  s19, [sp, #48]
+  flds  s18, [sp, #52]
+  bl  powf(PLT)
+  mov r1, #1082130432
+  fmsr  s23, r0
+  fmrs  r0, s17
+  bl  powf(PLT)
+</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="armasm">  movs  r1, #0
+  movt  r1, 16448
+  fmsr  s16, r0
+  fmrs  r0, s17
+  bl  powf(PLT)
+  fmuls s16, s16, s24
+  vfma.f32  s16, s23, s22
+  fmsr  s15, r0
+  vfma.f32  s16, s15, s21
+  fmuls s15, s17, s17
+  vfma.f32  s16, s20, s15
+  vfma.f32  s16, s19, s17
+  fadds s15, s16, s18
+  fldmfdd sp!, {d8-d12}
+  fmrs  r0, s15
+  pop {r3, pc}</code></pre>
+                  </td>
+              </tbody>
+            </table>
+            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
           </section>
 
           <section>
-            <h2>Common Subexpression Elimination</h2>
+            <h2>Machine independent transformations</h2>
+            <h3>Strength Reduction (manual)</h3>
+            <pre><code class="cpp">float applyHornerf(float a, float b, float c, float d, float e, float f, float x)
+{
+  return ((((a * x + b) * x + c) * x + d) * x + e) * x + f;
+}</code></pre>
+            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
+            <pre><code class="armasm">applyHornerf:
+  flds  s15, [sp, #8]
+  fmsr  s11, r0
+  fmsr  s12, r1
+  flds  s14, [sp]
+  vfma.f32  s12, s11, s15
+  fmsr  s11, r2
+  flds  s13, [sp, #4]
+  vfma.f32  s11, s12, s15
+  fcpys s12, s11
+  fmsr  s11, r3
+  vfma.f32  s11, s12, s15
+  vfma.f32  s14, s11, s15
+  vfma.f32  s13, s14, s15
+  fmrs  r0, s13
+  bx  lr
+</code></pre>
+          </section>
+
+          <section>
+            <h2>Machine independent transformations</h2>
+            <h3>Common Subexpression Elimination</h3>
             <p>Cache expression result into variable for future use. Sometimes you need to depict them in code, to help
             the compiler detect them.</p>
             <ul>
@@ -910,7 +1003,7 @@ int main()
             <h2>Auto-vectorization</h2>
             <ul>
               <li>Machine code generation that takes advantage of vector instructions.</li>
-              <li>Most of all modern architectures have vector units (co-processors or specialized pipes)
+              <li>Most of all modern architectures have vector extensions (as a co-processor or as specialized pipes)
                 <ul>
                   <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
                   <li>AltiVec, VSX</li>
@@ -920,15 +1013,79 @@ int main()
               <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
             </ul>
           </section>
-<!--           <section>
-            <p>absdiff -03 or hand-written assembly</p>
-          </section> -->
+          <section>
+            <h2>Auto-vectorization example</h2>
+            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int N)
+{
+  int i;
+  for (i = 0; i < N; i++)
+    a[i] += b[i];
+}</code></pre>
+            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 -fopt-info-missed 1.c -S -o 1.s</code>
+            <pre><code class="armasm">.L3:
+  fldmias r1!, {s14}
+  flds  s15, [r0]
+  fadds s15, s15, s14
+  fstmias r0!, {s15}
+  cmp r0, r2
+  bne .L3</code></pre>
+            <p>NEON does not support full IEEE 754, so gcc cannot vectorize the loop, what it told us</p>
+            <blockquote style="width:100%">1.c:64:3: note: not vectorized: relevant stmt not supported: _13 = _9 + _12;
+</blockquote>
+          </section>
+          <section>
+            <h2>Auto-vectorization example</h2>
+            <p>But armv8-a does support, let's check it!</p>
+            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int N)
+{
+  int i;
+  for (i = 0; i < N; i++)
+    a[i] += b[i];
+}</code></pre>
+            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 -fopt-info-missed 1.c -S -o 1.s</code>
+            <pre><code class="armasm">.L6:
+  ldr q1, [x3],16
+  add w6, w6, 1
+  ldr q0, [x7],16
+  cmp w6, w4
+  fadd  v0.4s, v0.4s, v1.4s
+  str q0, [x8],16
+  bcc .L6</code></pre>
+            <p>Optimizer reports:</p>
+            <blockquote style="width:100%">1.c:64:3: note: loop vectorized</blockquote>
+          </section>
+          <section>
+            <h2>Detailed analysis</h2>
+            <p>Full optimizer's report:</p>
+            <blockquote  style="width:100%;text-align: left;">
+              1.c:66:3: note: loop vectorized<br/>
+              1.c:66:3: note: loop versioned for vectorization because of possible aliasing<br/>
+              1.c:66:3: note: loop peeled for vectorization to enhance alignment<br/>
+              1.c:66:3: note: loop with 3 iterations completely unrolled<br/>
+              1.c:61:6: note: loop with 3 iterations completely unrolled<br/>
+            </blockquote>
+            <pre><code class="cpp">void vectorizeMe(float* __restrict a_, float* __restrict b_, int N)
+{
+  int i;
+  float *a = __builtin_assume_aligned(a_, 16);
+  float *b = __builtin_assume_aligned(b_, 16);
+  for (i = 0; i < N; i++)
+    a[i] += b[i];
+}</code></pre>
+            <blockquote  style="width:100%;text-align: left;">
+              1.c:66:3: note: loop vectorized<br/>
+              1.c:66:3: note: loop with 3 iterations completely unrolled<br/>
+            </blockquote>
+            <strong>Keywords may help, but are not necessary nowadays.</strong>
+          </section>
         </section>
 
+
         <section>
-          <h2>Are you still optimizing debug versions?</h2>
-          <br/><br/><br/><br/>
-          <h3>Learn a compiler well and stick with it!</h3>
+          <h2>Summary</h2>
+          <ul>
+            <li><strong>Are you still optimizing debug versions?</strong> Learn a compiler well and stick with it!</li>
+          </ul>
         </section>
 
         <section id="end1">
