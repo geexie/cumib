@@ -80,7 +80,23 @@
             <li>Classic taxonomy</li>
             <li>Scope taxonomy</li>
             <li>Code pattern taxonomy</li>
-            <!--  -->
+            <li>Examples of machine independent transformations
+              <ul>
+                <li>Copy propagation</li>
+                <li>Constant folding</li>
+                <li>Strength Reduction</li>
+                <li>Common Subexpression Elimination (CSE)</li>
+              </ul>
+            </li>
+            <li>Functional body inlining</li>
+            <li>Examples of loop optimizations
+              <ul>
+                <li>Singe-loop optimizations</li>
+                <li>Multi-loop optimizations</li>
+              </ul>
+            </li>
+            <li>Auto-vectorization</li>
+            <li>Summary</li>
           </ul>
         </section>
 
@@ -118,25 +134,6 @@
             </ul>
           </section>
 
-<!--           <section>
-            <h2>Machine (in-)dependent transformations</h2>
-            <ul>
-              <li>
-                <b>Machine independent transformations</b>
-                <ul>
-                </ul>
-              </li>
-              <br/>
-              <li>
-                <b>Machine dependent transformations</b>
-                <ul>
-                  <li>Strength reduction – e.g., replace multiply by a constant with adds and shifts</li>
-                  <li>Pipeline scheduling – reorder instructions to improve pipeline performance</li>
-                </ul>
-              </li>
-            </ul>
-          </section> -->
-
           <section>
             <h2>Scope taxonomy</h2>
             <dl>
@@ -160,11 +157,11 @@
 
           <section>
             <h2>Interprocedural optimizations (IPO)</h2>
-            <p>Looks at all routines and tries to make optimizations <strong>across routine boundaries</strong>,
+            <p>Looks at all routines in order to make optimizations <strong>across routine boundaries</strong>,
               including but not limited to <i>inlining</i> and <i>cloning</i>.It is referred as
               <strong>Interprocedural Analysis (IPA)</strong>, too.</p>
             <ul>
-              <li>Compiler can move, optimize, restructure and delete code between procedures (and files, if LTO is enabled)</li>
+              <li>Compiler can move, optimize, restructure and delete code between procedures<br/>(and files, if LTO is enabled)</li>
               <li><strong>Inlining</strong> &mdash; replacing a subprogram call with the replicated code of the subprogram</li>
               <li><strong>Cloning</strong> &mdash; optimizing logic in the copied routine for the particular call</li>
             </ul>
@@ -188,6 +185,18 @@
         </section>
 
         <section>
+          <section>
+            <h2>Machine independent transformations</h2>
+            <h3>
+              <ol>
+                <li>Copy propagation</li>
+                <li>Constant folding</li>
+                <li>Common Subexpression Elimination (CSE)</li>
+                <li>Strength Reduction</li>
+              </ol>
+            </h3>
+          </section>
+
           <section>
             <h2>Machine independent transformations</h2>
             <h3>Copy propagation</h3>
@@ -230,7 +239,7 @@ int z = 1 + y
                 </tr>
               </tbody>
             </table>
-            <p>Applicable to any scope and code pattern</p>
+            <p>May be performed in a global as well as local scope. Applicable to any code pattern.</p>
           </section>
 
           <section>
@@ -264,13 +273,52 @@ int c = 42;
                 </tr>
               </tbody>
             </table>
-            <p>Applicable to any scope and code pattern</p>
+            <p>May be performed in global as well as local scope. Applicable to any code pattern.</p>
           </section>
 
           <section>
             <h2>Machine independent transformations</h2>
+            <h3>Common Subexpression Elimination</h3>
+            <p>Cache expression result into variable for future use. Sometimes you need to depict them in code, to help
+            the compiler detect them.</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="cpp">
+double d = c * (a / b);
+double e = (a / b) * 2.0;
+
+
+
+</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="cpp">
+double adivb = a / b;
+
+double d = c * adivb;
+double e = adivb * 2.0;
+
+</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Usually performed in global scope. Applicable to any code pattern.</p>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Machine independent transformations</h2>
             <h3>Strength Reduction</h3>
-            <p>Replaces complex expressions with more simple analogy.</p>
+            <p>Replaces complex expressions with more simple analogy. Some of this optimizations may be machine dependent</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -278,7 +326,7 @@ int c = 42;
               </colgroup>
               <tbody>
                 <tr>
-                  <td width="50%">
+                  <td width="50%" style="border-bottom: 0;">
                     <pre><code class="cpp">double usePow(double x)
 {
   return pow(x, 2.0);
@@ -286,7 +334,7 @@ int c = 42;
 
 </code></pre>
                   </td>
-                  <td>
+                  <td style="border-bottom: 0;">
                     <pre><code class="armasm">usePow:
   fmdrr d16, r0, r1
   fmuld d16, d16, d16
@@ -315,6 +363,7 @@ int c = 42;
               </tbody>
             </table>
             <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
+            <p>Usually performed in local scope for plain dependency chain.</p>
           </section>
 
           <section>
@@ -381,6 +430,7 @@ int c = 42;
   fmrs  r0, s15
   pop {r3, pc}</code></pre>
                   </td>
+                </tr>
               </tbody>
             </table>
             <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
@@ -412,57 +462,104 @@ int c = 42;
   bx  lr
 </code></pre>
           </section>
+        </section>
 
+        <!-- <li>Pipeline scheduling – reorder instructions to improve pipeline performance</li> -->
+
+        <section>
           <section>
-            <h2>Machine independent transformations</h2>
-            <h3>Common Subexpression Elimination</h3>
-            <p>Cache expression result into variable for future use. Sometimes you need to depict them in code, to help
-            the compiler detect them.</p>
-            <ul>
-              <li>Before
-                <pre><code class="cpp">
-double d = c * (a / b);
-double e = (a / b) * 2.0;
+            <h2>Function body inlining</h2>
+            <p>Replace functional call to function body. <strong>Enables all further optimizations.</strong></p>
+            <p>Machine-independent &amp; interprocedural.</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="cpp">int square(int x)
+  {
+    return x*x;
+  }
+
+  for (int i = 0; i < N; i++)
+    a[i] = square(i);</code></pre>
+                    Becomes
+                    <pre><code class="cpp">for (int i = 0; i < N; i++)
+    a[i] = i*i;</code></pre>
+                  </td>
+                  <td>
+    <!-- movk - Move 16-bit immediate into register, keeping other bits unchanged. -->
+                    <pre><code class="armasm">
+  .L2:
+    add x2, x4, :lo12:.LANCHOR0
+    mov x1, 34464
+    mul w3, w0, w0
+    movk  x1, 0x1, lsl 16
+    str w3, [x2,x0,lsl 2]
+    add x0, x0, 1
+    cmp x0, x1
+    bne .L2
+
+
 
 </code></pre>
-              </li>
-              <li>After
-                <pre><code class="cpp">
-double adivb = a / b;
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <code>gcc -march=armv8-a+nosimd -fstrict-aliasing  -O3 -fopt-info 1.c -S -o 1.s</code>
+          </section>
+          <section>
+            <h2>Function body inlining</h2>
+            <p>Let's compile the code with vector extension enabled <strong><code>-march=armv8-a+simd</code></strong></p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="cpp">int square(int x)
+  {
+    return x*x;
+  }
 
-double d = c * adivb;
-double e = adivb * 2.0;
+  for (int i = 0; i < N; i++)
+    a[i] = square(i);</code></pre>
+                    Becomes
+                    <pre><code class="cpp">for (int i = 0; i < N; i++)
+    a[i] = i*i;</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="armasm">
+  add x0, x0, :lo12:.LANCHOR0
+  movi  v2.4s, 0x4
+  ldr q0, [x1]
+  add x1, x0, 397312
+  add x1, x1, 2688
+.L2:
+  mul v1.4s, v0.4s, v0.4s
+  add v0.4s, v0.4s, v2.4s
+  str q1, [x0],16
+  cmp x0, x1
+  bne .L2
 
 </code></pre>
-              </li>
-            </ul>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Auto-vectorization is enabled because of possibility to inline function call inside a loop.</p>
           </section>
         </section>
 
-        <section>
-          <h2>Function body inlining</h2>
-          <p>Replace functional call to function body. <strong>Enables all further optimizations.</strong></p>
-          <ul class="none">
-            <li>Before
-              <pre><code class="cpp">
-int square(int x)
-{
-  return x*x;
-}
-
-for (int i = 0; i < N; i++)
-  a[i] = square(i);
-</code></pre>
-            </li>
-            <li>After
-              <pre><code>
-for (int i = 0; i < N; i++)
-  a[i] = i*i;
-</code></pre>
-            </li>
-          </ul>
-        </section>
-
+        <!--  -->
         <section>
           <h2>List of loop optimization</h2>
           <ul>
@@ -993,8 +1090,9 @@ int main()
   bl  memcpy(PLT)
   ldmfd sp!, {r4, pc}</code></pre>
                   </td>
-                </tbody>
-              </table>
+                </tr>
+              </tbody>
+            </table>
           </section>
         </section>
 
