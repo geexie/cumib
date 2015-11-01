@@ -599,62 +599,132 @@ double e = adivb * 2.0;
 
         <section>
           <h2>#1: Loop-induction variable elimination</h2>
-          <p>In most cases compiler able to replace address arithmetics with pointer arithmetics. <strong>Most
-          hand-written pointer optimizations do not make sense with usage optimization levels hither than O0.</strong></p>
-          <ul class="none">
-            <li>Before
-              <pre><code class="cpp">
-void function(int* arr, int len)
+          <p>In most cases compiler able to replace address arithmetics with pointer arithmetics.</p>
+          <table class="simple">
+            <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td width="50%" width="50%" style="border-bottom: 0;">
+                  <pre><code class="cpp">void function(int* arr, int len)
 {
   for (int i = 0; i < len; i++)
     arr[i] = 1;
-}
-
-</code></pre>
-            </li>
-            <li>After
-          <pre><code class="cpp">
-void function(int* arr, int len)
+}</code></pre>
+                </td>
+                <td width="50%" style="border-bottom: 0;">
+                  <pre><code class="cpp">void function(int* arr, int len)
 {
-  for (int* p = arr; p < arr + 10000; p++)
+  for (int* p = arr; p < arr + len; p++)
       *p = 1;
-}
-
-</code></pre>
-            </li>
-          </ul>
+}</code></pre>
+                </td>
+              </tr>
+              <tr style="background-color:rgba(0,0,0,0);">
+                <td>
+                  <pre><code class="armacm">  cmp r1, #0
+  ble .L1
+  mov r3, r0
+  add r0, r0, r1, lsl #2
+  movs  r2, #1
+.L3:
+  str r2, [r3], #4
+  cmp r3, r0
+  bne .L3
+.L1:
+  bx  lr</code></pre>
+                </td>
+                <td>
+                  <pre><code class="armasm">
+  add r1, r0, r1, lsl #2
+  cmp r0, r1
+  bcs .L5
+  movs  r3, #1
+.L8:
+  str r3, [r0], #4
+  cmp r1, r0
+  bhi .L8
+.L5:
+  bx  lr</code></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O1 1.c -S -o 1.s</code>
+          <p>
+            <strong>Most hand-written pointer optimizations do not make sense with usage optimization levels
+            higher than O0.</strong>
+          </p>
         </section>
 
         <section>
           <h2>#2: Hoisting Loop Invariant Code</h2>
           <p>The goal of <b>hoisting</b> — also called <b>loop-invariant code motion</b> — is to avoid recomputing
           loop-invariant code each time through the body of a loop.</p>
-          <ul class="none">
-            <li>Before
-              <pre><code class="cpp">#include &lt;math.h&gt;
-
-void scale(double* X, double* Y, int len)
+         <table class="simple">
+            <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td width="50%" width="50%" style="border-bottom: 0;">
+                  <pre><code class="cpp">void scale(double* X, double* Y, int len)
 {
   for (int i = 0; i < len; i++)
     Y[i] = X[i] * exp(sqrt(M_PI/2));
 }
 
 </code></pre>
-            </li>
-            <li>After
-              <pre><code class="cpp">#include &lt;math.h&gt;
-
-void scale(double* X, double *Y, int len)
+                </td>
+                <td width="50%" style="border-bottom: 0;">
+                  <pre><code class="cpp">void scale(double* X, double *Y, int len)
 {
   double factor = exp(sqrt(M_PI/2));
-
   for (int i = 0; i < len; i++)
     Y[i] = X[i] * factor;
-}
+}</code></pre>
+                </td>
+              </tr>
+              <tr style="background-color:rgba(0,0,0,0);">
+                <td>
+                  <pre><code class="armacm">  fldd  d17, .L5
+.L3:
+  fldmiad r3!, {d16}
+  fmuld d16, d16, d17
+  fstmiad r1!, {d16}
+  cmp r3, r0
+  bne .L3
+.L1:
+  bx  lr
+.L5:
+  .word 2911864813
+  .word 1074529267
 </code></pre>
-            </li>
-          </ul>
+                </td>
+                <td>
+                  <pre><code class="armasm">  fldd  d17, .L11
+.L9:
+  fldmiad r3!, {d16}
+  fmuld d16, d16, d17
+  fstmiad r1!, {d16}
+  cmp r3, r0
+  bne .L9
+.L7:
+  bx  lr
+.L11:
+  .word 2911864813
+  .word 1074529267</code></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp  -mthumb -O1 1.c -S -o 1.s</code>
         </section>
+
+        <!--  -->
 
         <section>
           <h2>#3: Loop unrolling</h2>
