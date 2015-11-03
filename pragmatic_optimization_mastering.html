@@ -84,8 +84,10 @@
               <ul>
                 <li>Copy propagation</li>
                 <li>Constant folding</li>
-                <li>Strength Reduction</li>
-                <li>Common Subexpression Elimination (CSE)</li>
+                <li>...</li>
+<!--                 <li>Strength Reduction</li>
+                <li>Scalarization</li>
+                <li>Common Subexpression Elimination (CSE)</li> -->
               </ul>
             </li>
             <li>Functional body inlining</li>
@@ -312,13 +314,63 @@ double e = adivb * 2.0;
             </table>
             <p>Usually performed in global scope. Applicable to any code pattern.</p>
           </section>
+
+          <section>
+            <h2>Machine independent transformations</h2>
+            <h3>Scalarization</h3>
+            <p>Replaces branchy code with branch-less analogy.<br/>Usually performed for sequential code chain of loop body to
+            allow auto-vectorization.</p>
+            <p>Machine-independent, local</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="cpp">int branchy(int i)
+{
+  if (i &gt; 4 && i &lt; 42)
+    return 1;
+  return 0;
+}
+
+int branchless(int i)
+{
+  return (((unsigned)i) - 5 > 36);
+}
+</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="asm">branchy:
+  sub w0, w0, #5
+  cmp w0, 36
+  cset  w0, ls
+  ret
+
+branchless:
+  sub w0, w0, #5
+  cmp w0, 36
+  cset  w0, hi
+  ret
+</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <code>gcc -march=armv8-a+simd -O3 -fopt-info 1.c -S -o 1.s</code>
+            <p>Both are compiled to the same instruction sequence</p>
+          </section>
         </section>
 
         <section>
           <section>
-            <h2>Machine independent transformations</h2>
+            <h2>Machine (in)dependent transformations</h2>
             <h3>Strength Reduction</h3>
-            <p>Replaces complex expressions with more simple analogy. Some of this optimizations may be machine dependent</p>
+            <p>Replaces complex expressions with more simple analogy. Some of this optimizations may be machine
+            dependent and rely on a specific feature set implemented in hardware (e.g.
+            <strong>built-in detection</strong>)</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -367,7 +419,7 @@ double e = adivb * 2.0;
           </section>
 
           <section>
-            <h2>Machine independent transformations</h2>
+            <h2>Machine (in)dependent transformations</h2>
             <h3>Strength Reduction (advanced)</h3>
             <table class="simple">
               <colgroup>
@@ -437,7 +489,7 @@ double e = adivb * 2.0;
           </section>
 
           <section>
-            <h2>Machine independent transformations</h2>
+            <h2>Machine (in)dependent transformations</h2>
             <h3>Strength Reduction (manual)</h3>
             <pre><code class="cpp">float applyHornerf(float a, float b, float c, float d, float e, float f, float x)
 {
@@ -568,9 +620,9 @@ double e = adivb * 2.0;
                 <li>Loop-induction variable elimination</li>
                 <li>Hoisting Loop Invariant Code</li>
                 <li>Loop unrolling</li>
-                <li>Loop unswitching</li>
                 <li>Loop Peeling</li>
                 <li>Scalarization</li>
+                <li>Loop unswitching</li>
                 <li>Strip mining</li>
 
                 <!-- out of scope -->
@@ -599,7 +651,7 @@ double e = adivb * 2.0;
 
         <section>
           <h2>#1: Loop-induction variable elimination</h2>
-          <p>In most cases compiler able to replace address arithmetics with pointer arithmetics.</p>
+          <p>In most cases compiler is able to replace address arithmetics with pointer arithmetics.</p>
           <table class="simple">
             <colgroup>
               <col></col>
@@ -727,6 +779,196 @@ double e = adivb * 2.0;
         <!--  -->
 
         <section>
+          <section>
+            <h2>#3: Loop unswitching</h2>
+            <p>Moves loop-invariant conditionals or switches which are independent of the loop index out of
+            the loop. Increases instruction level parallelism, enables further optimizations.</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                   <pre><code class="cpp">for (int i = 0; i < len; i++)
+{
+  if (a > 32)
+    arr[i] = a;
+  else
+    arr[i] = 42;
+}
+</code></pre>
+                    Becomes
+                   <pre><code class="cpp">if (a > 32)
+{
+  for (int i = 0; i < len; i++)
+    arr[i] = a;
+}
+else
+{
+  for (int i = 0; i < len; i++)
+    arr[i] = 42;
+}</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="armasm">cmp w1, wzr
+  ble .L1
+  cmp w2, 32
+  bgt .L6
+  mov x2, 0
+  mov w3, 42
+.L4:
+  str w3, [x0,x2,lsl 2]
+  add x2, x2, 1
+  cmp w1, w2
+  bgt .L4
+.L1:
+  ret
+.L6:
+  mov x3, 0
+.L3:
+  str w2, [x0,x3,lsl 2]
+  add x3, x3, 1
+  cmp w1, w3
+  bgt .L3
+  ret</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <code>-gcc -march=armv8-a+simd -fno-tree-vectorize -O3 -fopt-info 1.c -S -o 1.s</code>
+            <small>auto-vectorization is disabled just to make example readable.</small>
+          </section>
+
+          <section>
+            <h2>Loop peeling</h2>
+            <p>A small number of iterations from the beginning or end of a loop taken out of the loop and executed
+            separately which eliminates if-statements and makes the loop more suitable for vectorization. In some
+            cases can be performed by the compiler on high optimization levels.</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                   <pre><code class="cpp">
+for (int i = 0; i &lt; len; i++)
+{
+  if (i==0)
+    b[i] = a[i+1];
+  else if(i== len-1 )
+    b[i] = a[i-1];
+  else
+    b[i] = a[i+1] + a[i-1];
+}
+
+</code></pre>
+                  </td>
+                  <td>
+                   <pre><code class="cpp">
+b[0] = a[0];
+
+for (int i = 0; i &lt; len; i++)
+  [i] = a[i+1] + a[i-1];
+
+b[len-1] = a[len-1];
+
+
+
+
+</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>IFor the example below both tested compilers: gcc 4.9 as well as the clang 3.5
+            <strong>won't</strong> perform this optimization. Make sure that compiler was able to apply optimization
+            to such a code pattern or implement this optimization manually.</p>
+          </section>
+
+          <section>
+            <h2>Advanced unswitching: Sentinels</h2>
+            <p><b>Sentinels</b> are special dummy values placed in a data structure <br/>which are added to simplify the logic
+            of handling boundary conditions <br/>(in particular, handling of loop-exit tests
+            or elimination out-of-bound checks).</p>
+
+            <p>Let's assume that array <strong><code>a</code></strong> contains two extra elements:<br/> one &mdash; at the left,
+             another &mdash; at the right. The code can be rewritten as follows.</p>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                   <pre><code class="cpp">
+for (int i = 0; i &lt; len; i++)
+{
+  if (i==0)
+    b[i] = a[i+1];
+  else if(i== len-1 )
+    b[i] = a[i-1];
+  else
+    b[i] = a[i+1] + a[i-1];
+}
+
+</code></pre>
+                  </td>
+                  <td>
+                   <pre><code class="cpp">
+// setup constants
+a[-1]  = 0;
+a[len] = 0;
+
+for (int i = 0; i &lt; len; i++)
+  [i] = a[i+1] + a[i-1];
+
+
+
+
+</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p><strong>This optimization cannot be performed by the compiler <br/>because require changes in use of
+            data structures</strong></p>
+          </section>
+        </section>
+
+<!--             <ul class="none">
+              <li>Before
+                <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
+{
+  uint64_t sum = 0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    sum += A[i];
+    if (sum < A[i])
+      return true;
+  }
+  return  false;
+}</code></pre>
+              </li>
+              <li>After
+                  <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
+{
+  A[n] = UINT64_MAX, A[n+1] = 0;
+  size_t i = 0; uint64_t sum = A[0];
+  while ( sum >= A[i])
+    sum += A[++i];
+
+  return (i < n);
+}</code></pre>
+              </li>
+            </ul> -->
+
+<!--  -->
+        <section>
           <h2>#3: Loop unrolling</h2>
           <p>Generates multiple copies of the code for the loop body, reduces number of branches and groups more
           instructions together to enable more efficient instruction pipelining. Best candidates are innermost loops
@@ -761,151 +1003,8 @@ for (int i = 0 ; i <= N-4; i+=4)
           loaded values which are kept in registers or caches. Complicated for compilers</p>
           <p>dot product example - process 2 lines</p>
           <p>test-flags example</p>
-<!--           <p>Generates multiple copies of the code for the loop body, reduces number of branches and groups more
-          instructions together to enable more efficient instruction pipelining. Best candidates are innermost loops
-          with limited control flow.</p>
-          <ul class="none:">
-            <li>Before
-              <pre><code class="cpp">
-for (int i = 0 ; i < N; i++)
-  h[p[i]]++;
-
-</code></pre>
-            </li>
-            <li>After
-              <pre><code class="cpp">
-for (int i = 0 ; i <= N-4; i+=4)
-{
-  int idx0 = p[i+0]; int idx1 = p[i+1];
-  int idx2 = p[i+2]; int idx3 = p[i+3];
-
-  h[idx0]++; h[idx1]++;
-  h[idx2]++; h[idx3]++;
-}
-
-</code></pre>
-            </li>
-          </ul> -->
         </section>
 
-        <section>
-          <section>
-            <h2>#4: Loop unswitching</h2>
-            <p>Moves loop-invariant conditional constructs or switches which are independent of the loop index out of
-            the loop. Increases instruction level parallelism, enables further optimizations.</p>
-            <ul class="none:">
-              <li>Before
-                <pre><code class="cpp">for (int i = 0; i < N; i++)
-{
-    if (a > 0)
-        X[i] = a;
-    else
-        X[i] = 0;
-}
-</code></pre>
-              </li>
-              <li>After
-                <pre><code class="cpp">if (a > 0)
-{
-    for (int i = 0; i < N; i++)
-        X[i] = a;
-}
-else
-{
-    for (int i = 0; i < N; i++)
-        X[i] = 0;
-}
-</code></pre>
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2>Loop peeling</h2>
-            <p>A small number of iterations from the beginning or end of a loop taken out of the loop and executed
-            separately which eliminates if-statements and makes the loop more suitable for vectorization</p>
-            <ul class="none:">
-              <li>Before
-                <pre><code class="cpp">for (int i = 0; i&lt;N; i++)
-{
-  if (i==0 || i==(N-1))
-    b[i] = a[i];
-  else
-    b[i] = b[i+1] + a[i-1];
-}
-</code></pre>
-              </li>
-              <li>After
-                <pre><code class="cpp">b[0] = a[0];
-for (int i = 0; i&lt;N; i++)
-  [i] = b[i+1] + a[i-1];
-b[N-1] = a[N-1];
-</code></pre>
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2>Scalarization</h2>
-            <p>Both compiled to the same instruction sequence</p>
-            <ul class="none:">
-              <li>Before
-                <pre><code class="cpp">int regular(int i)
-{
-  if (i&gt;5 && i&lt;00)
-    return 1;
-  return 0;
-}
-</code></pre>
-              </li>
-              <li>After
-                <pre><code class="cpp">int clever(int i)
-{
-  return (((unsigned)i) - 6 > 93);
-}
-</code></pre>
-              </li>
-              <li>Assembly
-            <pre><code class="asm">subl  $6, %edi
-cmpl  $93, %edi</code></pre>
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2>Advanced unswitching: Sentinels</h2>
-            <p>Sentinels are special dummy values placed in a data structure to simplify the logic of boundary conditions,
-  and in particular, the handling of loop-exit tests.</p>
-
-            <ul class="none">
-              <li>Before
-                <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
-{
-  uint64_t sum = 0;
-  for (size_t i = 0; i < n; ++i)
-  {
-    sum += A[i];
-    if (sum < A[i])
-      return true;
-  }
-  return  false;
-}</code></pre>
-              </li>
-              <li>After
-                  <pre style="display:inline;"><code class="cpp">bool overflow(uint64_t* A, size_t n)
-{
-  A[n] = UINT64_MAX, A[n+1] = 0;
-  size_t i = 0; uint64_t sum = A[0];
-  while ( sum >= A[i])
-    sum += A[++i];
-
-  return (i < n);
-}</code></pre>
-              </li>
-            </ul>
-          </section>
-        </section>
-<!--  -->
         <section>
           <h2>#5: Strip mining</h2>
           <p>Also called as blocking or tiling.</p>
