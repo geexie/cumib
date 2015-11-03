@@ -97,6 +97,7 @@
                 <li>Multi-loop optimizations</li>
               </ul>
             </li>
+            <li>Memory copping and filling</li>
             <li>Auto-vectorization</li>
             <li>Summary</li>
           </ul>
@@ -971,8 +972,8 @@ for (int i = 0; i &lt; len; i++)
         <section>
           <h2>#3: Loop unrolling</h2>
           <p>Generates multiple copies of the code for the loop body, reduces number of branches and groups more
-          instructions together to enable more efficient instruction pipelining. Best candidates are innermost loops
-          with limited control flow.</p>
+          instructions together to enable more efficient instruction pipelining.</p>
+          <p>Best candidates are innermost loops with limited control flow.</p>
           <ul class="none:">
             <li>Before
               <pre><code class="cpp">
@@ -997,7 +998,7 @@ for (int i = 0 ; i <= N-4; i+=4)
           </ul>
         </section>
 
-        <section>
+<!--         <section>
           <h2>Outer Loop unrolling</h2>
           <p>Usually it is used to reduce number of loads and stores on inner loops with invariants, introduce reuse of
           loaded values which are kept in registers or caches. Complicated for compilers</p>
@@ -1038,7 +1039,7 @@ for (int i = 0; i < N; i += block_size)
 </code></pre>
             </li>
           </ul>
-        </section>
+        </section> -->
 
         <section>
           <h2>#6: Loop Interchange</h2>
@@ -1331,6 +1332,12 @@ int main()
               1.c:66:3: note: loop with 3 iterations completely unrolled<br/>
               1.c:61:6: note: loop with 3 iterations completely unrolled<br/>
             </blockquote>
+            <strong>Compiler versions the loop to allow optimized paths<br/>in case of aligned and non-aliasing pointers</strong>
+          </section>
+          <section>
+            <h2>Detailed analysis</h2>
+            <p>Lit's follow the advice to put <code>__restrict</code> and
+            <code>__builtin_assume_aligned</code> keywords</p>
             <pre><code class="cpp">void vectorizeMe(float* __restrict a_, float* __restrict b_, int N)
 {
   int i;
@@ -1343,16 +1350,38 @@ int main()
               1.c:66:3: note: loop vectorized<br/>
               1.c:66:3: note: loop with 3 iterations completely unrolled<br/>
             </blockquote>
-            <strong>Keywords may help, but are not necessary nowadays.</strong>
+            <!-- <strong>Keywords may help, but are not necessary nowadays.</strong> -->
+            <strong><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminates some loop
+            versioning, but are not very useful from the performance perspective nowadays</strong>
           </section>
         </section>
 
-
         <section>
-          <h2>Summary</h2>
-          <ul>
-            <li><strong>Are you still optimizing debug versions?</strong> Learn a compiler well and stick with it!</li>
-          </ul>
+          <section>
+            <h2>Summary</h2>
+            <ul>
+              <li><strong>Are you still optimizing debug versions?</strong> Learn a compiler well and stick with it!</li>
+              <li>Compiler optimizations are split to machine dependent and machine independent</li>
+              <li>By scope compiler optimizations are split to Interprocedural, Intraprocedural, Global, Local and Peephole</li>
+              <li>The most common targets are dependency chains, branches, loops</li>
+              <li>Copy propagation, constant folding, CSE and strength reduction are widely used by the compiler</li>
+              <li>Functional body inlining enables all other optimizations</li>
+              <li>Most hand-written pointer optimizations do not make sense with usage optimization levels higher than O0</li>
+              <li>Hoising loop invariant code, unswitching and unrolling are the most common loop-targeted optimizations</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Summary</h2>
+            <ul>
+              <li>Loop peeling compiler capabilities are steel pure, use sentinels technique to eliminate extra checks and control flow</li>
+              <li>Decide loop fission/fusion depending on the register pressure and cache locality of the accesses</li>
+              <li>Compiler will detect <code>memcpy</code> and <code>memset</code>, even if you write it manually.
+              Library functions are usually more efficient</li>
+              <li><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminates some loop
+              versioning, but are not very useful from the performance perspective nowadays</li>
+            </ul>
+          </section>
         </section>
 
         <section id="end1">
