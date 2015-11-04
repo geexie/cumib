@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Pragmatic optimization in modern programming</title>
+    <meta name="description" content="Pragmatic optimization in modern programming - Introduction">
+    <meta name="author" content="Marina Kolpakova (cuda.geek)">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="plugin/reveal/css/reveal.css">
+    <link rel="stylesheet" href="plugin/reveal/css/theme/geek.css" id="theme">
+    <link rel="stylesheet" href="css/colors-orange.css">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'plugin/reveal/css/print/pdf.css' : 'plugin/reveal/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="plugin/reveal/lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h1>Pragmatic optimization</h1>
+          <h2>in modern programming</h2>
+          <h3>Modern computer architecture concepts</h3>
+          <!-- Optimizations in hardware -->
+          <!-- Hardware optimization capabilities -->
+          <br>
+          <br>
+          <br>
+          <small>Created by
+            <a href="http://github.com/cuda-geek">Marina Kolpakova</a>
+            for
+            <a href="http://www.unn.ru/eng/">UNN</a>
+          </small>
+        </section>
+
+        <section>
+          <h2>Themes &amp; Contents</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
+              <ul>
+                <li>Ordering optimization approaches</li>
+                <li>Demystifying a compiler</li>
+                <li>Mastering compiler optimizations</li>
+              </ul>
+            </li>
+            <li><strong>Computer Architectures</strong>
+              <ul>
+                <li><b>Architecture of modern computers</b></li>
+                <li>SIMD extensions</li>
+                <li>Specific co-processors</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Outline</h2>
+          <ul>
+            <li>pipelined execution</li>
+            <li>speculative execution</li>
+            <li>cache hierarchies</li>
+            <li>out of order execution and multi-piping</li>
+            <li>branch prediction</li>
+            <li>hardware pre-fetching</li>
+            <li>summary</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Key architecture families</h2>
+          <ul>
+            <li>RISC</li>
+            <li>CISC</li>
+            <li>VLIW</li>
+            <li>Vector</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>CISC</h2>
+          Complex Instruction Set Computer
+          <ul>
+            <li>Designed in the 1970s</li>
+            <li>Goal: define a set of assembly instructions so that high­
+level language constructs could be translated into as few
+assembly language instructions as possible => many
+instructions access memory, many instruction types</li>
+            <li>CISC instructions are typically broken down into lower
+level instructions called microcode</li>
+            <li>Difficult to pipeline instructions on CISC processors</li>
+            <li>Examples: VAX 11/780, Intel Pentium Pro</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Vector Processors</h2>
+          <ul>
+            <li>Seymour Cray introduced the Cray 1 in 1976</li>
+            <li>Dominated HPC in the 1980s</li>
+            <li>Perform operations on vectors of data</li>
+            <li>Vector pipelining (called chaining)</li>
+            <li>Examples: Cray T90, Convex C­4, Cray SV1, Cray SX­6, Cray X1, POWER5?</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>RISC</h2>
+          Reduced Instruction Set Computer
+          <ul>
+            <li>Designed in the 1980s</li>
+            <li>Goals: Decrease the number of clocks per instruction (CPI), Pipeline instructions as much as possible</li>
+            <li>Features:
+              <ul>
+                <li>No microcode</li>
+                <li>Relatively few instructions all the same length</li>
+                <li>Only load and store instructions access memory</li>
+                <li>Execution of branch delay slots</li>
+                <li>More registers than CISC processors</li>
+              </ul>
+            </li>
+            <li>Examples: MIPS R10K/12K/14K, Alpha21264, Sun UltraSparc­3, IBM Power3/Power4</li>
+          </ul>
+<!-- Additional features -->
+<!-- › Branch predicition -->
+<!-- › Superscalar processors -->
+<!-- • Static scheduling -->
+<!-- • Dynamic scheduling -->
+<!-- › Out­of­order execution -->
+<!-- › Speculative execution -->
+        </section>
+
+        <section>
+          <h2>VLIW</h2>
+          Very Long Instruction Word
+          <ul>
+            <li></li>
+            <li>Explicitly designed for instruction level parallelism (ILP)</li>
+            <li>Software determines which instructions can be performed in parallel, bundles this information
+            and the instructions, and passes the bundle to the hardware.</li>
+            <li>Example: Intel­HP Itanium</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+        </section>
+
+        <section id="end1">
+          <h1>THE END</h1>
+          <img class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015</h4s>
+        </section>
+
+      </div>
+
+    </div>
+
+    <script src="plugin/reveal/lib/js/head.min.js"></script>
+    <script src="plugin/reveal/js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: false,
+
+        width: 960,
+        height: 720,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'plugin/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
