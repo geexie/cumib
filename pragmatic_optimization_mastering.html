@@ -80,14 +80,14 @@
             <li>Classic taxonomy</li>
             <li>Scope taxonomy</li>
             <li>Code pattern taxonomy</li>
-            <li>Examples of machine independent transformations
+            <li>Some of machine independent transformations
               <ul>
                 <li>Copy propagation</li>
                 <li>Constant folding</li>
                 <li>...</li>
-<!--                 <li>Strength Reduction</li>
-                <li>Scalarization</li>
-                <li>Common Subexpression Elimination (CSE)</li> -->
+                <!-- <li>Strength Reduction</li> -->
+                <!-- <li>Scalarization</li> -->
+                <!-- <li>Common Subexpression Elimination (CSE)</li> -->
               </ul>
             </li>
             <li>Functional body inlining</li>
@@ -114,11 +114,11 @@
                 </ul>
                 <ol>
                   <li>Eliminate redundant computations</li>
-                  <li>Decrease ratio of overhead to real work</li>
                   <li>Eliminate dead code</li>
                   <li>Reduce running time or/and space</li>
+                  <li>Decrease ratio of overhead to real work</li>
                   <li>Specialize code on a context</li>
-                  <li>Enable other optimizations</li>
+                  <li><i>Enable many other optimizations</i></li>
                 </ol>
               </li>
               <br/>
@@ -130,7 +130,7 @@
                 <ol>
                   <li>Manage or hide latency</li>
                   <li>Manage resources (registers, stack)</li>
-                  <li>Improve the mapping from IR to this machine</li>
+                  <li>Improve mapping from IR to concrete machine</li>
                   <li>Use some exotic instructions (eg VLDM )</li>
                 </ol>
               </li>
@@ -141,32 +141,38 @@
             <h2>Scope taxonomy</h2>
             <dl>
               <dt><b>Interprocedural optimizations</b></dt>
-              <dd>consider whole translation unit, involve analysis of dataflow and dependency graphs.</dd>
+              <dd>consider the whole translation unit, involve analysis of <i>dataflow</i> and <i>dependency</i> graphs.</dd>
               <br/>
               <dt><b>Intraprocedural optimizations</b></dt>
-              <dd>consider whole procedure, involve analysis of dataflow and dependency graphs.</dd>
+              <dd>consider the whole procedure, involve analysis of <i>dataflow</i> and <i>dependency</i> graphs.</dd>
               <br/>
               <dt><b>Global optimizations</b></dt>
-              <dd>consider inter-most code block with the context. Most loop optimizations are belongs to this group </dd>
+              <dd>consider the inter-most code block with the context. <i>Loop optimizations belong to this</i>.</dd>
               <br/>
               <dt><b>Local optimizations</b></dt>
-              <dd>consider single code block, limited to straight-line code</dd>
+              <dd>consider a single code block, the analysis is limited to it.</dd>
               <br/>
               <dt><b>Peephole optimizations</b></dt>
-              <dd>map one or more consecutiveness operators from IR to machine code</dd>
+              <dd>map one or more consecutive operators from the IR to a machine code.</dd>
               <br/>
             </dl>
           </section>
 
           <section>
             <h2>Interprocedural optimizations (IPO)</h2>
-            <p>Looks at all routines in order to make optimizations <strong>across routine boundaries</strong>,
-              including but not limited to <i>inlining</i> and <i>cloning</i>.It is referred as
-              <strong>Interprocedural Analysis (IPA)</strong>, too.</p>
+            <p>Look at all routines in a translation unit in order to make optimizations
+              <strong>across routine boundaries</strong>, including but not limited to <i>inlining</i> and <i>cloning</i>.</p>
+            <p>Also called as <strong>Interprocedural Analysis (IPA)</strong>.</p>
             <ul>
-              <li>Compiler can move, optimize, restructure and delete code between procedures<br/>(and files, if LTO is enabled)</li>
-              <li><strong>Inlining</strong> &mdash; replacing a subprogram call with the replicated code of the subprogram</li>
-              <li><strong>Cloning</strong> &mdash; optimizing logic in the copied routine for the particular call</li>
+              <li>Compiler can move, optimize, restructure and delete code between procedures<br/>
+                <ul>
+                  <li>and even different source files, if LTO is enabled</li>
+                </ul>
+              </li>
+              <br/>
+              <li><strong>Inlining</strong> &mdash; replacing a subroutine call with the replicated code of it</li>
+              <br/>
+              <li><strong>Cloning</strong> &mdash; optimizing logic in the copied subroutine for a particular call</li>
             </ul>
           </section>
 
@@ -182,7 +188,7 @@
                   <li>Multi-loop</li>
                 </ul>
               </li>
-              <li>Functional calls to sub-routines</li>
+              <li>Functional calls to subroutines</li>
             </ul>
           </section>
         </section>
@@ -204,7 +210,7 @@
             <h2>Machine independent transformations</h2>
             <h3>Copy propagation</h3>
             <ul>
-              <li>Eliminates all copies of the variable with the initial value</li>
+              <li>Eliminates all copies of the variable with its initial value</li>
               <li>Simplifies intermediate representation and as the result<br/> shrinks problem size for further IR
               transformations</li>
               <li>Creates opportunities for death code elimination</li>
@@ -248,8 +254,8 @@ int z = 1 + y
           <section>
             <h2>Machine independent transformations</h2>
             <h3>Constant folding</h3>
-            <p>Evaluates expressions from the constants in compile time. Expressions could be quite complicated,
-            but absence of side effect is always a concern.</p>
+            <p>Evaluates expressions from constants in compile time. Expressions could be quite complicated,
+            but absence of any kind of side effects is always a concern.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -281,9 +287,10 @@ int c = 42;
 
           <section>
             <h2>Machine independent transformations</h2>
-            <h3>Common Subexpression Elimination</h3>
-            <p>Cache expression result into variable for future use. Sometimes you need to depict them in code, to help
-            the compiler detect them.</p>
+            <h3>Common Subexpression Elimination (CSE)</h3>
+            <p>Caches an expression result into a variable for future use.<br/>Sometimes you have to depict such
+            subexpressions in code by parentheses, to help the compiler to consider them which is especially important
+            for floating point codes.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -313,14 +320,14 @@ double e = adivb * 2.0;
                 </tr>
               </tbody>
             </table>
-            <p>Usually performed in global scope. Applicable to any code pattern.</p>
+            <p>Usually performed in a global scope. Applicable to any code pattern.</p>
           </section>
 
           <section>
             <h2>Machine independent transformations</h2>
             <h3>Scalarization</h3>
-            <p>Replaces branchy code with branch-less analogy.<br/>Usually performed for sequential code chain of loop body to
-            allow auto-vectorization.</p>
+            <p>Replaces branchy code with a branch-less analogy.<br/>
+            Usually is performed on a loop body to allow auto-vectorization.</p>
             <p>Machine-independent, local</p>
             <table class="simple">
               <colgroup>
@@ -361,7 +368,7 @@ branchless:
               </tbody>
             </table>
             <code>gcc -march=armv8-a+simd -O3 -fopt-info 1.c -S -o 1.s</code>
-            <p>Both are compiled to the same instruction sequence</p>
+            <p>As the result, both snippets are compiled to the same instruction sequence.</p>
           </section>
         </section>
 
@@ -369,9 +376,8 @@ branchless:
           <section>
             <h2>Machine (in)dependent transformations</h2>
             <h3>Strength Reduction</h3>
-            <p>Replaces complex expressions with more simple analogy. Some of this optimizations may be machine
-            dependent and rely on a specific feature set implemented in hardware (e.g.
-            <strong>built-in detection</strong>)</p>
+            Replaces complex expressions with a simpler analogy. The optimization may be machine dependent
+            in case if it relies on a specific feature set implemented in the hardware (e.g. <i>built-in detection</i>)
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -416,15 +422,15 @@ branchless:
               </tbody>
             </table>
             <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
-            <p>Usually performed in local scope for plain dependency chain.</p>
+            <p>Usually it is performed in a local scope for a dependency chain.</p>
           </section>
 
           <section>
             <h2>Machine (in)dependent transformations</h2>
             <h3>Strength Reduction (advanced)</h3>
+            Let's look at more complex expression.
             <table class="simple">
               <colgroup>
-                <col></col>
                 <col></col>
                 <col></col>
               </colgroup>
@@ -432,22 +438,23 @@ branchless:
                 <tr>
                   <td width="33%">
                     <pre><code class="cpp">float useManyPowf(
-    float a, float b, float c,
-    float d, float e, float f,
+    float a, float b,
+    float c, float d,
+    float e, float f,
     float x)
 {
-  return a * powf(x, 5.f) +
-         b * powf(x, 4.f) +
-         c * powf(x, 3.f) +
-         d * powf(x, 2.f) +
-         e * x            +
-         f;
+  return
+      a * powf(x, 5.f) +
+      b * powf(x, 4.f) +
+      c * powf(x, 3.f) +
+      d * powf(x, 2.f) +
+      e * x            +
+      f;
 }</code></pre>
                   </td>
                   <td width="33%">
                     <pre><code class="armasm">useManyPowf:
   push  {r3, lr}
-  fstmfdd sp!,{d8,d9,d10,d11,d12}
   flds  s17, [sp, #56]
   fmsr  s24, r1
   movs  r1, #0
@@ -487,11 +494,13 @@ branchless:
               </tbody>
             </table>
             <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
+            <p>Compiler was able just partly reduce the complexity and generate <code>vfma</code> there it is possible</p>
           </section>
 
           <section>
             <h2>Machine (in)dependent transformations</h2>
             <h3>Strength Reduction (manual)</h3>
+            Let's further reduce latency by applying Horner rule.
             <pre><code class="cpp">float applyHornerf(float a, float b, float c, float d, float e, float f, float x)
 {
   return ((((a * x + b) * x + c) * x + d) * x + e) * x + f;
@@ -522,11 +531,10 @@ branchless:
         <section>
           <section>
             <h2>Function body inlining</h2>
-            <p>Replace functional call to function body. <strong>Enables all further optimizations.</strong></p>
-            <p>Machine-independent &amp; interprocedural.</p>
+            <p>Replaces functional call to function body itself. <strong>Enables all further optimizations.</strong></p>
+            Machine-independent &amp; interprocedural.
             <table class="simple">
               <colgroup>
-                <col></col>
                 <col></col>
                 <col></col>
               </colgroup>
@@ -534,15 +542,15 @@ branchless:
                 <tr>
                   <td width="50%">
                     <pre><code class="cpp">int square(int x)
-  {
-    return x*x;
-  }
+{
+  return x*x;
+}
 
-  for (int i = 0; i < N; i++)
-    a[i] = square(i);</code></pre>
+for (int i = 0; i < len; i++)
+  arr[i] = square(i);</code></pre>
                     Becomes
-                    <pre><code class="cpp">for (int i = 0; i < N; i++)
-    a[i] = i*i;</code></pre>
+                    <pre><code class="cpp">for (int i = 0; i < len; i++)
+    arr[i] = i*i;</code></pre>
                   </td>
                   <td>
     <!-- movk - Move 16-bit immediate into register, keeping other bits unchanged. -->
@@ -566,6 +574,7 @@ branchless:
             </table>
             <code>gcc -march=armv8-a+nosimd -fstrict-aliasing  -O3 -fopt-info 1.c -S -o 1.s</code>
           </section>
+
           <section>
             <h2>Function body inlining</h2>
             <p>Let's compile the code with vector extension enabled <strong><code>-march=armv8-a+simd</code></strong></p>
@@ -583,11 +592,11 @@ branchless:
     return x*x;
   }
 
-  for (int i = 0; i < N; i++)
-    a[i] = square(i);</code></pre>
+  for (int i = 0; i < len; i++)
+    arr[i] = square(i);</code></pre>
                     Becomes
-                    <pre><code class="cpp">for (int i = 0; i < N; i++)
-    a[i] = i*i;</code></pre>
+                    <pre><code class="cpp">for (int i = 0; i < len; i++)
+    arr[i] = i*i;</code></pre>
                   </td>
                   <td>
                     <pre><code class="armasm">
@@ -622,11 +631,10 @@ branchless:
                 <li>Hoisting Loop Invariant Code</li>
                 <li>Loop unrolling</li>
                 <li>Loop Peeling</li>
-                <li>Scalarization</li>
                 <li>Loop unswitching</li>
-                <li>Strip mining</li>
 
                 <!-- out of scope -->
+                <!-- <li>Strip mining</li> -->
                 <!-- <li>Loop skewing</li> -->
                 <!-- <li>Unroll-and-jam</li> -->
                 <!-- <li>Loop reversal</li> -->
@@ -636,9 +644,9 @@ branchless:
                 <!-- <li>Array Initialization</li> -->
                 <!-- <li>Loop Defactorization</li> -->
                 <!-- <li>Outer Loop Unrolling</li> -->
-                <!--  -->
               </ul>
             </li>
+            <br/>
             <li><strong>Multi-loop (nested or detached)</strong>
               <ul>
                 <li>Loop fusion/fission</li>
@@ -652,7 +660,7 @@ branchless:
 
         <section>
           <h2>#1: Loop-induction variable elimination</h2>
-          <p>In most cases compiler is able to replace address arithmetics with pointer arithmetics.</p>
+          In most cases compiler is able to replace address arithmetics with pointer arithmetics.
           <table class="simple">
             <colgroup>
               <col></col>
@@ -707,14 +715,14 @@ branchless:
           </table>
           <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O1 1.c -S -o 1.s</code>
           <p>
-            <strong>Most hand-written pointer optimizations do not make sense with usage optimization levels
-            higher than O0.</strong>
+            <b>Most hand-written pointer optimizations do not make sense with usage optimization levels
+            higher than O0.</b>
           </p>
         </section>
 
         <section>
           <h2>#2: Hoisting Loop Invariant Code</h2>
-          <p>The goal of <b>hoisting</b> — also called <b>loop-invariant code motion</b> — is to avoid recomputing
+          <p>The goal of <b>hoisting</b> &mdash; also called <b>loop-invariant code motion</b> &mdash; is to avoid recomputing
           loop-invariant code each time through the body of a loop.</p>
          <table class="simple">
             <colgroup>
@@ -723,21 +731,23 @@ branchless:
             </colgroup>
             <tbody>
               <tr>
-                <td width="50%" width="50%" style="border-bottom: 0;">
-                  <pre><code class="cpp">void scale(double* X, double* Y, int len)
+                <td width="50%" style="border-bottom: 0;">
+                  <pre><code class="cpp">void scale(double* x, double* y,
+  int len)
 {
   for (int i = 0; i < len; i++)
-    Y[i] = X[i] * exp(sqrt(M_PI/2));
+    y[i] = x[i] * exp(sqrt(M_PI/2));
 }
 
 </code></pre>
                 </td>
                 <td width="50%" style="border-bottom: 0;">
-                  <pre><code class="cpp">void scale(double* X, double *Y, int len)
+                  <pre><code class="cpp">void scale(double* x, double *y,
+  int len)
 {
   double factor = exp(sqrt(M_PI/2));
   for (int i = 0; i < len; i++)
-    Y[i] = X[i] * factor;
+    y[i] = x[i] * factor;
 }</code></pre>
                 </td>
               </tr>
@@ -782,8 +792,8 @@ branchless:
         <section>
           <section>
             <h2>#3: Loop unswitching</h2>
-            <p>Moves loop-invariant conditionals or switches which are independent of the loop index out of
-            the loop. Increases instruction level parallelism, enables further optimizations.</p>
+            Moves loop-invariant conditionals or switches which are independent of the loop index<br/> out of
+            the loop. Increases instruction level parallelism, enables further optimizations.
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -844,9 +854,9 @@ else
 
           <section>
             <h2>Loop peeling</h2>
-            <p>A small number of iterations from the beginning or end of a loop taken out of the loop and executed
-            separately which eliminates if-statements and makes the loop more suitable for vectorization. In some
-            cases can be performed by the compiler on high optimization levels.</p>
+            <p>Takes out of the loop and executes separately a small number of iterations from the beginning or/and
+            the end of a loop, which eliminates if-statements and makes the loop more suitable for vectorization.<br/>
+            In some cases can be performed by a compiler under high optimization levels.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -885,19 +895,21 @@ b[len-1] = a[len-1];
                 </tr>
               </tbody>
             </table>
-            <p>IFor the example below both tested compilers: gcc 4.9 as well as the clang 3.5
-            <strong>won't</strong> perform this optimization. Make sure that compiler was able to apply optimization
+            <p>For the example below the both tested compilers: gcc 4.9 as well as the clang 3.5
+            <strong>won't</strong> perform this optimization. Make sure that a compiler was able to apply optimization
             to such a code pattern or implement this optimization manually.</p>
           </section>
 
           <section>
             <h2>Advanced unswitching: Sentinels</h2>
-            <p><b>Sentinels</b> are special dummy values placed in a data structure <br/>which are added to simplify the logic
-            of handling boundary conditions <br/>(in particular, handling of loop-exit tests
+            <p><b>Sentinels</b> are special dummy values placed in a data structure <br/>which are added to simplify
+            the logic of handling boundary conditions <br/>(in particular, handling of loop-exit tests
             or elimination out-of-bound checks).</p>
 
-            <p>Let's assume that array <strong><code>a</code></strong> contains two extra elements:<br/> one &mdash; at the left,
-             another &mdash; at the right. The code can be rewritten as follows.</p>
+            <p>Let's assume that array <strong><code>a</code></strong> contains two extra elements:
+            one &mdash; at the left <strong><code>a[-1]</code></strong>,
+             and one &mdash; at the right <strong><code>a[N]</code></strong>. With such assumptions the code can be
+             rewritten as follows.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -971,31 +983,46 @@ for (int i = 0; i &lt; len; i++)
 <!--  -->
         <section>
           <h2>#3: Loop unrolling</h2>
-          <p>Generates multiple copies of the code for the loop body, reduces number of branches and groups more
-          instructions together to enable more efficient instruction pipelining.</p>
+          <p>Generates multiple copies of the code for a loop body whereby reduces number of branching instructions and,
+          that is more important, enables more efficient instruction pipelining because of grouping instructions from
+          the different iterations together. May also reduce number of memory references.</p>
           <p>Best candidates are innermost loops with limited control flow.</p>
-          <ul class="none:">
-            <li>Before
-              <pre><code class="cpp">
-for (int i = 0 ; i < N; i++)
-  h[p[i]]++;
+          <table class="simple">
+            <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td width="50%">
+                  <pre><code class="cpp">
+for (int i = 0 ; i < len; i++)
+  h[arr[i]]++;
+
+
+
+
+
+
 
 </code></pre>
-            </li>
-            <li>After
-              <pre><code class="cpp">
-for (int i = 0 ; i <= N-4; i+=4)
+                </td>
+                <td>
+                  <pre><code class="cpp">
+for (int i = 0 ; i <= len-4; i+=4)
 {
-  int idx0 = p[i+0]; int idx1 = p[i+1];
-  int idx2 = p[i+2]; int idx3 = p[i+3];
+  int idx0 = arr[i+0]; int idx1 = arr[i+1];
+  int idx2 = arr[i+2]; int idx3 = arr[i+3];
 
   h[idx0]++; h[idx1]++;
   h[idx2]++; h[idx3]++;
 }
 
 </code></pre>
-            </li>
-          </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </section>
 
 <!--         <section>
@@ -1042,8 +1069,8 @@ for (int i = 0; i < N; i += block_size)
         </section> -->
 
         <section>
-          <h2>#6: Loop Interchange</h2>
-            <p>It is usually done for stride Minimization</p>
+          <h2>#4: Loop Interchange</h2>
+            <p>Minimize/eliminate/replace striding memory access patterns in the innermost loop to improve cache locality.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -1084,25 +1111,25 @@ for (int i = 0; i &lt; width; i++)
         </section>
 
         <section>
-          <h2>#7: Loop Fusion / Fission</h2>
+          <h2>#5: Loop Fusion / Fission</h2>
           <ul class="none">
             <li>Loop <b>fission</b> breaks up a complicated loop into multiple smaller loops, iterating over the same
             index range which may help to achieve better locality of reference and reduce register pressure. Fission
             results in smaller cache footprint.
-              <pre><code class="cpp">for (size_t i = 0; i < n; ++i)
+              <pre><code class="cpp">for (int i = 0; i < len; ++i)
   b[i] = a[i] + 1.f;
 
-for (size_t i = 0; i < n; ++i)
+for (int i = 0; i < len; ++i)
   c[i] = b[i] / 2.f;
 
-for (size_t i = 0; i < n; ++i)
+for (int i = 0; i < len; ++i)
   d[i] = 1.f / c[i];
 </code></pre>
             </li>
             <li>Loop <b>fusion</b> combines multiple loops operating over the same index range into one single loop
             which may lead to better locality of reference, but it may increase register pressure as well. Fusion results
             in fewer total memory references.
-              <pre><code class="cpp">for (size_t i = 0; i < n; ++i)
+              <pre><code class="cpp">for (int i = 0; i < len; ++i)
 {
   b[i] = a[i] + 1.f;
   c[i] = b[i] / 2.f;
@@ -1114,7 +1141,7 @@ for (size_t i = 0; i < n; ++i)
         </section>
 
         <section>
-          <h2>#8: Loop collapse</h2>
+          <h2>#6: Loop collapse</h2>
             <p>Reduces loop nesting and overhead on address computations, helps auto-vectorization.</p>
             <table class="simple">
               <colgroup>
@@ -1270,23 +1297,24 @@ int main()
           <section>
             <h2>Auto-vectorization</h2>
             <ul>
-              <li>Machine code generation that takes advantage of vector instructions.</li>
+              <li>Machine code generation that takes an advantage of vector instructions.</li><br/>
               <li>Most of all modern architectures have vector extensions (as a co-processor or as specialized pipes)
                 <ul>
                   <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
                   <li>AltiVec, VSX</li>
                   <li>ASIMD (NEON), MSA</li>
                 </ul>
-              </li>
-              <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, etc.</li>
+              </li><br/>
+              <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, and
+              other machine independent transformations.</li>
             </ul>
           </section>
           <section>
             <h2>Auto-vectorization example</h2>
-            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int N)
+            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int len)
 {
   int i;
-  for (i = 0; i < N; i++)
+  for (i = 0; i < len; i++)
     a[i] += b[i];
 }</code></pre>
             <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 -fopt-info-missed 1.c -S -o 1.s</code>
@@ -1304,10 +1332,10 @@ int main()
           <section>
             <h2>Auto-vectorization example</h2>
             <p>But armv8-a does support, let's check it!</p>
-            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int N)
+            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int len)
 {
   int i;
-  for (i = 0; i < N; i++)
+  for (i = 0; i < len; i++)
     a[i] += b[i];
 }</code></pre>
             <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 -fopt-info-missed 1.c -S -o 1.s</code>
@@ -1338,12 +1366,12 @@ int main()
             <h2>Detailed analysis</h2>
             <p>Lit's follow the advice to put <code>__restrict</code> and
             <code>__builtin_assume_aligned</code> keywords</p>
-            <pre><code class="cpp">void vectorizeMe(float* __restrict a_, float* __restrict b_, int N)
+            <pre><code class="cpp">void vectorizeMe(float* __restrict a_, float* __restrict b_, int len)
 {
   int i;
   float *a = __builtin_assume_aligned(a_, 16);
   float *b = __builtin_assume_aligned(b_, 16);
-  for (i = 0; i < N; i++)
+  for (i = 0; i < len; i++)
     a[i] += b[i];
 }</code></pre>
             <blockquote  style="width:100%;text-align: left;">
@@ -1351,7 +1379,7 @@ int main()
               1.c:66:3: note: loop with 3 iterations completely unrolled<br/>
             </blockquote>
             <!-- <strong>Keywords may help, but are not necessary nowadays.</strong> -->
-            <strong><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminates some loop
+            <strong><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminate some loop
             versioning, but are not very useful from the performance perspective nowadays</strong>
           </section>
         </section>
@@ -1360,25 +1388,26 @@ int main()
           <section>
             <h2>Summary</h2>
             <ul>
-              <li><strong>Are you still optimizing debug versions?</strong> Learn a compiler well and stick with it!</li>
-              <li>Compiler optimizations are split to machine dependent and machine independent</li>
-              <li>By scope compiler optimizations are split to Interprocedural, Intraprocedural, Global, Local and Peephole</li>
+              <li><strong>Are you still optimizing debug versions?</strong> Learn a compiler and stick with it!</li>
+              <li>Compiler optimizations are split into machine-dependent and machine-independent groups</li>
+              <li>By scope compiler optimizations are split into interprocedural, intraprocedural, global, local and peephole</li>
               <li>The most common targets are dependency chains, branches, loops</li>
               <li>Copy propagation, constant folding, CSE and strength reduction are widely used by the compiler</li>
               <li>Functional body inlining enables all other optimizations</li>
-              <li>Most hand-written pointer optimizations do not make sense with usage optimization levels higher than O0</li>
-              <li>Hoising loop invariant code, unswitching and unrolling are the most common loop-targeted optimizations</li>
+              <li>Most hand-written pointer optimizations do not make sense with usage of optimization levels higher than O0</li>
+              <li>Hoisting loop invariant code, unswitching and unrolling are the most common loop-targeted optimizations</li>
             </ul>
           </section>
 
           <section>
             <h2>Summary</h2>
             <ul>
-              <li>Loop peeling compiler capabilities are steel pure, use sentinels technique to eliminate extra checks and control flow</li>
-              <li>Decide loop fission/fusion depending on the register pressure and cache locality of the accesses</li>
-              <li>Compiler will detect <code>memcpy</code> and <code>memset</code>, even if you write it manually.
-              Library functions are usually more efficient</li>
-              <li><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminates some loop
+              <li>Loop peeling compiler capabilities are steel pure, use sentinels technique to eliminate extra checks
+              and control flow</li>
+              <li>Decide loop fission/fusion depending on a register pressure and cache locality of the accesses</li>
+              <li>Compiler will detect <code>memcpy</code> and <code>memset</code>, even if you implement them manually
+              and call library function instead. Library functions are usually more efficient</li>
+              <li><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminate some loop
               versioning, but are not very useful from the performance perspective nowadays</li>
             </ul>
           </section>
