@@ -86,9 +86,10 @@
               </ul>
             </li>
             <li>Hardware optimizations
-              <ul>
+              <ul style="width:100%; columns: 2; -webkit-columns: 2; -moz-columns: 2;">
                 <li>Pipelined execution</li>
-                <li>Speculative execution</li> <!--multi-piping-->
+                <li>Superscalar execution</li>
+                <li>Speculative execution</li>
                 <li>Out-of-order execution</li>
                 <li>Cache hierarchies</li>
                 <li>Branch prediction</li>
@@ -101,99 +102,107 @@
         </section>
 
         <section>
-          <h2>Key architecture families</h2>
-          <ul>
-            <li><strong>RISC</strong> - Reduced Instruction Set Computer</li><br/>
-            <li><strong>CISC</strong> - Complex Instruction Set Computer</li><br/>
-            <li><strong>VLIW</strong> - VEry Long Instruction Word</li><br/>
-            <li><strong>Vector</strong> architectures</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>CISC</h2>
-          <b>Complex Instruction Set Computer</b>
+          <h2>Architecture</h2>
           <dl style="text-align: justify;">
-            <dt><strong>Designed in the 1970s</strong></dt>
-            <dd>which was a time there transistors were expensive and compilers were weak.</dd>
-            <dt><strong>The goal</strong></dt>
-            <dd>is to define an instruction set that allows high level language constructs be translated into as few
-            assembly language instructions as possible.</dd>
-            <dt><strong>Features</strong></dt>
-            <dd>As the result <i>many instructions access memory</i>, <i>plenty of addressing modes</i>,
-            many instruction families, <i>very reach ISA</i>, and consequently, <i>complicated instruction decoding</i> logic.
-            Only a <i>few registers are available</i> for programmers.</dd>
-            <dt><strong>Examples</strong></dt>
-            <dd>VAX, x86, AMD64.</dd>
-            <dt><strong>Nowadays</strong></dt>
-            <dd>CISC instructions are typically broken down into lower level instructions called microcode which are
-            much easy to pipeline, large reorder buffers to eliminate stalls.</dd>
+            <dt><strong>Architecture</strong></dt>
+            <dd>is a contract between the Hardware and Software, which specifies right, possibilities and limitations.</dd>
+            <dt><strong>Microarchitecture</strong></dt>
+            <dd>is a implementation of the architecture.</dd>
           </dl>
         </section>
 
         <section>
-          <h2>RISC</h2>
-          <b>Reduced Instruction Set Computer</b>
-          <dl style="text-align: justify;">
-            <dt><strong>Designed in the 1980s</strong></dt>
-            <dd>which was a time there IPL was the most concern.</dd>
-            <dt><strong>The goal</strong></dt>
-            <dd>decrease the number of clocks per instruction (CPI), pipeline instructions as much as possible.</dd>
-            <dt><strong>Features</strong></dt>
-            <dd>Relatively few instructions all the same length. Only load and store instructions access memory.
-            Has more registers than CISC processors have. <strike>No microcode</strike></dd>
-            <dt><strong>Examples</strong></dt>
-            <dd>MIPS, ARM.</dd>
-            <dt><strong>Nowadays</strong></dt>
-            <dd>Most architectures that comes from RISC are called Load-Store architectures. They use most modern
-            hardware enhancements with deeper pipelines, multi-cycle instructions, OoO execution. Modern RISC may have
-            micro ops. Whereas they still employ special instructions for memory accesses.</dd>
-          </dl>
-        </section>
+          <section>
+            <h2>Key architecture families</h2>
+            <ul>
+              <li><strong>RISC</strong> - Reduced Instruction Set Computer</li><br/>
+              <li><strong>CISC</strong> - Complex Instruction Set Computer</li><br/>
+              <li><strong>VLIW</strong> - VEry Long Instruction Word</li><br/>
+              <li><strong>Vector</strong> architectures</li>
+            </ul>
+          </section>
 
-        <section>
-          <h2>VLIW</h2>
-          Very Long Instruction Word
-          <ul>
-          <dl style="text-align: justify;">
-            <dt><strong>Designed in the 1980s</strong></dt>
-            <dd>which was a time there IPL was the most concern.</dd>
-            <dt><strong>The goal</strong></dt>
-            <dd>is maximize instruction level parallelism (ILP) with pipelining done by software.</dd>
-            <dt><strong>Features</strong></dt>
-            <dd>Software determines which instructions can be performed in parallel, bundles this information
-            and the instructions, and passes the bundle to the hardware.</dd>
-            <dt><strong>Examples</strong></dt>
-            <dd>Intel­HP Itanium.</dd>
-            <dt><strong>Nowadays</strong></dt>
-            <dd>Aren't used in generic processors design, but widely for programmable co-processors where shrink in
-            the power consumption is crustal.</dd>
-          </dl>
-        </section>
+          <section>
+            <h2>CISC</h2>
+            <b>Complex Instruction Set Computer</b>
+            <dl style="text-align: justify;">
+              <dt><strong>Designed in the 1970s</strong></dt>
+              <dd>which was a time there transistors were expensive and compilers were weak.</dd>
+              <dt><strong>The goal</strong></dt>
+              <dd>is to define an instruction set that allows high level language constructs be translated into as few
+              assembly language instructions as possible.</dd>
+              <dt><strong>Features</strong></dt>
+              <dd>As the result <i>many instructions access memory</i>, <i>plenty of addressing modes</i>,
+              many instruction families, <i>very reach ISA</i>, and consequently, <i>complicated instruction decoding</i> logic.
+              Only a <i>few registers are available</i> for programmers.</dd>
+              <dt><strong>Examples</strong></dt>
+              <dd>VAX, x86, AMD64.</dd>
+              <dt><strong>Nowadays</strong></dt>
+              <dd>CISC instructions are typically broken down into lower level instructions called microcode which are
+              much easy to pipeline, large reorder buffers to eliminate stalls.</dd>
+            </dl>
+          </section>
 
-        <section>
-          <h2>Vector Processors</h2>
-          <dl>
-            <dt><strong>First introduced in 1976.</strong></dt>
-            <dd>dominated for HPC in the 1980s because of high instruction throughput.</dd>
-            <dt><strong>The goal</strong></dt>
-            <dd>perform operations on vectors of data to increase instruction throughput. Vector pipelining which is
-            also called chaining.</dd>
-            <dt><strong>Examples</strong></dt>
-            <dd>Cray</dd>
-            <dt><strong>Nowadays</strong></dt>
-            <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads.</dd>
-          </dl>
-        </section>
+          <section>
+            <h2>RISC</h2>
+            <b>Reduced Instruction Set Computer</b>
+            <dl style="text-align: justify;">
+              <dt><strong>Designed in the 1980s</strong></dt>
+              <dd>which was a time there IPL was the most concern.</dd>
+              <dt><strong>The goal</strong></dt>
+              <dd>decrease the number of clocks per instruction (CPI), pipeline instructions as much as possible.</dd>
+              <dt><strong>Features</strong></dt>
+              <dd>Relatively few instructions all the same length. Only load and store instructions access memory.
+              Has more registers than CISC processors have. <strike>No microcode</strike></dd>
+              <dt><strong>Examples</strong></dt>
+              <dd>MIPS, ARM, PowerPC.</dd>
+              <dt><strong>Nowadays</strong></dt>
+              <dd>Most architectures that comes from RISC are called Load-Store architectures. They use most modern
+              hardware enhancements with deeper pipelines, multi-cycle instructions, OoO execution. Modern RISC may have
+              micro ops. Whereas they still employ special instructions for memory accesses.</dd>
+            </dl>
+          </section>
 
-        <section>
-          <h2>SIMD vs Vector co-processors</h2>
+          <section>
+            <h2>VLIW</h2>
+            Very Long Instruction Word
+            <dl style="text-align: justify;">
+              <dt><strong>Designed in the 1980s</strong></dt>
+              <dd>which was a time there IPL was the most concern.</dd>
+              <dt><strong>The goal</strong></dt>
+              <dd>is maximize instruction level parallelism (ILP) with pipelining done by software.</dd>
+              <dt><strong>Features</strong></dt>
+              <dd>Software determines which instructions can be performed in parallel, bundles this information
+              and the instructions, and passes the bundle to the hardware.</dd>
+              <dt><strong>Examples</strong></dt>
+              <dd>Intel­HP Itanium.</dd>
+              <dt><strong>Nowadays</strong></dt>
+              <dd>Aren't used in generic processors design, but widely for programmable co-processors where shrink in
+              the power consumption is crustal.</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Vector Processors</h2>
+            <dl style="text-align: justify;">
+              <dt><strong>First introduced in 1976.</strong></dt>
+              <dd>dominated for HPC in the 1980s because of high instruction throughput.</dd>
+              <dt><strong>The goal</strong></dt>
+              <dd>perform operations on vectors of data to increase instruction throughput. Vector pipelining which is
+              also called chaining.</dd>
+              <dt><strong>Examples</strong></dt>
+              <dd>Cray</dd>
+              <dt><strong>Nowadays</strong></dt>
+              <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads.</dd>
+            </dl>
+          </section>
         </section>
 
         <section>
           <h2>Hardware optimizations</h2>
           <ul>
             <li>Pipelined execution</li><br/>
+            <li>Superscalar execution</li><br/>
             <li>Speculative execution</li><br/>
             <li>Out-of-order execution</li><br/>
             <li>Cache hierarchies</li><br/>
@@ -204,34 +213,64 @@
         </section>
 
         <section>
-          <h2>Pipelined execution</h2>
-          › Overlapping the execution of multiple instructions
-› Assembly line metaphor
-› Simple pipeline stages
-Instruction fetch cycle (IF)
-Instruction decode/register fetch cycle (ID)
-Execution/effective address cycle (EX)
-Memory access/branch completion cycle (MEM)
-Write­back cycle (WB)
+          <section>
+            <h2>Pipelined execution - Classic 5-stage pipeline</h2>
+            <p>The idea is to break down an instruction into multiple stages so that instructions
+            on different stages can be processed at the same clock cycle. Introduced in 1960s.</p>
+            <dl style="text-align: justify;">
+              <dt><b>Instruction fetch cycle (IF)</b></dt>
+              <dd>An instructions is fetched from IC and may be placed either into an instruction register
+              or a queue of pending instructions.</dd>
+              <dt><b>Instruction decode/register fetch cycle (ID)</b></dt>
+              <dd>An instruction is decoded, register operands are read from the register file.</dd>
+              <dt><b>Execution/effective address cycle (EX)</b></dt>
+              <dd>Either an ALU operation is performed or an effective address for memory access is computed,
+              which depends on an instruction type</dd>
+              <dt><b>Memory access/branch completion cycle (MEM)</b></dt>
+              <dd>The memory is accessed, if appropriate.</dd>
+              <dt><b>Write­back cycle (WB)</b></dt>
+              <dd>The result is written into the register file, whether it comes from the memory system (for a load)
+              or from the ALU (for an ALU instruction)</li>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Without pipelined execution</h2>
+            <img class="simple" width="80%" src="images/popt/nopipeline.svg">
+          </section>
+
+          <section>
+            <h2>Pipelined execution</h2>
+            <img class="simple" width="80%" src="images/popt/pipeline.svg">
+          </section>
+
+          <section>
+            <h2>Pipeline hazards</h2>
+            <p><b>Pipeline hazard</b> is a situation that prevents the next instruction in the pipeline from executing
+            during its designated clock cycle and thus cause pipeline stalls.</p>
+            <dl style="text-align: justify;">
+              <dt><b>Structural hazard</b></dt>
+              <dd>arise from resource conflicts when the hardware cannot support all possible combinations of instructions
+              simultaneously in overlapped execution.</dd>
+              <dt><b>Data hazard</b></dt>
+              <dd>arise when an instruction depends on the results of a previous instruction in a way that is exposed
+              by the overlapping of instructions in the pipeline.</dd>
+              <dt><b>Control hazard</b></dt>
+              <dd>arise from the pipelining of branches and other instructions that change the PC.</dd>
+            </dl>
+            <br/><small>All the terms used are taken from Hennessey & Paterson</small>
+          </section>
+
+          <section>
+            <h2>multiple-issue superscalars: Cortex-A53</h2>
+            Instructions are dispatched 2 per cycle to the appropriate issue queue.<br/>
+            Issue Width &mdash; 2 &mu;ops, Pipeline Length &mdash; 8 stages, Pipeline Length &mdash; 8 stages,
+            Number of pipes &mdash; 5: I0, I1, FP, B, LD/DT.
+            <div><img width="50%" src="images/popt/A53-Diagram.png"></div>
+            <small>image source is <a href="http://images.anandtech.com/doci/8718/A53-Diagram.png">AnandTech.com</a></small>
+          </section>
         </section>
 
-        <section>
-          <h2>Hazards</h2>
-          › Situations that prevent the next instruction in the pipeline
-from executing during its designated clock cycle and
-thus cause pipeline stalls
-› Types of hazards
-› Structural hazard – resource conflict when the hardware
-cannot support all instructions simultaneously
-› Data hazard – when an instruction depends on the results of
-a previous instruction
-› Control hazard – caused by branches and other instructions
-that change the PC
-        </section>
-
-        <section>
-          <h2>Pipeline with Multicycle Operations</h2>
-        </section>
 
         <section>
           <h2>Speculative execution</h2>
@@ -467,6 +506,11 @@ Keep the instructions isolated to one piece of hardware on chip.
 
         <section>
           <h2>Prefetch streams and write stream</h2>
+        </section>
+
+
+        <section>
+          <h2>SIMD vs Vector co-processors</h2>
         </section>
 
         <section>
