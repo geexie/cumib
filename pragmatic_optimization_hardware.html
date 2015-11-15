@@ -87,14 +87,14 @@
             </li>
             <li>Hardware optimizations
               <ul style="width:100%; columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+                <li>Cache hierarchies</li>
+                <li>Hardware prefetching</li>
+                <li>Write stream detection</li>
+
                 <li>Pipelined execution</li>
                 <li>Superscalar execution</li>
                 <li>Speculative execution</li>
                 <li>Out-of-order execution</li>
-                <li>Cache hierarchies</li>
-                <li>Branch prediction</li>
-                <li>Hardware prefetching</li>
-                <li>Write stream detection</li>
               </ul>
             </li>
             <li>summary</li>
@@ -102,12 +102,28 @@
         </section>
 
         <section>
-          <h2>Architecture</h2>
+          <h2>Defining Computer Architecture</h2>
           <dl style="text-align: justify;">
-            <dt><strong>Architecture</strong></dt>
-            <dd>is a contract between the Hardware and Software, which specifies right, possibilities and limitations.</dd>
-            <dt><strong>Microarchitecture</strong></dt>
-            <dd>is a implementation of the architecture.</dd>
+            <dt><b>Instruction Set Architecture (ISA)</b></dt>
+            <dd>is a contract between the Hardware and Software, which specifies right, possibilities and limitations.<br/>
+              <ul>
+                <li>Class of ISA (load-store, register-memory)</li>
+                <li>Memory addressing (alignment rules)</li>
+                <li>Addressing modes (base-immediate, base-register)</li>
+                <li>Types and sizes of operands (size of byte, short)</li>
+                <li>Operations (general arithmetic, control, logical)</li>
+                <li>Control flow instructions (branches, jumps, calls, and returns)</li>
+                <li>Encoding an ISA (fixed or variable length)</li>
+              </ul>
+            </dd>
+
+            <dt><b>Microarchitecture (organization)</b></dt>
+            <dd>is a concrete implementation of the ISA, the high-level aspects of a processors design (memory system,
+            memory interconnect, design of the internal processor).</dd>
+
+            <dt><b>Hardware (design)</b></dt>
+            <dd>is the specifics of a computer, including the logic design and packaging, a concrete implementation of
+            the microarchitecture.</dd>
           </dl>
         </section>
 
@@ -196,21 +212,285 @@
               <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads.</dd>
             </dl>
           </section>
+
+          <section>
+            <h2>Why RISC?</h2>
+            <ol>
+              <li>Keep the number of instructions small.</li>
+              <li>Keep the functionality of the instructions orthogonal.</li>
+              <li>Keep the instructions isolated to one piece of hardware on chip.</li>
+              <li>Decoding logic is power efficient</li>
+              <li>Easy for compiler optimizations</li>
+              <li>Design, place and route more elegantly</li>
+              <li>Drive a higher clock rate</li>
+              <li>Have a deeper pipeline</li>
+              <li>Expose opportunities for instruction parallelism to the compiler</li>
+            </ol>
+          </section>
         </section>
 
         <section>
           <h2>Hardware optimizations</h2>
           <ul>
-            <li>Pipelined execution</li><br/>
-            <li>Superscalar execution</li><br/>
-            <li>Speculative execution</li><br/>
-            <li>Out-of-order execution</li><br/>
             <li>Cache hierarchies</li><br/>
-            <li>Branch prediction</li><br/>
-            <li>Hardware prefetching</li><br/>
+
+            <li>Pipelined execution</li>
+            <li>Superscalar execution</li>
+            <li>Speculative execution</li>
+            <li>Out-of-order execution</li>
+            <li>Forwarding</li><br>
+
+            <li>Hardware prefetching</li>
             <li>Write stream detection</li>
           </ul>
         </section>
+
+        <section>
+          <section>
+            <h2>The memory-processor gap</h2>
+            <div><img src="images/popt/hp-mem.jpg"></div>
+            <small>image source Hennessey &amp; Paterson</small>
+          </section>
+
+          <section>
+            <h2>Cache hierarchies</h2>
+            <p><strong>The goal for caches is to mitigate a performance gap between<br/>latencies of memory access
+            and processor operations</strong></p>
+            <dl style="text-align: justify;">
+              <dt><b>Temporal locality</b></dt>
+              <dd>relies on the fact that <strong>recently accessed items</strong> are <strong>likely</strong>
+              to be accessed in the <strong>near future</strong>. If address <strong><code>M(n)</code></strong>
+              is accessed at time <strong><code>t</code></strong>, it is likely that <strong><code>M(n)</code></strong>
+              will be used again at time <strong><code>t+</code>&epsilon;</strong> , where <strong>&epsilon;</strong>
+              is small.</dd><br/>
+
+              <dt><b>Spatial locality</b></dt>
+              <dd>relies on the fact that items whose addresses are <strong>near each other likely to accessed close
+              together in time</strong>. If we access <strong><code>M(n)</code></strong> it is likely that
+              <strong><code>M(n + &epsilon;)</code></strong> will be used, where <strong><code>&epsilon;</code></strong>
+              is small.</dd>
+            </dl>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Cache terminology</h2>
+            <dl style="text-align: justify;">
+              <dt><b>Access time</b></dt>
+              <dd>is the time from when a read or write is requested until it arrives at its destination.</dd><br/>
+              <dt><b>Cycle time</b></dt>
+              <dd>is the minimum time between requests to memory.</dd><br/>
+              <dt><b>Cache hit</b></dt>
+              <dd>is the situation when the requested data is in the cache.</dd><br/>
+              <dt><b>Cache miss</b></dt>
+              <dd>is the situation when the requested data isn't in the cache. Upon a cache miss, a cache line is retrieved
+               from main memory (or a higher level of cache) and placed in the cache.</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Cache terminology</h2>
+            <dl style="text-align: justify;">
+              <dt><b>Cache miss rate</b></dt>
+              <dd>is the fraction of cache accesses that result in a miss.</dd>
+              <dt><b>Local miss rate</b></dt>
+              <dd>is the number of misses in a cache divided by the total number of memory access to this cache</dd>
+              <dt><b>Global miss rate</b></dt>
+              <dd>is the number of misses in a cache divided by the total number of memory accesses generated</dd>
+              <br/>
+              <dt><b>Cache miss penalty</b></dt>
+              <dd>is the time required for serving a cache miss<br/>(depends on the latency and bandwidth of the memory).</dd><br/>
+              <dt><b>Memory stall cycles</b></dt>
+              <dd>is the cycles during which a CPU is stalled waiting for a memory access.</dd>
+            </dl>
+          </section>
+        </section>
+
+<!--         Using multiple levels of cache allows a small fast cache to keep pace with the
+CPU, while slower larger caches can be used to reduce the miss penalty since
+the next level cache can be used to capture many accesses that would go to
+main memory.
+The local miss rate is large for higher level caches because the first level
+cache benefits the most from data locality.  Thus a global miss rate that
+indicates what fraction of the memory access that leave the CPU go all the way
+to memory is a more useful measure. -->
+
+        <section>
+          <h2>Cache properties </h2>
+          <ul>
+            <li>Modern processors have from 1 to 4 levels of caches
+            <ul>
+              <li>Inclusive caches duplicates the data from higher level cache in lower levels</li>
+              <li>Exclusive caches contains data only in one level of cache</li>
+              <li>Most caches are <b>inclusive</b>.</li>
+            </ul>
+            </li>
+            <li>Data transfer unit between registers and L1 cache is usually in between 1-16 bytes</li>
+            <li><b>Cache line</b> is the smallest unit of memory that can be transferred to and form main memory
+            (typically 32, 64 bytes, sometimes 128 bytes and more)</li>
+            <li>Line is also unit of storage allocation in cache</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Associativity</h2>
+          <ul>
+            <li><b>Cache associativity</b> is the number of unique places in a cache where any given memory item can reside.</li>
+            <li>In an n way associative cache, any cache line from memory can map to any of the n locations in a set.</li>
+            <li>1 way set associative cache is called direct mapped.</li>
+            <li>A fully associative cache is one in which a cache line can be placed anywhere in cache.</li>
+          </ul>
+          <p>Direct mapped means only one location. But very, very fast.
+          Higher associativity is better, but costly in terms of gates and complexity (power and performance).</p>
+        </section>
+
+        <section>
+          <h2>Cache misses taxonomy</h2>
+          <dl style="text-align: justify;">
+            <dt><b>Compulsory</b></dt>
+            <dd>refers to misses for the very first access to a cache line.</dd><br/>
+            <dt><b>Capacity</b></dt>
+            <dd>is the situation than the cache cannot contain all the cache lines needed during execution of a program.</dd><br/>
+            <dt><b>Conflict</b></dt>
+            <dd>occurs when a block must be discarded and later retrieved because too many cache lines mapped to the
+            same set. It is only applicable to a (less than fully) set associative or direct mapped cache.</dd><br/>
+            <dt><b>Coherency</b></dt>
+            <dd></dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2>Replacement policy &amp; Write strategy</h2>
+          <p>Replacement policy</p>
+          <ul>
+            <li>Random</li>
+            <li>Round robin</li>
+            <li>Least Recently Used (LRU): performs better than random or round robin but is more difficult to implement</li>
+            <li>Pseudo-LRU</li>
+          </ul>
+          <p>Write Strategy is strategy to maintain coherence between cache and memory</p>
+          <ul>
+            <li>Write through: The data are written to both the cache line in the cache and to main memory.</li>
+            <li>Write back: The data are written only to the cache line in the cache.  The modified cache line
+            is written to memory only when necessary (e.g., when it is replaced by another cache line.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Nonblocking Caches</h2>
+          Pipelined computers that allow out-of-order execution can continue fetching instructions from the instruction
+          cache while waiting on a data cache miss. A nonblocking cache design allows the data cache to continue to
+          supply cache hits during a miss, called <b>hit under miss</b>, or <b>hit under multiple miss</b> if multiple
+          misses can be overlapped.  Hit under miss significantly increases the complexity of the cache controller,
+          with the complexity increasing as the number of outstanding misses allowed increases. Out-of-order processors
+          with hit under miss are generally capable of hiding the  miss penalty of an L1 data cache miss that hits
+          in the L2 cache, but are not capable of hiding a significant portion of the L2 miss penalty.
+        </section>
+
+        <section>
+          <h2>Coherency</h2>
+          Cache Contention on SMPs
+          › When two or more CPUs alternately and repeatedly update the same cache line
+          › memory contention
+          •  when two or more CPUs update the same variable
+          • correcting it involves an algorithm change
+          › false sharing
+          • when CPUs update distinct variables that occupy the same cache line
+          • correcting it involves modification of data structure layout
+        </section>
+
+<!--         <section>
+At least 3 major approaches:
+Make cores as fast/slow as main memory (SiCortex, Tensilica)
+Add faster/closer memory pipes (Opteron, Nehalem)
+Streaming compute engines (NVIDIA,AMD), vectorized memory pipelines (Convey).
+
+With multiple cores, more than one level can keep MESI states.
+
+Hardware Prefetching
+When you see linear scaling graphs, be (somewhat) suspicious.
+Linear scalability is easy(ier) when per-core performance is low!
+The faster a single core computes, the more vulnerable it is to other bottlenecks.
+So producing a linear graph, does not make your program efficient.
+
+Cache Blocking for Multicore
+Generally, block for the largest non-shared cache.
+L2 on Nehalem.
+Depending on the speed difference and amount of work per iteration, L1 may be better.
+Never block for the shared cache size.
+        </section> -->
+
+<!--         <section>
+
+When a memory location is accessed, the whole cache line
+containing the address is copied from memory to the cache
+a cache replacement policy defines how old data in the
+cache is replaced with new data
+tries to keep frequently used data in the cache –
+Least Recently Used algorithm
+
+A cache mapping defines where memory locations will be
+placed in cache
+in which cache line a memory addresses will be placed
+we can think of the memory as being divided into blocks of
+the size of a cache line
+the cache mapping is a simple hash function from
+addresses to cache sets
+Cache is much smaller than main memory
+more than one of the memory blocks can be mapped to the
+same cache line
+Each cache line is identified by a tag
+determines which memory addresses the cache line holds
+based on the tag and the valid bit, we can find out if a
+particular address is in the cache (hit) or not (miss)
+
+DIRECT MAPPED CACHES
+A memory location can be placed in exactly one cache line
+Easy to find out if a memory address is in cache or not
+there is only one possible location in the cache where a
+memory address can be
+need only to check the tag and the valid bit in that line
+if the tag in the cache matches the address, we have a hit
+if the tag does not match the address, we have a miss
+
+FULLY ASSOCIATIVE CACHE
+A fully associative cache consists of a single set
+a memory block can be placed in any cache line
+There is no information about where a memory block will be
+placed in the cache
+have to search through the whole cache to find the
+location containing the tag we are looking for
+Implemented by associative memory
+can search through all cache lines simultaneously for a
+matching tag
+Fully associative caches are small and expensive
+mainly used for translation lookaside buffers (TLB’s) and
+similar
+
+SET ASSOCIATIVE CACHE
+A set contains more than one line
+A memory block can be placed in any of the lines in the set
+Similar to a number of small fully associative caches
+Which set a memory block is located in is computed from the
+address
+2-, 4-, 8- and 16-way set associative caches are often used in
+modern processors
+        </section> -->
+
+        <section>
+          <h2>Cache optimizations</h2>
+          <ol>
+            <li>Larger block size to reduce miss rate</li>
+            <li>Bigger caches to reduce miss rate</li>
+            <li>Higher associativity to reduce miss rate</li>
+            <li>Multilevel caches to reduce miss penalty</li>
+            <li>Giving priority to read misses over writes to reduce miss penalty</li>
+            <li>Avoiding address translation during indexing of the cache to reduce hit time</li>
+          </ol>
+        </section>
+
+        <!--  -->
 
         <section>
           <section>
@@ -278,230 +558,6 @@
 
         <section>
           <h2>Out-of-order execution</h2>
-        </section>
-
-        <section>
-          <h2>Cache hierarchies</h2>
-          <strong>The goal for caches is to mitigate a performance gap between latency of memory access and processor
-          arithmetics.</strong>
-          <dl>
-            <dt><b>Temporal locality</b></dt>
-            <dd>recently accessed items are likely to be accessed in the near future. If we access address
-            <code>M(n)</code> at time t, it is likely that <code>M(n)</code> will be used again at time t + &epsilon;,
-            where &epsilon; is small.</dd><br/>
-            <dt><b>Spatial locality</b></dt>
-            <dd>items whose addresses are near each other likely to accessed close together in time. If we access
-            <code>M(n)</code> it is likely that <code>M(n + &epsilon;)</code> will be used, where
-            <code>&epsilon;</code> is small.</dd>
-          </dl>
-        </section>
-
-        <section>
-          <section>
-            <h2>Cache terminology</h2>
-            <dl>
-              <dt><b>Access time</b></dt>
-              <dd>is the time from when a read or write is requested until it arrives at its destination.</dd><br/>
-              <dt><b>Cycle time</b></dt>
-              <dd>is the minimum time between requests to memory.</dd><br/>
-              <dt><b>Cache line size</b></dt>
-              <dd>is the smallest unit of memory that can be transferred to and form main memory.</dd><br/>
-              <dt><b>Cache hit</b></dt>
-              <dd>is the situation when the requested data is in the cache.</dd><br/>
-              <dt><b>Cache hit</b></dt>
-              <dd>is the situation when the requested data isn't in the cache. Upon a cache miss, a cache line is retrieved
-               from main memory (or a higher level of cache) and placed in the cache.</dd>
-            </dl>
-          </section>
-
-          <section>
-            <h2>Cache terminology</h2>
-            <dl>
-              <dt><b>Cache miss rate</b></dt>
-              <dd>is the fraction of cache accesses that result in a miss.</dd><br/>
-              <dt><b>Cache miss penalty</b></dt>
-              <dd>is the time required for a cache miss (depends on both the latency and bandwidth of the memory).</dd><br/>
-              <dt><b>Memory stall cycles</b></dt>
-              <dd>is the cycles during which the CPU is stalled waiting for memory access</dd>.
-            </dl>
-          </section>
-        </section>
-
-        <section>
-          <h2>Cache properties </h2>
-          <dl>
-            <dt><b>Number of caches</b></dt>
-            <dt><b>Cache line size</b></dt>
-            <dd>is the smallest unit of memory that can be transferred to and form main memory.</dd>
-            <dt><b>Cache sizes</b></dt>
-            <dt><b>Associativity</b></dt>
-            <dt><b>Replacement policy</b></dt>
-            <dt><b>Write strategy</b></dt>
-          </dl>
-        </section>
-
-        <section>
-          <h2>Cache misses taxonomy</h2>
-          <dl>
-            <dt><b>Compulsory</b></dt>
-            <dd>refers to misses for the very first access to a cache line.</dd>
-            <dt><b>Capacity</b></dt>
-            <dd>is the situation than the cache cannot contain all the cache lines needed during execution of a program.</dd>
-            <dt><b>Conflict</b></dt>
-            <dd>occurs when a block must be discarded and later retrieved because too many cache lines mapped to the
-            same set. It is only applicable to a (less than fully) set associative or direct mapped cache.</dd>
-          </dl>
-        </section>
-
-        <section>
-          <h2>Nonblocking Caches</h2>
-          Pipelined computers that allow out-of-order execution can continue fetching instructions from the instruction
-          cache while waiting on a data cache miss. A nonblocking cache design allows the data cache to continue to
-          supply cache hits during a miss, called <b>hit under miss</b>, or <b>hit under multiple miss</b> if multiple
-          misses can be overlapped.  Hit under miss significantly increases the complexity of the cache controller,
-          with the complexity increasing as the number of outstanding misses allowed increases. Out-of-order processors
-          with hit under miss are generally capable of hiding the  miss penalty of an L1 data cache miss that hits
-          in the L2 cache, but are not capable of hiding a significant portion of the L2 miss penalty.
-        </section>
-
-        <section>
-› Usually between 32 and 128 bytes
-› In an n­way associative cache, any cache line from
-memory can map to any of the n locations in a set.
-› 1­way set associative cache is called direct mapped
-› A fully associative cache is one in which a cache line can be
-placed anywhere in cache.
-
-
-
-Using multiple levels of cache allows a small fast cache to keep pace with the
-CPU, while slower larger caches can be used to reduce the miss penalty since
-the next level cache can be used to capture many accesses that would go to
-main memory.
-The local miss rate is large for higher level caches because the first level
-cache benefits the most from data locality.  Thus a global miss rate that
-indicates what fraction of the memory access that leave the CPU go all the way
-to memory is a more useful measure.  Let us define these terms as follows:
-› local miss rate – the number of misses in a cache divided by the total number of
-memory access to this cache
-› global miss rate – the number of misses in a cache divided by the total number of
-memory accesses generated
-
-
-
-Possible policies
-› Least Recently Used (LRU)
-› Random
-› Round robin
-› LRU performs better than random or round
-robin but is more difficult to implement.
-
-Cache Write Strategy
-› When a store instruction writes data into a cache­
-resident line, one of following policies is usually used:
-› Write through: The data are written to both the cache line in
-the cache and to main memory.
-› Write back: The data are written only to the cache line in the
-cache.  The modified cache line is written to memory only
-when necessary (e.g., when it is replaced by another cache
-line.
-
-At least 3 major approaches:
-Make cores as fast/slow as main memory (SiCortex, Tensilica)
-Add faster/closer memory pipes (Opteron, Nehalem)
-Streaming compute engines (NVIDIA,AMD),
-vectorized memory pipelines (Convey).
-
-Memory cannot live anywhere in a cache.
-Cache associativity – The number of unique
-places in a cache where any given memory item
-can reside.
-–
-–
-Location is determined by some bits in the physical
-or virtual address..
-Direct mapped means only one location.
-But very, very fast.
-Higher associativity is better, but costly in terms of
-gates and complexity (power and performance).
-
-Most caches are inclusive.
-–
-●
-With multiple cores, more than one level can
-keep MESI states.
-–
-●
-Data kept in multiple levels at the same time
-In Nehalem, L3 keeps state per socket, L1 and L2 per
-core
-Transitions to E, I, S are often performance hits.
-–
-NOTUR2009
-But they can be identified with the right tools and
-insight.
-
-Hardware Prefetching
-
-When you see linear scaling graphs, be
-(somewhat) suspicious.
-Linear scalability is easy(ier) when per-core
-performance is low!
-The faster a single core computes, the more
-vulnerable it is to other bottlenecks.
-–
-●
-Memory, Sync, Comm, I/O
-So producing a linear graph, does not make your
-program efficient.
-
-
-Cache Blocking for Multicore
-●
-Generally, block for the largest non-shared
-cache.
-–
-●
-●
-L2 on Nehalem.
-Depending on the speed difference and amount
-of work per iteration, L1 may be better.
-Never block for the shared cache size.
-
-Reduced Instruction Set Architecture
-We can:
-Design, place and route more elegantly.
-Drive a higher clock rate
-Have a deeper pipeline.
-Expose opportunities for instruction parallelism to the compiler.
-Guess what? Your Pentium is a RISC.
-●
-CISC translated to RISC “micro-ops”.
-
-●
-●
-Reduced Instruction Set Architecture
-If we:
-Keep the number of instructions small.
-Keep the functionality of the instructions orthogonal.
-Keep the instructions isolated to one piece of hardware on chip.
-
-        </section>
-
-        <section>
-          <h2>Coherency</h2>
-          Cache Contention on SMPs
-          › When two or more CPUs alternately and repeatedly update the same cache line
-          › memory contention
-          •  when two or more CPUs update the same variable
-          • correcting it involves an algorithm change
-          › false sharing
-          • when CPUs update distinct variables that occupy the same cache line
-          • correcting it involves modification of data structure layout
-        </section>
-
-        <section>
-          <h2>Branch prediction</h2>
         </section>
 
         <section>
