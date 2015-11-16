@@ -20,6 +20,18 @@
     <!-- Code syntax highlighting -->
     <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
 
+    <style type="text/css">
+    .rotate
+    {
+      transform: rotate(-90.0deg);
+      -moz-transform: rotate(-90.0deg);
+      -webkit-transform: rotate(-90.0deg);
+      -o-transform: rotate(-90.0deg);
+      filter: progid: DXImageTransform.Microsoft.BasicImage(rotation=0.083);
+      -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)";
+    }
+    </style>
+
     <!-- Printing and PDF exports -->
     <script>
       var link = document.createElement( 'link' );
@@ -145,17 +157,19 @@
                     <th>Hardware</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody style="">
                   <tr>
-                    <td style="background-color:rgba(100,100,100,0.5);" rowspan="8">Armv8-a</td>
+                    <td style="background-color:rgba(100,100,100,0.5); vertical-align: middle; max-width:1em;" rowspan="11">
+                      <div class='rotate'>Armv8-a</div>
+                    </td>
                     <td>Cortex-A53</td>
                     <td>ARM</td>
-                    <td></td>
+                    <td>Octa Exynos 7(7580) 1.6GHz 28nm <abbr title="High-k Metal Gate">HKMG</abbr></td>
                   </tr>
                   <tr>
                     <td>Cortex-A57</td>
                     <td>ARM</td>
-                    <td></td>
+                    <td>Octa Exynos 7(7420) <small style="vertical-align:bottom; ">big.LITTLE</small> 2.1/1.5 14nm LPE</td>
                   </tr>
                   <tr>
                     <td>Cortex-A72</td>
@@ -170,22 +184,35 @@
                   <tr>
                     <td>Denver</td>
                     <td>NVIDIA</td>
-                    <td>NVIDIA Tegra K1 processor 2.3 GHz</td>
+                    <td>Dual Tegra K1 2.3GHz 28nm <abbr title="High Performance Mobile">HPM</abbr></td>
                   </tr>
                   <tr>
                     <td>Cyclone</td>
                     <td>Apple</td>
-                    <td></td>
+                    <td>Dual A7 (APL0698) 1.4GHz 28nm <abbr title="High-k Metal Gate">HKMG</abbr></td>
+                  </tr>
+                  <tr>
+                    <td>Typhoon</td>
+                    <td>Apple</td>
+                    <td>Dual A8 (APL1012) 1.5GHz 20nm HKMG (TSMC)</td>
+                  </tr>
+                  <tr>
+                    <td rowspan="2">Twister</td>
+                    <td rowspan="2">Apple</td>
+                    <td>Dual A9 (APL0898) 1.85GHz 16<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr> (TSMC)</td>
+                  </tr>
+                  <tr>
+                    <td>Dual A9 (APL1022) 1.85GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Kryo</td>
                     <td>Qualcomm</td>
-                    <td></td>
+                    <td>Tetra Snapdragon 820 <small style="vertical-align:bottom; ">big.LITTLE</small> 2.2/1.6 14LPP</td>
                   </tr>
                   <tr>
-                    <td>Vulcan</td>
-                    <td>Broadcom</td>
-                    <td></td>
+                    <td>Exynos M1</td>
+                    <td>Samsung</td>
+                    <td>Exynos 8890 ? </td>
                   </tr>
                 </tbody>
               </table>
