@@ -43,7 +43,6 @@
           <h2>in modern programming</h2>
           <h3>Modern computer architecture concepts</h3>
           <!-- Optimizations in hardware -->
-          <!-- Hardware optimization capabilities -->
           <br>
           <br>
           <br>
@@ -79,7 +78,7 @@
           <ul>
             <li>Modern architecture taxonomy
               <ul>
-                <li>RISC</li>
+                <li><strong>RISC</strong></li>
                 <li>CISC</li>
                 <li>VLIW</li>
                 <li>Vector</li>
@@ -102,29 +101,95 @@
         </section>
 
         <section>
-          <h2>Defining Computer Architecture</h2>
-          <dl style="text-align: justify;">
-            <dt><b>Instruction Set Architecture (ISA)</b></dt>
-            <dd>is a contract between the Hardware and Software, which specifies right, possibilities and limitations.<br/>
-              <ul>
-                <li>Class of ISA (load-store, register-memory)</li>
-                <li>Memory addressing (alignment rules)</li>
-                <li>Addressing modes (base-immediate, base-register)</li>
-                <li>Types and sizes of operands (size of byte, short)</li>
-                <li>Operations (general arithmetic, control, logical)</li>
-                <li>Control flow instructions (branches, jumps, calls, and returns)</li>
-                <li>Encoding an ISA (fixed or variable length)</li>
-              </ul>
-            </dd>
+          <section>
+            <h2>Three Aspects of Computer Architecture</h2>
+            <dl style="text-align: justify;">
+              <dt><b>Instruction Set Architecture or ISA (interface)</b></dt>
+              <dd>is a contract between the Hardware and Software, which specifies <strong>right</strong>,
+              <strong>possibilities</strong> and <strong>limitations</strong>.<br/>
+                <ul>
+                  <li>Class of ISA (e.g. load-store, register-memory)</li>
+                  <li>Memory addressing (e.g. alignment rules)</li>
+                  <li>Addressing modes (e.g. base-immediate, base-register)</li>
+                  <li>Types and sizes of operands (e.g. size of byte, short)</li>
+                  <li>Operations (e.g. general arithmetic, control, logical)</li>
+                  <li>Control flow instructions (e.g. branches, jumps, calls, and returns)</li>
+                  <li>Encoding an ISA (e.g. fixed or variable length)</li>
+                </ul>
+              </dd>
 
-            <dt><b>Microarchitecture (organization)</b></dt>
-            <dd>is a concrete implementation of the ISA, the high-level aspects of a processors design (memory system,
-            memory interconnect, design of the internal processor).</dd>
+              <dt><b>Microarchitecture (organization)</b></dt>
+              <dd>is a concrete implementation of the ISA, the high-level aspects of a processors design (memory system,
+              memory interconnect, design of the internal processor).</dd>
 
-            <dt><b>Hardware (design)</b></dt>
-            <dd>is the specifics of a computer, including the logic design and packaging, a concrete implementation of
-            the microarchitecture.</dd>
-          </dl>
+              <dt><b>Hardware (design)</b></dt>
+              <dd>is the specifics of a computer, including the logic design and packaging, a concrete implementation of
+              the microarchitecture.</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Example: 64-bit ARM</h2>
+              <table>
+                <colgroup>
+                  <col></col>
+                  <col></col>
+                  <col></col>
+                  <col></col>
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>ISA</th>
+                    <th>&mu;arch</th>
+                    <th>IP</th>
+                    <th>Hardware</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="background-color:rgba(100,100,100,0.5);" rowspan="8">Armv8-a</td>
+                    <td>Cortex-A53</td>
+                    <td>ARM</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Cortex-A57</td>
+                    <td>ARM</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Cortex-A72</td>
+                    <td>ARM</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Cortex-A35</td>
+                    <td>ARM</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Denver</td>
+                    <td>NVIDIA</td>
+                    <td>NVIDIA Tegra K1 processor 2.3 GHz</td>
+                  </tr>
+                  <tr>
+                    <td>Cyclone</td>
+                    <td>Apple</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Kryo</td>
+                    <td>Qualcomm</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Vulcan</td>
+                    <td>Broadcom</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+          </section>
         </section>
 
         <section>
@@ -146,11 +211,11 @@
               <dd>which was a time there transistors were expensive and compilers were weak.</dd>
               <dt><strong>The goal</strong></dt>
               <dd>is to define an instruction set that allows high level language constructs be translated into as few
-              assembly language instructions as possible.</dd>
+              assembly language instructions as possible, improving code density as well.</dd>
               <dt><strong>Features</strong></dt>
               <dd>As the result <i>many instructions access memory</i>, <i>plenty of addressing modes</i>,
               many instruction families, <i>very reach ISA</i>, and consequently, <i>complicated instruction decoding</i> logic.
-              Only a <i>few registers are available</i> for programmers.</dd>
+              Only <i>few registers are available</i> for programmers.</dd>
               <dt><strong>Examples</strong></dt>
               <dd>VAX, x86, AMD64.</dd>
               <dt><strong>Nowadays</strong></dt>
@@ -214,10 +279,22 @@
           </section>
 
           <section>
-            <h2>Why RISC?</h2>
+            <h2>Why everything doing to be <strike>RISC</strike> Load/Store?</h2>
+            <p>there is a trend of instruction unification. </p>
             <ol>
+              <li>Simple instructions of the same width
+                <ul>
+                  <li>Simple hardware logic &#8594; power efficient chips</li>
+                  <li>Easily compiler-optimizable. Complex instructions are mostly ignored by compilers due to semantic
+                  gap</li>
+                  <li>Complex addressing modes lead to variable length instructions logic &#8594; inefficient decoding
+                  and scheduling as well as alignment issues.</li>
+                  <li>Large register set</li>
+                  <li>Orthogonal functionality of the instructions orthogonal.</li>
+                </ul>
+              </li>
+              <li>Large register set</li>
               <li>Keep the number of instructions small.</li>
-              <li>Keep the functionality of the instructions orthogonal.</li>
               <li>Keep the instructions isolated to one piece of hardware on chip.</li>
               <li>Decoding logic is power efficient</li>
               <li>Easy for compiler optimizations</li>
@@ -225,6 +302,7 @@
               <li>Drive a higher clock rate</li>
               <li>Have a deeper pipeline</li>
               <li>Expose opportunities for instruction parallelism to the compiler</li>
+              <li>Efficient support for procedure calls and returns</li>
             </ol>
           </section>
         </section>
@@ -337,12 +415,34 @@ to memory is a more useful measure. -->
           <h2>Associativity</h2>
           <ul>
             <li><b>Cache associativity</b> is the number of unique places in a cache where any given memory item can reside.</li>
-            <li>In an n way associative cache, any cache line from memory can map to any of the n locations in a set.</li>
-            <li>1 way set associative cache is called direct mapped.</li>
+            <li>Each line has a <b>tag</b> that indicates the address in memory from which the line has been copied.</li>
+            <li>Cache hit is detected through an <b>associative search</b> of all the tags.</li>
+            <li>Consequently, there is a size/hit latency tread off, large caches can keep mere data,
+            but need more time for tag search.</li>
+            <li>In an <b>n way associative</b> cache, any cache line from memory can map to any of the
+            n locations in a set. 2-, 4-, 8- and 16-way set associative caches are often used in modern processors.</li>
+            <li>1 way set associative cache is called <b>direct mapped</b>. Direct mapped means only one location,
+            and so high probability of conflict, but tag search is very fast.</li>
             <li>A fully associative cache is one in which a cache line can be placed anywhere in cache.</li>
+            <li>Higher associativity is better, but costly in terms of gates and complexity (power and performance).
+            Full association is feasible for very small size caches only (TLB's)</li>
           </ul>
-          <p>Direct mapped means only one location. But very, very fast.
-          Higher associativity is better, but costly in terms of gates and complexity (power and performance).</p>
+          <p>
+        </section>
+
+        <section>
+          <section>
+            <h2>Direct Mapped</h2>
+            <img class="simple" width="50%" src="images/popt/dmc.svg"/>
+          </section>
+          <section>
+            <h2>Set-associative</h2>
+            <img class="simple" width="50%" src="images/popt/sac.svg"/>
+          </section>
+          <section>
+            <h2>Fully-associative</h2>
+            <img class="simple" width="50%" src="images/popt/fac.svg"/>
+          </section>
         </section>
 
         <section>
@@ -400,86 +500,8 @@ to memory is a more useful measure. -->
           • correcting it involves modification of data structure layout
         </section>
 
-<!--         <section>
-At least 3 major approaches:
-Make cores as fast/slow as main memory (SiCortex, Tensilica)
-Add faster/closer memory pipes (Opteron, Nehalem)
-Streaming compute engines (NVIDIA,AMD), vectorized memory pipelines (Convey).
-
-With multiple cores, more than one level can keep MESI states.
-
-Hardware Prefetching
-When you see linear scaling graphs, be (somewhat) suspicious.
-Linear scalability is easy(ier) when per-core performance is low!
-The faster a single core computes, the more vulnerable it is to other bottlenecks.
-So producing a linear graph, does not make your program efficient.
-
-Cache Blocking for Multicore
-Generally, block for the largest non-shared cache.
-L2 on Nehalem.
-Depending on the speed difference and amount of work per iteration, L1 may be better.
-Never block for the shared cache size.
-        </section> -->
-
-<!--         <section>
-
-When a memory location is accessed, the whole cache line
-containing the address is copied from memory to the cache
-a cache replacement policy defines how old data in the
-cache is replaced with new data
-tries to keep frequently used data in the cache –
-Least Recently Used algorithm
-
-A cache mapping defines where memory locations will be
-placed in cache
-in which cache line a memory addresses will be placed
-we can think of the memory as being divided into blocks of
-the size of a cache line
-the cache mapping is a simple hash function from
-addresses to cache sets
-Cache is much smaller than main memory
-more than one of the memory blocks can be mapped to the
-same cache line
-Each cache line is identified by a tag
-determines which memory addresses the cache line holds
-based on the tag and the valid bit, we can find out if a
-particular address is in the cache (hit) or not (miss)
-
-DIRECT MAPPED CACHES
-A memory location can be placed in exactly one cache line
-Easy to find out if a memory address is in cache or not
-there is only one possible location in the cache where a
-memory address can be
-need only to check the tag and the valid bit in that line
-if the tag in the cache matches the address, we have a hit
-if the tag does not match the address, we have a miss
-
-FULLY ASSOCIATIVE CACHE
-A fully associative cache consists of a single set
-a memory block can be placed in any cache line
-There is no information about where a memory block will be
-placed in the cache
-have to search through the whole cache to find the
-location containing the tag we are looking for
-Implemented by associative memory
-can search through all cache lines simultaneously for a
-matching tag
-Fully associative caches are small and expensive
-mainly used for translation lookaside buffers (TLB’s) and
-similar
-
-SET ASSOCIATIVE CACHE
-A set contains more than one line
-A memory block can be placed in any of the lines in the set
-Similar to a number of small fully associative caches
-Which set a memory block is located in is computed from the
-address
-2-, 4-, 8- and 16-way set associative caches are often used in
-modern processors
-        </section> -->
-
         <section>
-          <h2>Cache optimizations</h2>
+          <h2>Hardware cache optimizations</h2>
           <ol>
             <li>Larger block size to reduce miss rate</li>
             <li>Bigger caches to reduce miss rate</li>
@@ -488,6 +510,18 @@ modern processors
             <li>Giving priority to read misses over writes to reduce miss penalty</li>
             <li>Avoiding address translation during indexing of the cache to reduce hit time</li>
           </ol>
+        </section>
+
+        <section>
+          <h2>Optimizer's point of view</h2>
+          <ul>
+            <li>Ensure data locality</li>
+            <li>Generally, tile for the largest non-shared cache. Depending on the speed difference and amount of
+            work per iteration, L1 may be better. Never block for the shared cache size.</li>
+            <li>Do not access the same locations memory from different processes very often</li>
+            <li>Avoid associativity conflicts while fetching from different memory streams</li>
+            <li></li>
+          </ul>
         </section>
 
         <!--  -->
@@ -578,6 +612,21 @@ modern processors
           <img class="simple" src="images/popt/infinity.png">
           <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015</h4s>
         </section>
+
+<!--         <section>
+At least 3 major approaches:
+Make cores as fast/slow as main memory (SiCortex, Tensilica)
+Add faster/closer memory pipes (Opteron, Nehalem)
+Streaming compute engines (NVIDIA,AMD), vectorized memory pipelines (Convey).
+
+With multiple cores, more than one level can keep MESI states.
+
+Hardware Prefetching
+When you see linear scaling graphs, be (somewhat) suspicious.
+Linear scalability is easy(ier) when per-core performance is low!
+The faster a single core computes, the more vulnerable it is to other bottlenecks.
+So producing a linear graph, does not make your program efficient.
+        </section> -->
 
       </div>
 
