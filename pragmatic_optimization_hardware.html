@@ -21,6 +21,13 @@
     <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
 
     <style type="text/css">
+    .common
+    {
+      background-color:rgba(100,100,100,0.5);
+      vertical-align: middle !important;
+      max-width: 1em;
+    }
+
     .rotate
     {
       transform: rotate(-90.0deg);
@@ -159,7 +166,7 @@
                 </thead>
                 <tbody style="">
                   <tr>
-                    <td style="background-color:rgba(100,100,100,0.5); vertical-align: middle; max-width:1em;" rowspan="11">
+                    <td class="common" rowspan="11">
                       <div class='rotate'>Armv8-a</div>
                     </td>
                     <td>Cortex-A53</td>
@@ -169,12 +176,14 @@
                   <tr>
                     <td>Cortex-A57</td>
                     <td>ARM</td>
-                    <td>Octa Exynos 7(7420) <small style="vertical-align:bottom; ">big.LITTLE</small> 2.1/1.5 14nm LPE</td>
+                    <td>Octa Exynos 7(7420) <small style="vertical-align:bottom; ">big.LITTLE</small>
+                    2.1/1.5 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET (LPP)</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Cortex-A72</td>
                     <td>ARM</td>
-                    <td></td>
+                    <td>Deca MediaTek Helio X20 <small style="vertical-align:bottom; ">big.LITTLE</small> 2.5/2.0/1.4
+                    20<abbr title="High-k Metal Gate">HKMG</abbr> (TSMC)  </td>
                   </tr>
                   <tr>
                     <td>Cortex-A35</td>
@@ -194,7 +203,7 @@
                   <tr>
                     <td>Typhoon</td>
                     <td>Apple</td>
-                    <td>Dual A8 (APL1012) 1.5GHz 20nm HKMG (TSMC)</td>
+                    <td>Dual A8 (APL1012) 1.3GHz 20<abbr title="High-k Metal Gate">HKMG</abbr> (TSMC)</td>
                   </tr>
                   <tr>
                     <td rowspan="2">Twister</td>
@@ -207,12 +216,19 @@
                   <tr>
                     <td>Kryo</td>
                     <td>Qualcomm</td>
-                    <td>Tetra Snapdragon 820 <small style="vertical-align:bottom; ">big.LITTLE</small> 2.2/1.6 14LPP</td>
+                    <td>Tetra S820 <small style="vertical-align:bottom; ">big.LITTLE</small>
+                    2.2/1.6GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET (LPP)</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Exynos M1</td>
                     <td>Samsung</td>
                     <td>Exynos 8890 ? </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                   </tr>
                 </tbody>
               </table>
