@@ -198,7 +198,7 @@
                   <tr>
                     <td>Cyclone</td>
                     <td>Apple</td>
-                    <td>Dual A7 (APL0698) 1.4GHz 28nm <abbr title="High-k Metal Gate">HKMG</abbr></td>
+                    <td>Dual A7 (APL0698) 1.4GHz 28nm <abbr title="High-k Metal Gate">HKMG</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Typhoon</td>
@@ -274,7 +274,8 @@
               <dt><strong>Designed in the 1980s</strong></dt>
               <dd>which was a time there IPL was the most concern.</dd>
               <dt><strong>The goal</strong></dt>
-              <dd>decrease the number of clocks per instruction (CPI), pipeline instructions as much as possible.</dd>
+              <dd>decrease the number of clocks per instruction (CPI), pipeline instructions as much as possible,
+              increase clock rate.</dd>
               <dt><strong>Features</strong></dt>
               <dd>Relatively few instructions all the same length. Only load and store instructions access memory.
               Has more registers than CISC processors have. <strike>No microcode</strike></dd>
@@ -302,7 +303,7 @@
               <dd>Intel­HP Itanium.</dd>
               <dt><strong>Nowadays</strong></dt>
               <dd>Aren't used in generic processors design, but widely for programmable co-processors where shrink in
-              the power consumption is crustal.</dd>
+              the power consumption without lose of performance is crustal.</dd>
             </dl>
           </section>
 
@@ -317,35 +318,39 @@
               <dt><strong>Examples</strong></dt>
               <dd>Cray</dd>
               <dt><strong>Nowadays</strong></dt>
-              <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads.</dd>
+              <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads: HPC,
+              multimedia.</dd>
             </dl>
           </section>
 
           <section>
             <h2>Why everything doing to be <strike>RISC</strike> Load/Store?</h2>
-            <p>there is a trend of instruction unification. </p>
+            <p>There is a trend of instruction unification. </p>
             <ol>
-              <li>Simple instructions of the same width
+              <li><b>Simple instructions of the same width an few addressing modes</b>
                 <ul>
-                  <li>Simple hardware logic &#8594; power efficient chips</li>
-                  <li>Easily compiler-optimizable. Complex instructions are mostly ignored by compilers due to semantic
-                  gap</li>
-                  <li>Complex addressing modes lead to variable length instructions logic &#8594; inefficient decoding
+                  <li>Simple hardware logic &#8594; power efficient chips.</li>
+                  <li>Complex addressing modes lead to variable length instructions &#8594; inefficient decoding
                   and scheduling as well as alignment issues.</li>
-                  <li>Large register set</li>
-                  <li>Orthogonal functionality of the instructions orthogonal.</li>
+                  <li>Drive a higher clock rate.</li>
                 </ul>
-              </li>
-              <li>Large register set</li>
-              <li>Keep the number of instructions small.</li>
-              <li>Keep the instructions isolated to one piece of hardware on chip.</li>
-              <li>Decoding logic is power efficient</li>
-              <li>Easy for compiler optimizations</li>
-              <li>Design, place and route more elegantly</li>
-              <li>Drive a higher clock rate</li>
-              <li>Have a deeper pipeline</li>
-              <li>Expose opportunities for instruction parallelism to the compiler</li>
-              <li>Efficient support for procedure calls and returns</li>
+              </li><br/>
+              <li><b>Concise set of the instructions with orthogonal functionality</b>
+                <ul>
+                  <li>Easily compiler-optimizable. Complex instructions are mostly ignored by compilers due to semantic
+                  gap.</li>
+                </ul>
+              </li><br/>
+              <li><b>Large register set</b>
+                <ul>
+                  <li>Save cycles on memory requests.</li>
+                  <li>Expose opportunities for instruction parallelism to the compiler.</li>
+                </ul>
+              </li><br/>
+              <li><b>Efficient support for procedure calls and returns</b></li>
+
+              <!-- <li>Keep the instructions isolated to one piece of hardware on chip.</li> -->
+              <!-- <li>Have a deeper pipeline</li> -->
             </ol>
           </section>
         </section>
@@ -442,15 +447,15 @@ to memory is a more useful measure. -->
           <ul>
             <li>Modern processors have from 1 to 4 levels of caches
             <ul>
-              <li>Inclusive caches duplicates the data from higher level cache in lower levels</li>
-              <li>Exclusive caches contains data only in one level of cache</li>
-              <li>Most caches are <b>inclusive</b>.</li>
+              <li><b>Inclusive</b> caches duplicates the data from higher level cache in lower levels</li>
+              <li><b>Exclusive</b> caches contains data only in one level of cache</li>
+              <li>Most caches are <b>inclusive</b> which simplifies coherency handling.</li>
             </ul>
             </li>
             <li>Data transfer unit between registers and L1 cache is usually in between 1-16 bytes</li>
-            <li><b>Cache line</b> is the smallest unit of memory that can be transferred to and form main memory
-            (typically 32, 64 bytes, sometimes 128 bytes and more)</li>
-            <li>Line is also unit of storage allocation in cache</li>
+            <li><b>Cache line</b> is the smallest transfer unit between main memory(or higher level cache) and cache
+            (typically 32, 64 bytes, sometimes 128 bytes and more). Cache line is also unit of storage allocation in cache</li>
+            <li>Each line has a <b>tag</b> that indicates the address in memory from which the line has been copied.</li>
           </ul>
         </section>
 
@@ -458,19 +463,21 @@ to memory is a more useful measure. -->
           <h2>Associativity</h2>
           <ul>
             <li><b>Cache associativity</b> is the number of unique places in a cache where any given memory item can reside.</li>
-            <li>Each line has a <b>tag</b> that indicates the address in memory from which the line has been copied.</li>
+
             <li>Cache hit is detected through an <b>associative search</b> of all the tags.</li>
-            <li>Consequently, there is a size/hit latency tread off, large caches can keep mere data,
-            but need more time for tag search.</li>
-            <li>In an <b>n way associative</b> cache, any cache line from memory can map to any of the
-            n locations in a set. 2-, 4-, 8- and 16-way set associative caches are often used in modern processors.</li>
+          </ul>
+          <blockquote>Consequently, there is a <b>cache size/hit latency tread off</b>,<br/>large caches can keep mere data,
+            but need more time for tag search.</blockquote>
+          <ul>
+            <li>In an <b>N-way set associative</b> cache, any cache line from memory can map to any of the
+            N locations in a <b>set</b>. 2-/4-/8-/16-way associative caches are often used in modern chips.</li>
             <li>1 way set associative cache is called <b>direct mapped</b>. Direct mapped means only one location,
             and so high probability of conflict, but tag search is very fast.</li>
-            <li>A fully associative cache is one in which a cache line can be placed anywhere in cache.</li>
-            <li>Higher associativity is better, but costly in terms of gates and complexity (power and performance).
-            Full association is feasible for very small size caches only (TLB's)</li>
+            <li>A fully associative cache is one in which a cache line can be placed anywhere in cache. Full association
+            is feasible for very small size caches only (TLB's).</li>
           </ul>
-          <p>
+          <blockquote>Higher associativity gives faster caches, but costly in terms of gates and complexity
+          (power and performance).</blockquote>
         </section>
 
         <section>
@@ -492,12 +499,13 @@ to memory is a more useful measure. -->
           <h2>Cache misses taxonomy</h2>
           <dl style="text-align: justify;">
             <dt><b>Compulsory</b></dt>
-            <dd>refers to misses for the very first access to a cache line.</dd><br/>
+            <dd>refers to misses for the <i>very first</i> access to a cache line.</dd><br/>
             <dt><b>Capacity</b></dt>
-            <dd>is the situation than the cache cannot contain all the cache lines needed during execution of a program.</dd><br/>
+            <dd>is the situation than the cache <i>cannot contain all the cache lines</i> needed during execution
+            of a program.</dd><br/>
             <dt><b>Conflict</b></dt>
             <dd>occurs when a block must be discarded and later retrieved because too many cache lines mapped to the
-            same set. It is only applicable to a (less than fully) set associative or direct mapped cache.</dd><br/>
+            <i>same set</i>. It is only applicable to a (less than fully) set associative or direct mapped cache.</dd><br/>
             <dt><b>Coherency</b></dt>
             <dd></dd>
           </dl>
@@ -505,20 +513,22 @@ to memory is a more useful measure. -->
 
         <section>
           <h2>Replacement policy &amp; Write strategy</h2>
-          <p>Replacement policy</p>
+          <p><b>Replacement policy</b> defines which cache line should be replaced under miss</p>
           <ul>
             <li>Random</li>
             <li>Round robin</li>
             <li>Least Recently Used (LRU): performs better than random or round robin but is more difficult to implement</li>
-            <li>Pseudo-LRU</li>
+            <li>Pseudo-LRU: close to LRU in term of cache efficiency, but much faster to operate</li>
           </ul>
-          <p>Write Strategy is strategy to maintain coherence between cache and memory</p>
+          <p><b>Write Strategy</b> is strategy to maintain coherence between cache and memory</p>
           <ul>
-            <li>Write through: The data are written to both the cache line in the cache and to main memory.</li>
-            <li>Write back: The data are written only to the cache line in the cache.  The modified cache line
-            is written to memory only when necessary (e.g., when it is replaced by another cache line.</li>
+            <li><b>Write through</b>: The data is written through all cache hierarchy up to main memory.</li>
+            <li><b>Write back</b>: The data is written only to the cache line in the cache. The modified cache line
+            is written to memory only when necessary (it need to be replaced by another one).</li>
           </ul>
         </section>
+
+        <!--  -->
 
         <section>
           <h2>Nonblocking Caches</h2>
@@ -566,8 +576,6 @@ to memory is a more useful measure. -->
             <li></li>
           </ul>
         </section>
-
-        <!--  -->
 
         <section>
           <section>
