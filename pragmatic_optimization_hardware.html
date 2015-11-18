@@ -512,10 +512,12 @@ to memory is a more useful measure. -->
               <li><b>Exclusive</b> caches contains data only in one level of cache</li>
               <li>Most caches are <b>inclusive</b> which simplifies coherency handling.</li>
             </ul>
-            </li>
+            </li><br>
             <li>Data transfer unit between registers and L1 cache is usually in between 1-16 bytes</li>
             <li><b>Cache line</b> is the smallest transfer unit between main memory(or higher level cache) and cache
-            (typically 32, 64 bytes, sometimes 128 bytes and more). Cache line is also unit of storage allocation in cache</li>
+            (typically 32, 64 bytes, sometimes 128 bytes and more). Cache line is also unit of storage
+            allocation in cache</li><br>
+            <li>Whole cache is split into <b>sets</b> equal in size.</li>
             <li>Each line has a <b>tag</b> that indicates the address in memory from which the line has been copied.</li>
           </ul>
         </section>
@@ -568,7 +570,9 @@ to memory is a more useful measure. -->
             <dd>occurs when a block must be discarded and later retrieved because too many cache lines mapped to the
             <i>same set</i>. It is only applicable to a (less than fully) set associative or direct mapped cache.</dd><br/>
             <dt><b>Coherency</b></dt>
-            <dd></dd>
+            <!-- miss forced by hardware coherence protocol -->
+            <dd>occurs when a block must be reloaded from the memory or other cache to keep data coherent between
+            multiple processors in <abbr title="Symmetric Multi Processor">SMP</abbr> system. </dd><br/>
           </dl>
         </section>
 
@@ -576,8 +580,8 @@ to memory is a more useful measure. -->
           <h2>Replacement policy &amp; Write strategy</h2>
           <p><b>Replacement policy</b> defines which cache line should be replaced under miss</p>
           <ul>
-            <li>Random</li>
-            <li>Round robin</li>
+            <li>Random: no preference or specific order</li>
+            <li>Round robin: evicted in FIFO order</li>
             <li>Least Recently Used (LRU): performs better than random or round robin but is more difficult to implement</li>
             <li>Pseudo-LRU: close to LRU in term of cache efficiency, but much faster to operate</li>
           </ul>
@@ -589,52 +593,86 @@ to memory is a more useful measure. -->
           </ul>
         </section>
 
-        <!--  -->
+        <section>
+          <section>
+            <h2>Hardware cache optimizations</h2>
+            <p>Basic:</p>
+            <ol>
+              <li>Larger block size to reduce miss rate</li>
+              <li>Bigger caches to reduce miss rate</li>
+              <li>Higher associativity to reduce miss rate</li>
+              <li>Multilevel caches to reduce miss penalty</li>
+              <li>Giving priority to read misses over writes to reduce miss penalty</li>
+              <li>Avoiding address translation during indexing of the cache to reduce hit time</li>
+            </ol>
+          </section>
+
+          <section>
+            <h2>Hardware cache optimizations</h2>
+            <p>Advanced:</p>
+            <ol>
+              <li>Small and Simple First-Level Caches to Reduce Hit Time and Power</li>
+              <li>Way Prediction to Reduce Hit Time</li>
+              <li>Pipelined Cache Access to Increase Cache Bandwidth</li>
+              <li>Nonblocking Caches to Increase Cache Bandwidth</li>
+              <li>Multi-banked Caches to Increase Cache Bandwidth</li>
+              <li>Critical Word First and Early Restart to Reduce Miss Penalty</li>
+              <li>Merging Write Buffer to Reduce Miss Penalty</li>
+              <li>Hardware Prefetching of Instructions and Data to Reduce Miss Penalty or Miss Rate</li>
+            </ol>
+          </section>
+        </section>
 
         <section>
           <h2>Nonblocking Caches</h2>
-          Pipelined computers that allow out-of-order execution can continue fetching instructions from the instruction
-          cache while waiting on a data cache miss. A nonblocking cache design allows the data cache to continue to
-          supply cache hits during a miss, called <b>hit under miss</b>, or <b>hit under multiple miss</b> if multiple
-          misses can be overlapped.  Hit under miss significantly increases the complexity of the cache controller,
+          <p> Pipelined computers that allow out-of-order execution can continue fetching instructions
+          from the instruction cache while waiting on a data cache miss.<p>
+          <p>A nonblocking cache design allows the data cache to continue to supply cache hits during a miss,
+          called <b>hit under miss</b>, or <b>hit under multiple miss</b> if multiple
+          misses can be overlapped.</p>
+          <p>Hit under miss significantly increases the complexity of the cache controller,
           with the complexity increasing as the number of outstanding misses allowed increases. Out-of-order processors
           with hit under miss are generally capable of hiding the  miss penalty of an L1 data cache miss that hits
-          in the L2 cache, but are not capable of hiding a significant portion of the L2 miss penalty.
+          in the L2 cache, but are not capable of hiding a significant portion of the L2 miss penalty.</p>
         </section>
 
-        <section>
-          <h2>Coherency</h2>
-          Cache Contention on SMPs
-          › When two or more CPUs alternately and repeatedly update the same cache line
-          › memory contention
-          •  when two or more CPUs update the same variable
-          • correcting it involves an algorithm change
-          › false sharing
-          • when CPUs update distinct variables that occupy the same cache line
-          • correcting it involves modification of data structure layout
-        </section>
-
-        <section>
-          <h2>Hardware cache optimizations</h2>
-          <ol>
-            <li>Larger block size to reduce miss rate</li>
-            <li>Bigger caches to reduce miss rate</li>
-            <li>Higher associativity to reduce miss rate</li>
-            <li>Multilevel caches to reduce miss penalty</li>
-            <li>Giving priority to read misses over writes to reduce miss penalty</li>
-            <li>Avoiding address translation during indexing of the cache to reduce hit time</li>
-          </ol>
-        </section>
-
-        <section>
-          <h2>Optimizer's point of view</h2>
+<!--         <section>
+          <h2>Coherency problem</h2>
+          <p>Cache Contention on SMPs</p>
           <ul>
-            <li>Ensure data locality</li>
-            <li>Generally, tile for the largest non-shared cache. Depending on the speed difference and amount of
-            work per iteration, L1 may be better. Never block for the shared cache size.</li>
-            <li>Do not access the same locations memory from different processes very often</li>
-            <li>Avoid associativity conflicts while fetching from different memory streams</li>
-            <li></li>
+            <li>When two or more CPUs alternately and repeatedly update the same cache line</li>
+            <li>memory contention
+              <ul>
+                <li>when two or more CPUs update the same variable</li>
+                <li>correcting it involves an algorithm change</li>
+              </ul>
+            </li>
+            <li>false sharing
+              <ul>
+                <li>when CPUs update distinct variables that occupy the same cache line</li>
+                <li>correcting it involves modification of data structure layout</li>
+              </ul>
+            </li>
+          </ul>
+        </section> -->
+
+        <section>
+          <h2>Pragmatics: caches</h2>
+          <ul>
+            <li>Don't access for write into the same cache lines from different processes<br>
+            &#8594; avoid coherency conflicts</li>
+            <li>Ensure data locality, use proper data structures and algorithms<br>
+            &#8594; avoid contention conflicts</li>
+            <li>Fetch from many different streams carefully<br>
+            &#8594; avoid associativity conflicts</li>
+            <li>Tile for the largest non-shared cache. Never block for the shared cache size<br>
+            &#8594; avoid contention conflicts<br>
+            <small>Depending on the speed difference and amount of work per iteration, L1 may be better.</small></li>
+            <li>Use software prefetching (<code>PLD</code>)<br>
+            &#8594; reduce cold cash misses<br>
+            <small>Prefetching suits contiguous memory accesses patterns, but not random</small></li>
+            <!-- <li>Compiler Optimizations to Reduce Miss Rate</li> -->
+            <!-- <li>Compiler-Controlled Prefetching to Reduce Miss Penalty or Miss Rate</li> -->
           </ul>
         </section>
 
@@ -642,8 +680,8 @@ to memory is a more useful measure. -->
           <section>
             <h2>Pipelined execution - Classic 5-stage pipeline</h2>
             <p>The idea is to break down an instruction into multiple stages so that instructions
-            on different stages can be processed at the same clock cycle. Introduced in 1960s.</p>
-            <dl style="text-align: justify;">
+            on different stages can be processed at the same clock cycle. Introduced in 1958.</p>
+            <dl>
               <dt><b>Instruction fetch cycle (IF)</b></dt>
               <dd>An instructions is fetched from IC and may be placed either into an instruction register
               or a queue of pending instructions.</dd>
@@ -697,8 +735,7 @@ to memory is a more useful measure. -->
           </section>
         </section>
 
-
-        <section>
+<!--         <section>
           <h2>Speculative execution</h2>
         </section>
 
@@ -717,7 +754,7 @@ to memory is a more useful measure. -->
 
         <section>
           <h2>Summary</h2>
-        </section>
+        </section> -->
 
         <section id="end1">
           <h1>THE END</h1>
