@@ -5,7 +5,7 @@
     <meta charset="utf-8">
 
     <title>Pragmatic optimization in modern programming</title>
-    <meta name="description" content="Pragmatic optimization in modern programming - Introduction">
+    <meta name="description" content="Pragmatic optimization in modern programming - Modern computer architecture concepts">
     <meta name="author" content="Marina Kolpakova (cuda.geek)">
 
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -21,22 +21,6 @@
     <link rel="stylesheet" href="plugin/reveal/lib/css/zenburn.css">
 
     <style type="text/css">
-    .common
-    {
-      background-color:rgba(100,100,100,0.5);
-      vertical-align: middle !important;
-      max-width: 1em;
-    }
-
-    .rotate
-    {
-      transform: rotate(-90.0deg);
-      -moz-transform: rotate(-90.0deg);
-      -webkit-transform: rotate(-90.0deg);
-      -o-transform: rotate(-90.0deg);
-      filter: progid: DXImageTransform.Microsoft.BasicImage(rotation=0.083);
-      -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)";
-    }
     </style>
 
     <!-- Printing and PDF exports -->
@@ -61,7 +45,6 @@
           <h1>Pragmatic optimization</h1>
           <h2>in modern programming</h2>
           <h3>Modern computer architecture concepts</h3>
-          <!-- Optimizations in hardware -->
           <br>
           <br>
           <br>
@@ -84,7 +67,7 @@
             </li>
             <li><strong>Computer Architectures</strong>
               <ul>
-                <li><b>Modern computer architectures</b></li>
+                <li><b>Modern computer architecture concepts</b></li>
                 <li>SIMD extensions</li>
                 <li>Specific co-processors</li>
               </ul>
@@ -104,7 +87,7 @@
               </ul>
             </li>
             <li>Hardware optimizations
-              <ul style="width:100%; columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+              <ul style="width:100%;" class="cols2">
                 <li>Cache hierarchies</li>
                 <li>Hardware prefetching</li>
                 <li>Write stream detection</li>
@@ -124,8 +107,8 @@
             <h2>Three Aspects of Computer Architecture</h2>
             <dl style="text-align: justify;">
               <dt><b>Instruction Set Architecture or ISA (interface)</b></dt>
-              <dd>is a contract between the Hardware and Software, which specifies <strong>right</strong>,
-              <strong>possibilities</strong> and <strong>limitations</strong>.<br/>
+              <dd>is a <strong>contract</strong> between HW and SW, which specifies <strong>right</strong>,
+              <strong>possibilities</strong> &amp; <strong>limitations</strong>.<br/>
                 <ul>
                   <li>Class of ISA (e.g. load-store, register-memory)</li>
                   <li>Memory addressing (e.g. alignment rules)</li>
@@ -141,14 +124,14 @@
               <dd>is a concrete implementation of the ISA, the high-level aspects of a processors design (memory system,
               memory interconnect, design of the internal processor).</dd>
 
-              <dt><b>Hardware (design)</b></dt>
-              <dd>is the specifics of a computer, including the logic design and packaging, a concrete implementation of
-              the microarchitecture.</dd>
+              <dt><b>Hardware or chip (design)</b></dt>
+              <dd>is the specifics of a computer, including the logic design and packaging. This is a concrete
+              implementation of the microarchitecture.</dd>
             </dl>
           </section>
 
           <section>
-            <h2>Example: 64-bit ARM</h2>
+            <h2>Architecture: 64-bit ARM</h2>
               <table>
                 <colgroup>
                   <col></col>
@@ -177,7 +160,8 @@
                     <td>Cortex-A57</td>
                     <td>ARM</td>
                     <td>Octa Exynos 7(7420) <small style="vertical-align:bottom; ">big.LITTLE</small>
-                    2.1/1.5 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET (LPP)</abbr> (Samsung)</td>
+                    2.1/1.5 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr> (
+                    <abbr title="Low power Early">LPE</abbr>) (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Cortex-A72</td>
@@ -208,10 +192,11 @@
                   <tr>
                     <td rowspan="2">Twister</td>
                     <td rowspan="2">Apple</td>
-                    <td>Dual A9 (APL0898) 1.85GHz 16<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr> (TSMC)</td>
+                    <td>Dual A9 (APL0898) 1.85GHz 16<abbr title="Fin-Shaped Field Effect Transistor">FinFET+</abbr> (TSMC)</td>
                   </tr>
                   <tr>
-                    <td>Dual A9 (APL1022) 1.85GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr> (Samsung)</td>
+                    <td>Dual A9 (APL1022) 1.85GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr>(
+                    <abbr title="Low power Plus">LPP)</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Kryo</td>
@@ -236,93 +221,169 @@
         </section>
 
         <section>
-          <section>
-            <h2>Key architecture families</h2>
-            <ul>
-              <li><strong>RISC</strong> - Reduced Instruction Set Computer</li><br/>
-              <li><strong>CISC</strong> - Complex Instruction Set Computer</li><br/>
-              <li><strong>VLIW</strong> - VEry Long Instruction Word</li><br/>
-              <li><strong>Vector</strong> architectures</li>
-            </ul>
-          </section>
+          <h2>Key architecture families</h2>
+          <ul>
+            <li><strong>RISC</strong> - Reduced Instruction Set Computer</li><br/>
+            <li><strong>CISC</strong> - Complex Instruction Set Computer</li><br/>
+            <li><strong>VLIW</strong> - Very Long Instruction Word</li><br/>
+            <li><strong>Vector</strong> architectures</li>
+          </ul>
+        </section>
 
+        <section>
           <section>
             <h2>CISC</h2>
             <b>Complex Instruction Set Computer</b>
-            <dl style="text-align: justify;">
+            <dl>
               <dt><strong>Designed in the 1970s</strong></dt>
-              <dd>which was a time there transistors were expensive and compilers were weak.</dd>
+              <dd>it was a time where transistors were expensive and compilers were naive.</dd><br>
               <dt><strong>The goal</strong></dt>
-              <dd>is to define an instruction set that allows high level language constructs be translated into as few
-              assembly language instructions as possible, improving code density as well.</dd>
-              <dt><strong>Features</strong></dt>
-              <dd>As the result <i>many instructions access memory</i>, <i>plenty of addressing modes</i>,
-              many instruction families, <i>very reach ISA</i>, and consequently, <i>complicated instruction decoding</i> logic.
-              Only <i>few registers are available</i> for programmers.</dd>
+              <dd>is to define an instruction set that allows high level language constructs be translated into
+                <strong>as few assembly language instructions as possible</strong>,
+              improving performance as well as code density.</dd><br/>
               <dt><strong>Examples</strong></dt>
-              <dd>VAX, x86, AMD64.</dd>
-              <dt><strong>Nowadays</strong></dt>
-              <dd>CISC instructions are typically broken down into lower level instructions called microcode which are
-              much easy to pipeline, large reorder buffers to eliminate stalls.</dd>
+              <dd>VAX, x86, <b>AMD64</b>.</dd>
             </dl>
           </section>
 
           <section>
+            <h2>CISC</h2>
+            <dl>
+              <dt><strong>Features</strong></dt>
+              <dd>
+                <ul>
+                  <li><i>many instructions access memory</i>,</li>
+                  <li><i>plenty of addressing modes</i>,</li>
+                  <li>many instruction families and <i>very rich ISA</i>,</li>
+                  <li>consequently, <i><strong>complicated instruction decoding</strong></i> logic.</li>
+                  <li>Moreover, only <i>few registers are available</i> for programmers.</li>
+                </ul>
+              </dd><br/>
+              <dt><strong>Nowadays</strong></dt>
+              <dd>
+                <ol>
+                  <li>CISC instructions are typically broken down into the lower level instructions (microcode) which
+                  are much easy to pipeline and process in a power efficient fashion.</li>
+                  <li>Transistors are spent to out-of-order execution, large reorder buffers and speculation
+                   to eliminate pipeline stalls.</li>
+                   <li>Symmetric multi-processing.</li>
+                  <li><b>Latency-oriented architecture</b></li>
+                </ol>
+              </dd>
+            </dl>
+          </section>
+        </section>
+
+        <section>
+          <section>
             <h2>RISC</h2>
             <b>Reduced Instruction Set Computer</b>
-            <dl style="text-align: justify;">
+            <dl>
               <dt><strong>Designed in the 1980s</strong></dt>
-              <dd>which was a time there IPL was the most concern.</dd>
+              <dd>which was a time there IPL was the most concern.</dd><br/>
               <dt><strong>The goal</strong></dt>
               <dd>decrease the number of clocks per instruction (CPI), pipeline instructions as much as possible,
-              increase clock rate.</dd>
-              <dt><strong>Features</strong></dt>
-              <dd>Relatively few instructions all the same length. Only load and store instructions access memory.
-              Has more registers than CISC processors have. <strike>No microcode</strike></dd>
+              increase clock rate.</dd><br/>
               <dt><strong>Examples</strong></dt>
-              <dd>MIPS, ARM, PowerPC.</dd>
+              <dd><b>MIPS</b>, <b>ARM</b>, <b>PowerPC</b>.</dd>
+            </dl>
+          </section>
+          <section>
+            <h2>RISC</h2>
+            <dl>
+              <dt><strong>Features</strong></dt>
+              <dd>
+                <ul>
+                  <li>Relatively few instructions all the same length.</li>
+                  <li>Only load and store instructions access memory.</li>
+                  <li>They have more registers than CISC processors.</li>
+                  <li><strike>No microcode</strike></li>
+                </ul>
+              </dd><br>
               <dt><strong>Nowadays</strong></dt>
-              <dd>Most architectures that comes from RISC are called Load-Store architectures. They use most modern
-              hardware enhancements with deeper pipelines, multi-cycle instructions, OoO execution. Modern RISC may have
-              micro ops. Whereas they still employ special instructions for memory accesses.</dd>
+              <dd>
+               Most architectures that comes from RISC are called <b>Load-Store architectures</b>.<br/>They combine
+               concepts of the classic RISC with the use of modern hardware enhancements:<br/>
+               <ol>
+                <li>deep pipelines, multi-cycle instructions,</li>
+                <li>out-of-order execution,</li>
+                <li>speculation.</li>
+              </ol><br/>
+                The latest RISCs may employ micro-ops. Whereas, they still use special instructions to access memory.
+              </dd>
             </dl>
           </section>
 
           <section>
             <h2>VLIW</h2>
-            Very Long Instruction Word
-            <dl style="text-align: justify;">
+            <b>Very Long Instruction Word</b>
+            <dl>
               <dt><strong>Designed in the 1980s</strong></dt>
-              <dd>which was a time there IPL was the most concern.</dd>
+              <dd>which was a time there IPL was the most concern.</dd><br>
               <dt><strong>The goal</strong></dt>
-              <dd>is maximize instruction level parallelism (ILP) with pipelining done by software.</dd>
-              <dt><strong>Features</strong></dt>
-              <dd>Software determines which instructions can be performed in parallel, bundles this information
-              and the instructions, and passes the bundle to the hardware.</dd>
+              <dd>is maximize instruction level parallelism (ILP) with pipelining done by software to eliminate redundant
+              complexity.<br>
+                <ul>
+                  <li>Compiler
+                    <ul>
+                      <li>analyzes control flow, analyses dependency</li>
+                      <li>schedules instructions</li>
+                      <li>map variables to limited register set</li>
+                    </ul>
+                  </li>
+                  <li>Hardware
+                    <ul>
+                      <li>analyzes control flow, analyses dependency</li>
+                      <li>schedules instructions for parallel execution </li>
+                      <li>remap ISA register to large internal register set</li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd><br/>
               <dt><strong>Examples</strong></dt>
               <dd>Intel­HP Itanium.</dd>
-              <dt><strong>Nowadays</strong></dt>
-              <dd>Aren't used in generic processors design, but widely for programmable co-processors where shrink in
-              the power consumption without lose of performance is crustal.</dd>
             </dl>
           </section>
 
           <section>
-            <h2>Vector Processors</h2>
-            <dl style="text-align: justify;">
-              <dt><strong>First introduced in 1976.</strong></dt>
-              <dd>dominated for HPC in the 1980s because of high instruction throughput.</dd>
-              <dt><strong>The goal</strong></dt>
-              <dd>perform operations on vectors of data to increase instruction throughput. Vector pipelining which is
-              also called chaining.</dd>
-              <dt><strong>Examples</strong></dt>
-              <dd>Cray</dd>
+            <h2>VLIW</h2>
+            <dl>
+              <dt><strong>Features</strong></dt>
+              <dd>
+                <ul>
+                  <li>Software determines which instructions can be performed in parallel,</li>
+                  <li>bundles this information and the instructions,</li>
+                  <li>and passes the <b>bundle</b> to the hardware.</li>
+                  <li>No data dependencies between instructions in a word.</li>
+                  <li>Each operation in a bundle assigned to specific issue slot (dedicated FU).</li>
+                </ul>
+              </dd><br>
               <dt><strong>Nowadays</strong></dt>
-              <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads: HPC,
-              multimedia.</dd>
+              <dd>Hardly any generic processor implements VLIW do to brunchy nature of codes used for production
+              (in contrast to computational, scientific codes), but architecture is widely adopted for programmable
+              co-processors where shrink in the power consumption without lose of performance is crustal (DSP, ISP,
+              GPU).</dd>
             </dl>
           </section>
+        </section>
 
+        <section>
+          <h2>Vector Processors</h2>
+          <dl>
+            <dt><strong>First introduced in 1976.</strong></dt>
+            <dd>dominated for HPC in the 1980s because of high instruction throughput.</dd>
+            <dt><strong>The goal</strong></dt>
+            <dd>perform operations on vectors of data to increase instruction throughput. Vector pipelining which is
+            also called chaining.</dd>
+            <dt><strong>Examples</strong></dt>
+            <dd>Cray</dd>
+            <dt><strong>Nowadays</strong></dt>
+            <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads: HPC,
+            multimedia. <b>Throughput oriented architectures.</b></dd>
+          </dl>
+        </section>
+
+        <section>
           <section>
             <h2>Why everything doing to be <strike>RISC</strike> Load/Store?</h2>
             <p>There is a trend of instruction unification. </p>
@@ -382,7 +443,7 @@
             <h2>Cache hierarchies</h2>
             <p><strong>The goal for caches is to mitigate a performance gap between<br/>latencies of memory access
             and processor operations</strong></p>
-            <dl style="text-align: justify;">
+            <dl>
               <dt><b>Temporal locality</b></dt>
               <dd>relies on the fact that <strong>recently accessed items</strong> are <strong>likely</strong>
               to be accessed in the <strong>near future</strong>. If address <strong><code>M(n)</code></strong>
@@ -402,13 +463,13 @@
         <section>
           <section>
             <h2>Cache terminology</h2>
-            <dl style="text-align: justify;">
+            <dl>
               <dt><b>Access time</b></dt>
-              <dd>is the time from when a read or write is requested until it arrives at its destination.</dd><br/>
+              <dd>is the time from when a read or write is requested until it arrives at its destination.</dd>
               <dt><b>Cycle time</b></dt>
               <dd>is the minimum time between requests to memory.</dd><br/>
               <dt><b>Cache hit</b></dt>
-              <dd>is the situation when the requested data is in the cache.</dd><br/>
+              <dd>is the situation when the requested data is in the cache.</dd>
               <dt><b>Cache miss</b></dt>
               <dd>is the situation when the requested data isn't in the cache. Upon a cache miss, a cache line is retrieved
                from main memory (or a higher level of cache) and placed in the cache.</dd>
@@ -417,7 +478,7 @@
 
           <section>
             <h2>Cache terminology</h2>
-            <dl style="text-align: justify;">
+            <dl>
               <dt><b>Cache miss rate</b></dt>
               <dd>is the fraction of cache accesses that result in a miss.</dd>
               <dt><b>Local miss rate</b></dt>

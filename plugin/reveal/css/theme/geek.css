@@ -425,3 +425,25 @@ pre .cls {
 .reveal .cols2 pre { margin:0; }
 .reveal .cols3 pre { margin:0; }
 .reveal .cols2 pre { margin:0; }
+
+.common
+{
+  background-color:rgba(100, 100, 100, 0.5);
+  vertical-align: middle !important;
+  max-width: 1em;
+}
+
+.rotate
+{
+  transform: rotate(-90.0deg);
+  -moz-transform: rotate(-90.0deg);
+  -webkit-transform: rotate(-90.0deg);
+  -o-transform: rotate(-90.0deg);
+  filter: progid: DXImageTransform.Microsoft.BasicImage(rotation=0.083);
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)";
+}
+
+.reveal dl
+{
+  text-align: justify;
+}
