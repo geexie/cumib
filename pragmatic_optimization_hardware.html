@@ -87,11 +87,8 @@
               </ul>
             </li>
             <li>Hardware optimizations
-              <ul style="width:100%;" class="cols2">
+              <ul>
                 <li>Cache hierarchies</li>
-                <li>Hardware prefetching</li>
-                <li>Write stream detection</li>
-
                 <li>Pipelined execution</li>
                 <li>Superscalar execution</li>
                 <li>Speculative execution</li>
@@ -111,8 +108,7 @@
               <strong>possibilities</strong> &amp; <strong>limitations</strong>.<br/>
                 <ul>
                   <li>Class of ISA (e.g. load-store, register-memory)</li>
-                  <li>Memory addressing (e.g. alignment rules)</li>
-                  <li>Addressing modes (e.g. base-immediate, base-register)</li>
+                  <li>Memory addressing modes &amp; rules (e.g. base-immediate, alignment requirements)</li>
                   <li>Types and sizes of operands (e.g. size of byte, short)</li>
                   <li>Operations (e.g. general arithmetic, control, logical)</li>
                   <li>Control flow instructions (e.g. branches, jumps, calls, and returns)</li>
@@ -121,8 +117,8 @@
               </dd>
 
               <dt><b>Microarchitecture (organization)</b></dt>
-              <dd>is a concrete implementation of the ISA, the high-level aspects of a processors design (memory system,
-              memory interconnect, design of the internal processor).</dd>
+              <dd>is a concrete implementation of the ISA, the high-level aspects of a processor design (memory system,
+              memory interconnect, design of the processor internals).</dd>
 
               <dt><b>Hardware or chip (design)</b></dt>
               <dd>is the specifics of a computer, including the logic design and packaging. This is a concrete
@@ -160,7 +156,7 @@
                     <td>Cortex-A57</td>
                     <td>ARM</td>
                     <td>Octa Exynos 7(7420) <small style="vertical-align:bottom; ">big.LITTLE</small>
-                    2.1/1.5 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr> (
+                    2.1/1.5 14<abbr title="Fin-Shaped Field Effect Transistor">FF</abbr> (
                     <abbr title="Low power Early">LPE</abbr>) (Samsung)</td>
                   </tr>
                   <tr>
@@ -192,22 +188,22 @@
                   <tr>
                     <td rowspan="2">Twister</td>
                     <td rowspan="2">Apple</td>
-                    <td>Dual A9 (APL0898) 1.85GHz 16<abbr title="Fin-Shaped Field Effect Transistor">FinFET+</abbr> (TSMC)</td>
+                    <td>Dual A9 (APL0898) 1.85GHz 16<abbr title="Fin-Shaped Field Effect Transistor">FF+</abbr> (TSMC)</td>
                   </tr>
                   <tr>
-                    <td>Dual A9 (APL1022) 1.85GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET</abbr>(
+                    <td>Dual A9 (APL1022) 1.85GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FF</abbr>(
                     <abbr title="Low power Plus">LPP)</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Kryo</td>
                     <td>Qualcomm</td>
                     <td>Tetra S820 <small style="vertical-align:bottom; ">big.LITTLE</small>
-                    2.2/1.6GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FinFET (LPP)</abbr> (Samsung)</td>
+                    2.2/1.6GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FF (LPP)</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Exynos M1</td>
                     <td>Samsung</td>
-                    <td>Exynos 8890 ? </td>
+                    <td>Exynos 8890 (no details yet) </td>
                   </tr>
                   <tr>
                     <td></td>
@@ -226,7 +222,7 @@
             <li><strong>RISC</strong> - Reduced Instruction Set Computer</li><br/>
             <li><strong>CISC</strong> - Complex Instruction Set Computer</li><br/>
             <li><strong>VLIW</strong> - Very Long Instruction Word</li><br/>
-            <li><strong>Vector</strong> architectures</li>
+            <li><strong>Vector</strong> architecture</li>
           </ul>
         </section>
 
@@ -294,7 +290,7 @@
               <dt><strong>Features</strong></dt>
               <dd>
                 <ul>
-                  <li>Relatively few instructions all the same length.</li>
+                  <li>Relatively few instructions, all are the same length.</li>
                   <li>Only load and store instructions access memory.</li>
                   <li>They have more registers than CISC processors.</li>
                   <li><strike>No microcode</strike></li>
@@ -310,10 +306,13 @@
                 <li>speculation.</li>
               </ol><br/>
                 The latest RISCs may employ micro-ops. Whereas, they still use special instructions to access memory.
+              <li><b>Latency-oriented architecture</b></li>
               </dd>
             </dl>
           </section>
+        </section>
 
+        <section>
           <section>
             <h2>VLIW</h2>
             <b>Very Long Instruction Word</b>
@@ -321,21 +320,20 @@
               <dt><strong>Designed in the 1980s</strong></dt>
               <dd>which was a time there IPL was the most concern.</dd><br>
               <dt><strong>The goal</strong></dt>
-              <dd>is maximize instruction level parallelism (ILP) with pipelining done by software to eliminate redundant
-              complexity.<br>
+              <dd>is ILP maximization with the pipelining done by SW to reduce HW complexity.<br>
                 <ul>
                   <li>Compiler
                     <ul>
-                      <li>analyzes control flow, analyses dependency</li>
+                      <li>analyzes control flow, analyzes dependency</li>
                       <li>schedules instructions</li>
-                      <li>map variables to limited register set</li>
+                      <li>maps variables to limited register set</li>
                     </ul>
                   </li>
                   <li>Hardware
                     <ul>
-                      <li>analyzes control flow, analyses dependency</li>
+                      <li>analyzes control flow, analyzes dependency</li>
                       <li>schedules instructions for parallel execution </li>
-                      <li>remap ISA register to large internal register set</li>
+                      <li>remaps ISA register to large internal register set</li>
                     </ul>
                   </li>
                 </ul>
@@ -359,10 +357,16 @@
                 </ul>
               </dd><br>
               <dt><strong>Nowadays</strong></dt>
-              <dd>Hardly any generic processor implements VLIW do to brunchy nature of codes used for production
-              (in contrast to computational, scientific codes), but architecture is widely adopted for programmable
-              co-processors where shrink in the power consumption without lose of performance is crustal (DSP, ISP,
-              GPU).</dd>
+              <dd>Hardly any generic processor implements VLIW due to:<br>
+                <ul>
+                  <li>brunchy nature of production codes (in contrast to HPC or scientific codes),</li>
+                  <li>need to follow binary compatibility across the architecture families.</li>
+                </ul>
+              Whereas architecture is widely adopted for programmable co-processors where shrink in power consumption
+              without lose of performance is crucial (DSP, GPU).<br>
+              Other solution is to provide RISC-based ISA, but construct VLIW instructions on fry during
+              instruction fetch, which is used for Denver &mu;architecture.
+              </dd>
             </dl>
           </section>
         </section>
@@ -371,12 +375,12 @@
           <h2>Vector Processors</h2>
           <dl>
             <dt><strong>First introduced in 1976.</strong></dt>
-            <dd>dominated for HPC in the 1980s because of high instruction throughput.</dd>
+            <dd>dominated for HPC in the 1980s because of high instruction throughput.</dd><br>
             <dt><strong>The goal</strong></dt>
-            <dd>perform operations on vectors of data to increase instruction throughput. Vector pipelining which is
-            also called chaining.</dd>
+            <dd>is to perform operations on vectors of data to increase instruction throughput. Vector pipelining which is
+            also called chaining.</dd><br>
             <dt><strong>Examples</strong></dt>
-            <dd>Cray</dd>
+            <dd>Cray</dd><br>
             <dt><strong>Nowadays</strong></dt>
             <dd>Aren't used in generic processors design, but used as a co-processors for a specific workloads: HPC,
             multimedia. <b>Throughput oriented architectures.</b></dd>
@@ -386,13 +390,14 @@
         <section>
           <section>
             <h2>Why everything doing to be <strike>RISC</strike> Load/Store?</h2>
-            <p>There is a trend of instruction unification. </p>
+            <!-- <p>There is a trend of architecture unification. </p> -->
             <ol>
               <li><b>Simple instructions of the same width an few addressing modes</b>
                 <ul>
+                  <li>Instructions can be loaded by cache line granularity, branch addresses are aligned,</li>
+                  <li>Complex addressing modes lead either to variable length instructions or big instruction size
+                   &#8594; inefficient decoding and scheduling as well as alignment issues.</li>
                   <li>Simple hardware logic &#8594; power efficient chips.</li>
-                  <li>Complex addressing modes lead to variable length instructions &#8594; inefficient decoding
-                  and scheduling as well as alignment issues.</li>
                   <li>Drive a higher clock rate.</li>
                 </ul>
               </li><br/>
@@ -437,6 +442,13 @@
             <h2>The memory-processor gap</h2>
             <div><img src="images/popt/hp-mem.jpg"></div>
             <small>image source Hennessey &amp; Paterson</small>
+          </section>
+
+          <section>
+            <h2>What is on die?</h2>
+            <img width="50%" class="simple" src="images/popt/pLDBDAIaeFFrBEdN.large.jpeg">
+            <br>
+            <small>Image source <a href="http://www.chipworks.com">ChipWorks</a></small>
           </section>
 
           <section>
@@ -584,6 +596,7 @@ to memory is a more useful measure. -->
             <li>Round robin: evicted in FIFO order</li>
             <li>Least Recently Used (LRU): performs better than random or round robin but is more difficult to implement</li>
             <li>Pseudo-LRU: close to LRU in term of cache efficiency, but much faster to operate</li>
+            <li>Belady: unreachable optimum</li>
           </ul>
           <p><b>Write Strategy</b> is strategy to maintain coherence between cache and memory</p>
           <ul>
@@ -625,8 +638,6 @@ to memory is a more useful measure. -->
 
         <section>
           <h2>Nonblocking Caches</h2>
-          <p> Pipelined computers that allow out-of-order execution can continue fetching instructions
-          from the instruction cache while waiting on a data cache miss.<p>
           <p>A nonblocking cache design allows the data cache to continue to supply cache hits during a miss,
           called <b>hit under miss</b>, or <b>hit under multiple miss</b> if multiple
           misses can be overlapped.</p>
@@ -634,6 +645,8 @@ to memory is a more useful measure. -->
           with the complexity increasing as the number of outstanding misses allowed increases. Out-of-order processors
           with hit under miss are generally capable of hiding the  miss penalty of an L1 data cache miss that hits
           in the L2 cache, but are not capable of hiding a significant portion of the L2 miss penalty.</p>
+          <p> Pipelined computers that allow out-of-order execution can continue fetching instructions
+          from the instruction cache while waiting on a data cache miss.<p>
         </section>
 
 <!--         <section>
@@ -740,6 +753,10 @@ to memory is a more useful measure. -->
         </section>
 
         <section>
+          <h2>Branch prediction</h2>
+        </section>
+
+        <section>
           <h2>Out-of-order execution</h2>
         </section>
 
@@ -747,6 +764,10 @@ to memory is a more useful measure. -->
           <h2>Prefetch streams and write stream</h2>
         </section>
 
+        <section>
+          <h2>SMP vs AMP</h2>
+          <p>difference, coherency problems, multi-core vs multi-cluster big.LITTLE</p>
+        </section>
 
         <section>
           <h2>SIMD vs Vector co-processors</h2>
@@ -754,6 +775,10 @@ to memory is a more useful measure. -->
 
         <section>
           <h2>Summary</h2>
+          <ul>
+            <li>Deep pipeline is to a silver-bullet (CPI, overhead)</li>
+            <li>Programmer is almost unable to schedule registers on modern architectures: OoO, renaming, optimizing compilers
+          </ul>
         </section> -->
 
         <section id="end1">
