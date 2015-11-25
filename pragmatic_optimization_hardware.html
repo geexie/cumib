@@ -390,7 +390,6 @@
         <section>
           <section>
             <h2>Why everything doing to be <strike>RISC</strike> Load/Store?</h2>
-            <!-- <p>There is a trend of architecture unification. </p> -->
             <ol>
               <li><b>Simple instructions of the same width an few addressing modes</b>
                 <ul>
@@ -414,9 +413,6 @@
                 </ul>
               </li><br/>
               <li><b>Efficient support for procedure calls and returns</b></li>
-
-              <!-- <li>Keep the instructions isolated to one piece of hardware on chip.</li> -->
-              <!-- <li>Have a deeper pipeline</li> -->
             </ol>
           </section>
         </section>
@@ -424,57 +420,53 @@
         <section>
           <h2>Hardware optimizations</h2>
           <ul>
-            <li>Cache hierarchies</li><br/>
+            <li>Cache hierarchies</li>
+            <li>Hardware prefetching</li>
+            <li>Write stream detection</li><br/>
 
             <li>Pipelined execution</li>
             <li>Superscalar execution</li>
             <li>Speculative execution</li>
             <li>Out-of-order execution</li>
-            <li>Forwarding</li><br>
-
-            <li>Hardware prefetching</li>
-            <li>Write stream detection</li>
+            <li>Forwarding</li>
           </ul>
         </section>
 
         <section>
-          <section>
-            <h2>The memory-processor gap</h2>
-            <div><img src="images/popt/hp-mem.jpg"></div>
-            <small>image source Hennessey &amp; Paterson</small>
-          </section>
+          <h2>The memory-processor gap</h2>
+          <div><img src="images/popt/hp-mem.jpg"></div>
+          <small>image source Hennessey &amp; Paterson</small>
+        </section>
 
-          <section>
-            <h2>What is on die?</h2>
-            <img width="50%" class="simple" src="images/popt/pLDBDAIaeFFrBEdN.large.jpeg">
-            <br>
-            <small>Image source <a href="http://www.chipworks.com">ChipWorks</a></small>
-          </section>
+        <section>
+          <h2>What is on die?</h2>
+          <img width="50%" class="simple" src="images/popt/pLDBDAIaeFFrBEdN.large.jpeg">
+          <br>
+          <small>Image source <a href="http://www.chipworks.com">ChipWorks</a></small>
+        </section>
 
-          <section>
-            <h2>Cache hierarchies</h2>
-            <p><strong>The goal for caches is to mitigate a performance gap between<br/>latencies of memory access
-            and processor operations</strong></p>
-            <dl>
-              <dt><b>Temporal locality</b></dt>
-              <dd>relies on the fact that <strong>recently accessed items</strong> are <strong>likely</strong>
-              to be accessed in the <strong>near future</strong>. If address <strong><code>M(n)</code></strong>
-              is accessed at time <strong><code>t</code></strong>, it is likely that <strong><code>M(n)</code></strong>
-              will be used again at time <strong><code>t+</code>&epsilon;</strong> , where <strong>&epsilon;</strong>
-              is small.</dd><br/>
+        <section>
+          <h2>Cache hierarchies</h2>
+          <p><strong>The goal for caches is to mitigate a performance gap between<br/>latencies of memory access
+          and processor operations</strong></p>
+          <dl>
+            <dt><b>Temporal locality</b></dt>
+            <dd>relies on the fact that <strong>recently accessed items</strong> are <strong>likely</strong>
+            to be accessed in the <strong>nearest future</strong>. If address <b><code>M(n)</code></b>
+            is accessed at time <b><code>t</code></b>, it is likely that <b><code>M(n)</code></b>
+            will be used again at time <b><code>t+</code>&epsilon;</b> , where <b>&epsilon;</b>
+            is small.</dd><br/>
 
-              <dt><b>Spatial locality</b></dt>
-              <dd>relies on the fact that items whose addresses are <strong>near each other likely to accessed close
-              together in time</strong>. If we access <strong><code>M(n)</code></strong> it is likely that
-              <strong><code>M(n + &epsilon;)</code></strong> will be used, where <strong><code>&epsilon;</code></strong>
-              is small.</dd>
-            </dl>
-          </section>
+            <dt><b>Spatial locality</b></dt>
+            <dd>relies on the fact that items whose addresses are <strong>near each other likely to accessed close
+            together in time</strong>. If address <b><code>M(n)</code></b> is accessed it is likely that
+            <b><code>M(n+&epsilon;)</code></b> will be used, where <b><code>&epsilon;</code></b> is small.</dd>
+          </dl>
         </section>
 
         <section>
           <section>
-            <h2>Cache terminology</h2>
+            <h2>terminology</h2>
             <dl>
               <dt><b>Access time</b></dt>
               <dd>is the time from when a read or write is requested until it arrives at its destination.</dd>
@@ -589,21 +581,67 @@ to memory is a more useful measure. -->
         </section>
 
         <section>
-          <h2>Replacement policy &amp; Write strategy</h2>
+          <h2>Replacement policy</h2>
           <p><b>Replacement policy</b> defines which cache line should be replaced under miss</p>
-          <ul>
-            <li>Random: no preference or specific order</li>
-            <li>Round robin: evicted in FIFO order</li>
-            <li>Least Recently Used (LRU): performs better than random or round robin but is more difficult to implement</li>
-            <li>Pseudo-LRU: close to LRU in term of cache efficiency, but much faster to operate</li>
-            <li>Belady: unreachable optimum</li>
+          <dl>
+            <dt>Random</dt>
+            <dd>evicts cache lines without any preference or specific order</dd>
+            <dt>Round robin (RR)</dt>
+            <dd>evicts cache lines in FIFO order</dd>
+            <dt>Least Recently Used (LRU)</dt>
+            <dd>evicts cache line which was not in use for the longest time. It performs better than random or RR
+            but is more difficult to implement</dd>
+            <dt>Pseudo-LRU</dt>
+            <dd>evicts one of the least recently used. close to LRU in term of cache efficiency, but much faster to operate.</dd>
+            <dt>Belady</dt>
+            <dd>evicts block that will be used the furthest in future. Unreachable optimum</dd>
           </ul>
-          <p><b>Write Strategy</b> is strategy to maintain coherence between cache and memory</p>
+        </section>
+        <section>
+          <h2>Write strategy</h2>
+          <blockquote><b>Write Strategy</b> is strategy to maintain coherence between caches in a hierarchy and the main memory
+          while write occur.</blockquote>
           <ul>
-            <li><b>Write through</b>: The data is written through all cache hierarchy up to main memory.</li>
-            <li><b>Write back</b>: The data is written only to the cache line in the cache. The modified cache line
-            is written to memory only when necessary (it need to be replaced by another one).</li>
+            <li>Data is in cache (write hit)
+              <dl>
+                <dt><b>Write through</b></dt>
+                <dd>The data is written through all cache hierarchy up to main memory. Memory and cache are always in
+                coherent state. Uniform latency on misses.</dd>
+                <dt><b>Write back</b></dt>
+                <dd>The data is written only to the cache line in the cache. The modified cache line
+                is written to memory only when necessary (it need to be replaced by another one). Memory and caches can be
+                in not coherent state. Non-uniform miss latency
+                  <ul>
+                    <li><b>Clean miss</b> results in one transaction with lower level (fill)</li>
+                    <li><b>Dirty miss</b> results in two transactions with lower level (writeback & fill)</li>
+                  </ul>
+                </dd>
+              </dl>
+            </li>
+            <li>Data is in not cache (write miss)<br>
+              <dl>
+                <dt>Write-allocate (is used with write back)</dt>
+                <dt>Write-non-allocate (is used with write through)</dt>
+              </dl>
+            </li>
           </ul>
+        </section>
+
+        <section>
+          <h2>Write buffer</h2>
+          <blockquote><b>Write buffer</b> is a buffer between current level of cache and next level of cache or memory</blockquote>
+          <ul>
+            <li>Store latency is not uniform ( e.g. if a cache line must be read or allocated)</li>
+            <li>Buffering writes is used to avoid stalling the CPU. Especially helpful for write-back.</li>
+            <li>Write buffer (store buffer/write-behind buffer) is a FIFO queue of incomplete stores</li>
+          </ul>
+
+<!-- Store A to service load of a value that is still in write buffer avoids unnecessary stalls of load operations
+
+Store B Implies that memory contents are temporarily stale
+on a multiprocessor, CPUs see different order of writes
+“weak store order”, to be revisited in SMP context -->
+
         </section>
 
         <section>
@@ -617,6 +655,7 @@ to memory is a more useful measure. -->
               <li>Multilevel caches to reduce miss penalty</li>
               <li>Giving priority to read misses over writes to reduce miss penalty</li>
               <li>Avoiding address translation during indexing of the cache to reduce hit time</li>
+              <li>Victim buffer to reduce conflict misses</li>
             </ol>
           </section>
 
@@ -627,7 +666,7 @@ to memory is a more useful measure. -->
               <li>Small and Simple First-Level Caches to Reduce Hit Time and Power</li>
               <li>Way Prediction to Reduce Hit Time</li>
               <li>Pipelined Cache Access to Increase Cache Bandwidth</li>
-              <li>Nonblocking Caches to Increase Cache Bandwidth</li>
+              <li><b>Nonblocking Caches to Increase Cache Bandwidth</b></li>
               <li>Multi-banked Caches to Increase Cache Bandwidth</li>
               <li>Critical Word First and Early Restart to Reduce Miss Penalty</li>
               <li>Merging Write Buffer to Reduce Miss Penalty</li>
@@ -647,6 +686,35 @@ to memory is a more useful measure. -->
           in the L2 cache, but are not capable of hiding a significant portion of the L2 miss penalty.</p>
           <p> Pipelined computers that allow out-of-order execution can continue fetching instructions
           from the instruction cache while waiting on a data cache miss.<p>
+        </section>
+
+        <section>
+          <h2>Victim buffer</h2>
+          <p><b>Victim buffer</b> is a very small fully-associative cache (&approx;4 entries) used to store
+          evicted cache lines before complete kick out. If the cache line in a victim buffer is requested it is placed
+          in cache again.</p>
+          <ul>
+            <li>In fact it is 4 extra ways, shared among all sets</li>
+            <li>VB is very useful to deal with conflict misses</li>
+            <li>VB helps then associativity is not enough</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Hardware prefetching</h2>
+          <blockquote><b>Hardware prefetching</b> is the mechanism implemented in cache HW that puts memory blocks promising to be accessed
+           in the nearest future speculatively in cache.</blockquote>
+          <ul>
+            <li>Hardware is able to recognize different access pattern</li>
+            <li>Prefetcher keeps on track multiple read and write streams</li>
+            <li>The simplest pattern is streaming kernel.</li>
+            <li>The compromise should be found
+              <ul>
+                <li>Do not evict useful data</li>
+                <li>Properly select prefetching distance</li>
+              </ul>
+            </li>
+          </ul>
         </section>
 
 <!--         <section>
@@ -686,6 +754,14 @@ to memory is a more useful measure. -->
             <small>Prefetching suits contiguous memory accesses patterns, but not random</small></li>
             <!-- <li>Compiler Optimizations to Reduce Miss Rate</li> -->
             <!-- <li>Compiler-Controlled Prefetching to Reduce Miss Penalty or Miss Rate</li> -->
+          </ul>
+        </section>
+
+        <section>
+          <h2>Optimize for caches</h2>
+          <ul>
+            <li>Strip mining & tiling </li>
+            <li>Stride minimization</li>
           </ul>
         </section>
 
@@ -736,6 +812,11 @@ to memory is a more useful measure. -->
               <dd>arise from the pipelining of branches and other instructions that change the PC.</dd>
             </dl>
             <br/><small>All the terms used are taken from Hennessey & Paterson</small>
+          </section>
+
+          <section>
+            <h2>Superscalar</h2>
+            <img class="simple" width="60%" src="images/popt/super-scalar.png">
           </section>
 
           <section>
