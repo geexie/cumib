@@ -572,7 +572,9 @@ to memory is a more useful measure. -->
             of a program.</dd><br/>
             <dt><b>Conflict</b></dt>
             <dd>occurs when a block must be discarded and later retrieved because too many cache lines mapped to the
-            <i>same set</i>. It is only applicable to a (less than fully) set associative or direct mapped cache.</dd><br/>
+            <i>same set</i>. It is only applicable to a (less than fully) set associative or direct mapped cache.
+            <small>Conflict misses may in the worst case lead to <b>cache trashing</b> a cache line is repeatedly
+            brought in, and then immediately thrown out because of a conflict miss</small></dd><br/>
             <dt><b>Coherency</b></dt>
             <!-- miss forced by hardware coherence protocol -->
             <dd>occurs when a block must be reloaded from the memory or other cache to keep data coherent between
@@ -677,22 +679,23 @@ on a multiprocessor, CPUs see different order of writes
 
         <section>
           <h2>Nonblocking Caches</h2>
-          <p>A nonblocking cache design allows the data cache to continue to supply cache hits during a miss,
-          called <b>hit under miss</b>, or <b>hit under multiple miss</b> if multiple
-          misses can be overlapped.</p>
-          <p>Hit under miss significantly increases the complexity of the cache controller,
-          with the complexity increasing as the number of outstanding misses allowed increases. Out-of-order processors
-          with hit under miss are generally capable of hiding the  miss penalty of an L1 data cache miss that hits
-          in the L2 cache, but are not capable of hiding a significant portion of the L2 miss penalty.</p>
-          <p> Pipelined computers that allow out-of-order execution can continue fetching instructions
-          from the instruction cache while waiting on a data cache miss.<p>
+          <blockquote><b>Nonblocking cache (or Lockup Free)</b> is a cache design for which cache continues to supply
+          cache hits during a miss, called <b>hit under miss</b>, or <b>hit under multiple miss</b>.</blockquote>
+
+          <ul>
+            <li>Especially useful for out-or-order pipeline</li>
+            <li>Out-or-oder with coup of nonblocking cache is generally capable of hiding the  miss penalty of an L1 data cache miss that hits
+            in the L2 cache, but is not capable of hiding a significant portion of the L2 miss penalty.</li>
+            <li>Hit under miss significantly increases the complexity of the cache controller with the complexity
+            increasing as the number of outstanding misses allowed increases.</li>
+          </ul>
         </section>
 
         <section>
           <h2>Victim buffer</h2>
-          <p><b>Victim buffer</b> is a very small fully-associative cache (&approx;4 entries) used to store
+          <blockquote><b>Victim buffer (or Victim cache)</b> is a very small fully-associative cache (&approx;4 entries) used to store
           evicted cache lines before complete kick out. If the cache line in a victim buffer is requested it is placed
-          in cache again.</p>
+          in cache again.</blockquote>
           <ul>
             <li>In fact it is 4 extra ways, shared among all sets</li>
             <li>VB is very useful to deal with conflict misses</li>
