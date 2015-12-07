@@ -431,6 +431,8 @@
                   <li>Deep pipelines, wide execution units, not necessary the same width as size if vector in elements</li>
                   <li>Most efficient for simple memory patterns, but getter/scatter is usually possible too</li>
                   <li>fide memory interfaces to saturate execution units</li>
+                  <li>Large vector register file, cache is not a strict requirement and absent for classical vector
+                  processors.</li>
                 </ul>
               </li>
               <br>
@@ -472,18 +474,33 @@
           </section>
         </section>
 
-        <section>
-          <h1>Cache hierarchy</h1>
-        </section>
+        <!-- caches -->
 
         <section>
           <h2>The memory-processor gap</h2>
           <p>Processor advances much faster than memory.</p>
           <div><img src="images/popt/hp-mem.jpg"></div>
           <small>image source Hennessey &amp; Paterson</small>
-          <p><strong>The goal for caches is to mitigate a performance gap between<br/>latencies of memory access
-          and processor operations</strong></p>
+          <p><strong>The goal for cache hierarchy is to mitigate a performance gap between<br/>latencies
+          of memory access and processor operations</strong></p>
         </section>
+
+        <section>
+          <h2>Cache hierarchy</h2>
+          <ul>
+            <li><b>Cache</b> is a small fast memory usually integrated on the chip that holds recently used data or instructions
+            for further use. It is slower than accessing registers but faster than main memory.</li>
+            <li>Modern computers have memory of different types and properties organized in hierarchy, several levels
+            of caches lay between processor and main memory. Hierarchy offers a reasonable tread off between speed, size
+            and cost.</li>
+            <li>Modern architectures belong to Harvard class so have data and instruction cache separated.</li>
+            <li>Cache is usually marked as <b><code>Lx</code></b> for referring to any type of it. <b><code>Dx</code></b>,
+             for <strong>data</strong> cache and <b><code>Ix</code></b> for <strong>instruction</strong> cache.</li>
+            <li>L1 is used to call the closest to processor level of cache.</li>
+            <li>Cache may offer some shrink in power consumption as well.</li>
+          </ul>
+        </section>
+
 
         <section>
           <h2>Locality principals</h2>
@@ -519,7 +536,7 @@
           </section>
 
           <section>
-            <h2>Cache terminology</h2>
+            <h2>terminology</h2>
             <dl>
               <dt><b>Cache miss rate</b></dt>
               <dd>is the fraction of cache accesses that result in a miss.</dd>
