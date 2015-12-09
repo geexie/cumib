@@ -214,7 +214,7 @@
               <dt><b>Latency</b> oriented architecture</dt>
               <dd>
                 <ul>
-                  <li><b>addresses latency hiding issues</b>;</li>
+                  <li><b>addresses latency hiding issues;</b></li>
                   <li>features sophisticated pipelining, out-of-order;</li>
                   <li>employs advanced cache hierarchies;</li>
                   <li>widely uses speculation.</li>
@@ -619,85 +619,85 @@ to memory is a more useful measure. -->
 
         <section>
           <h2>Cache misses taxonomy</h2>
-          <dl style="text-align: justify;">
-            <dt><b>Compulsory</b></dt>
-            <dd>refers to misses for the <i>very first</i> access to a cache line.</dd><br/>
-            <dt><b>Capacity</b></dt>
-            <dd>is the situation than the cache <i>cannot contain all the cache lines</i> needed during execution
-            of a program.</dd><br/>
-            <dt><b>Conflict</b></dt>
-            <dd>occurs when a block must be discarded and later retrieved because too many cache lines mapped to the
-            <i>same set</i>. It is only applicable to a (less than fully) set associative or direct mapped cache.<br>
-            <small>Conflict misses may in the worst case lead to <b>cache trashing</b> a cache line is repeatedly
-            brought in, and then immediately thrown out because of a conflict miss</small></dd><br/>
-            <dt><b>Coherency</b></dt>
+          <ol>
+            <li><b>Compulsory</b> miss refers to a miss for the <i>very first</i> access for a cache line,
+            which is unavoidable for any program.</li><br>
+
+            <li><b>Capacity</b> miss is the situation than the cache <i>cannot contain all the cache lines</i> needed
+            during execution of a program. This type is inevitable for any production program.</li><br>
+
+            <li><b>Conflict</b> miss occurs when a block is to be discarded and later retrieved because too many cache
+            lines mapped to the <i>same set</i>. It is only applicable to a (less than fully) set associative caches.
+            Conflict misses may in the worst case lead to a <b>cache trashing</b> where a cache line is repeatedly
+            brought in, and then immediately thrown out because of a conflict miss</li><br>
+
             <!-- miss forced by hardware coherence protocol -->
-            <dd>occurs when a block must be reloaded from the memory or other cache to keep data coherent between
-            multiple processors in <abbr title="Symmetric Multi Processor">SMP</abbr> system. </dd><br/>
-          </dl>
+            <li><b>Coherency</b> miss occurs when a block must be reloaded from the memory or lower level of cache to keep data
+            coherent between multiple processors in <abbr title="Symmetric Multi Processor">SMP</abbr> system. </li>
+          </ol>
         </section>
 
         <section>
           <h2>Replacement policy</h2>
-          <p><b>Replacement policy</b> defines which cache line should be replaced under miss</p>
-          <dl>
-            <dt>Random</dt>
-            <dd>evicts cache lines without any preference or specific order</dd>
-            <dt>Round robin (RR)</dt>
-            <dd>evicts cache lines in FIFO order</dd>
-            <dt>Least Recently Used (LRU)</dt>
-            <dd>evicts cache line which was not in use for the longest time. It performs better than random or RR
-            but is more difficult to implement</dd>
-            <dt>Pseudo-LRU</dt>
-            <dd>evicts one of the least recently used. close to LRU in term of cache efficiency, but much faster to operate.</dd>
-            <dt>Belady</dt>
-            <dd>evicts block that will be used the furthest in future. Unreachable optimum</dd>
+          <blockquote style="width:100%;"><b>Replacement policy</b> defines which cache line is to be replaced under a miss.</blockquote>
+          <ul>
+            <li><b>Random</b> evicts cache lines without any preference or specific order</li><br>
+            <li><b>Round robin (RR)</b> evicts cache lines in the FIFO order</li><br>
+            <li><b>Least Recently Used (LRU)</b> evicts cache line which was not in use for the longest time.
+            It performs better than random or RR but is more difficult to implement</li><br>
+            <li><b>Pseudo-LRU</b> evicts one of the least recently used. close to LRU in term of cache efficiency,
+            but much faster to operate.</li><br>
+            <li><b>Belady</b> evicts block that will be used the furthest in future. Unreachable optimum.</li>
           </ul>
         </section>
 
         <section>
           <h2>Write strategy</h2>
-          <blockquote><b>Write Strategy</b> is strategy to maintain coherence between caches in a hierarchy and the main memory
-          while write occur.</blockquote>
-          <ul>
-            <li>Data is in cache (write hit)
-              <dl>
-                <dt><b>Write through</b></dt>
-                <dd>The data is written through all cache hierarchy up to main memory. Memory and cache are always in
-                coherent state. Uniform latency on misses.</dd>
-                <dt><b>Write back</b></dt>
-                <dd>The data is written only to the cache line in the cache. The modified cache line
-                is written to memory only when necessary (it need to be replaced by another one). Memory and caches can be
-                in not coherent state. Non-uniform miss latency
-                  <ul>
-                    <li><b>Clean miss</b> results in one transaction with lower level (fill)</li>
-                    <li><b>Dirty miss</b> results in two transactions with lower level (writeback & fill)</li>
-                  </ul>
-                </dd>
-              </dl>
-            </li>
-          </ul>
+          <blockquote><b>Write Strategy</b> is a strategy to maintain coherence between caches in a hierarchy
+          and the main memory while write occur.</blockquote>
+          <p>Data is in the cache (write hit)</p>
+          <dl>
+            <dt><b>Write through</b></dt>
+            <dd>The data is written through all cache hierarchy up to main memory. Memory and cache are always in
+            coherent state. Uniform latency on misses, but extra bus traffic.</dd>
+            <dt><b>Write back</b></dt>
+            <dd>The data is written only to the cache line in the cache. The modified cache line
+            is written to memory only when necessary (it need to be replaced by another one). Memory and caches can be
+            in not coherent state. Non-uniform miss latency
+              <ul>
+                <li><b>Clean miss</b> results in one transaction with lower level (fill)</li>
+                <li><b>Dirty miss</b> results in two transactions with lower level (writeback & fill)</li>
+              </ul>
+            </dd>
+          </dl>
         </section>
 
         <section>
           <h2>Allocation policy</h2>
-          <ul>
-            <li>Data is in not cache (write miss)<br>
-              <dl>
-                <dt>Write-allocate (is used with write back)</dt>
-                <dt>Write-non-allocate (is used with write through)</dt>
-              </dl>
-            </li>
-          </ul>
+          <blockquote><b>Allocation policy</b> is a policy of a new cache allocation<br> if the write miss occurs.
+          </blockquote>
+          <p>Data is not in the cache (write miss)</p>
+
+          <dl>
+            <dt><b>Write-allocate</b> (is to be used with write back)</dt>
+            <dd>Allocate a line in a cache to store by retrieving the data from lower level of cache and update the value.
+            It requires <strong>additional bandwidth</strong>, but may <strong>decrease miss rate</strong> for reads.</dd>
+
+            <dt><b>Write-non-allocate</b> (is to be used with write through)</dt>
+            <dd>By pass the cache and store the data directly to the memory or lower level of cache. No extra bandwidth
+            is added, but might result in miss rate increase.</dd>
+          </dl>
         </section>
 
         <section>
           <h2>Write buffer</h2>
-          <blockquote><b>Write buffer</b> is a buffer between current level of cache and next level of cache or memory</blockquote>
+          <blockquote><b>Write buffer</b> is a buffer between the current level of cache and the next level of
+          cache or memory</blockquote>
           <ul>
             <li>Store latency is not uniform ( e.g. if a cache line must be read or allocated)</li>
-            <li>Buffering writes is used to avoid stalling the CPU. Especially helpful for write-back.</li>
+            <li>Buffering writes is used to avoid stalling the CPU. Especially helpful for write-back</li>
             <li>Write buffer (store buffer/write-behind buffer) is a FIFO queue of incomplete stores</li>
+            <li>intermediate values can be forwarded for use upon request</li>
           </ul>
 
 <!-- Store A to service load of a value that is still in write buffer avoids unnecessary stalls of load operations
