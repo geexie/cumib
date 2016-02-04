@@ -53,15 +53,16 @@
         </section>
 
         <section>
-          <h2>Themes &amp; Contents</h2>
+          <h2>Course Topics</h2>
           <ul>
             <li><strong>Pragmatics</strong>
               <ul>
-                <li>Ordering optimization approaches</li>
+                <li>Ordering optimization approaches</b></li>
                 <li><b>Demystifying a compiler</b></li>
                 <li>Mastering compiler optimizations</li>
               </ul>
             </li>
+            <br/>
             <li><strong>Computer Architectures</strong>
               <ul>
                 <li>Architecture of modern computers</li>
@@ -87,8 +88,8 @@
             </li>
             <li>Optimization levels</li>
             <li>Case study </li>
-            <li>Optimization feedback</li>
-            <li>Link time optimization</li>
+            <li>compiler's feedback</li>
+            <li>Link-time optimization</li>
             <li>Summary</li>
           </ul>
         </section>
@@ -134,8 +135,6 @@
               <dt><b>Syntax Analysis</b></dt>
               <dd>takes the tokens, produced by lexical analysis, as input and generates a syntax tree.
                 Source code grammar (syntactical correctness) is checked here.</dd>
-              <dt><b>Semantic Analysis</b></dt>
-              <dd>checks whether the syntax tree constructed follows the rules of the language (eg, type checks).</dd>
             </dl>
           </section>
 
@@ -144,9 +143,19 @@
             <img class="simple" src="images/popt/compiler_phases.svg">
             <br/><br/>
             <dl>
+              <dt><b>Semantic Analysis</b></dt>
+              <dd>checks whether the syntax tree constructed follows the rules of the language (eg, type checks).</dd>
               <dt><b>Intermediate Code Generation</b></dt>
               <dd>represents a program for some abstract machine. It is in between the high-level language and the
                 machine language.</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Compilation trajectory</h2>
+            <img class="simple" src="images/popt/compiler_phases.svg">
+            <br/><br/>
+            <dl>
               <dt><b>Code Optimization</b></dt>
               <dd>does code optimization of the intermediate code (eg, redundancy elimination).</dd>
               <dt><b>Code Generation</b></dt>
@@ -158,10 +167,9 @@
             <h2>Frontend and backend</h2>
             <img src="images/popt/front-back.svg" class="simple">
             <ul>
-              <li>No requirement for a full native compiler for each new target or programming language</li>
-              <li>Only backend part needed to support every new machine</li>
-              <li>Only frontend part needed to support every new programming language</li>
-              <li>Most of optimizations resemble each other for all targets and could be applied in between font end
+              <li>Only backend is needed to support every new machine</li>
+              <li>Only frontend is needed to support every new language</li>
+              <li>Most of optimizations resemble each other for all targets and could be applied in between fontend
               and backend.</li>
             </ul>
           </section>
@@ -173,6 +181,9 @@
             <img src="images/popt/intermediate_code.svg" class="simple" width="60%">
             <p>It becomes easier to apply code optimization techniques on the intermediate code. Modern compilers usually
             use 2 levels of intermediate representation (IR).</p>
+          </section>
+          <section>
+            <h2>Intermediate language</h2>
             <dl>
               <dt><b>High Level IR</b></dt>
               <dd>is close to the source and can be easily generated from the source code. Some code optimizations
@@ -183,34 +194,29 @@
             </dl>
           </section>
 
-<!-- Intermediate code generator receives input from its predecessor phase, semantic analyzer,
-in the form of an annotated syntax tree. That syntax tree then can be converted into a linear
-representation, e.g., postfix notation. Intermediate code tends to be machine independent code.
-Therefore, code generator assumes to have unlimited number of memory storage (register) to generate code. -->
-
           <section>
             <h2>Intermediate language</h2>
             <ul>
-              <li>Language-specific: it can be used for JIT compilation later:
+              <li><b>Language-specific</b> to be used for JIT compilation later:
                 <ul>
-                  <li>Java, Scala byte code; CLI for .NET languages like C#, F#, PTX for GPU shaders.</li>
+                  <li>Java byte code; .NET CLI, NVIDIA PTX.</li>
                 </ul>
               </li>
-              <li>language independent, like three-address code (similar to classic RISC ISA).</li>
+              <li><b>Language independent</b>, like three-(four-)address code (similar to a classic RISC ISA).</li>
             </ul>
-            <pre style="width:50%"><code class="cpp">a = b + c * d;</code></pre>
+            <pre><code class="cpp">a = b + c * d;</code></pre>
             <p>Three-Address Code (TAC)</p>
-            <pre style="width:50%"><code>r1 = c * d;
+            <pre><code>r1 = c * d;
 r2 = b + r1;
 r3 = r2 + r1;
 a = r3</code></pre>
-            <p>Here <strong>r1, r2</strong>, etc. are as abstract registers.</p>
+            <p>Here <strong>r<small>th</small></strong> is an abstract register.</p>
           </section>
 
           <section>
             <h2>Three-Address Code</h2>
             <ul>
-              <li>Quadruples has four fields: operator, arg1, arg2, and result
+              <li>Quadruples has four fields
                 <table>
                   <colgroup>
                     <col></col>
@@ -255,7 +261,7 @@ a = r3</code></pre>
                 </table>
               </li>
               <br/>
-              <li>Triples or Indirect triples have three fields : op, arg1, and arg2.
+              <li>Triples or Indirect triples have three fields
                 <table>
                   <colgroup>
                     <col></col>
@@ -302,185 +308,104 @@ a = r3</code></pre>
             <dl>
               <dt><a href="https://gcc.gnu.org/onlinedocs/gccint/GENERIC.html#GENERIC">GENERIC</a>
               and <a href="https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html">GIMPLE</a></dt>
-              <dd>GNU Compiler Collection gcc
-                <small style="vertical-align:middle;">(
-                  <code>-fdump-tree-all -fdump-tree-ssa -fdump-tree-optimized -fdump-rtl-all</code>)
+              <dd>GNU Compiler Collection<br>
+                <small style="vertical-align:middle;">
+                  <code>-fdump-tree-all -fdump-tree-ssa -fdump-tree-optimized -fdump-rtl-all</code>
                 </small>
               </dd>
               <dt><a href="http://llvm.org/docs/LangRef.html">LLVM IL</a></dt>
-              <dd>clang and other LLWM based compilers <small  style="vertical-align:middle;">(
-                <code>-emit-llvm</code>)
-                </small>
+              <dd>clang and other LLWM based compilers<br>
+                <small  style="vertical-align:middle;"><code>-emit-llvm</code></small>
               </dd>
               <dt>CIL (C Intermediate Language)</dt>
               <dd>Visual Studio cl.exe</dd>
             </dl>
-            <blockquote>
-              clang -Os -S -emit-llvm squere.c -o squere.ll; cat squere.ll
-            </blockquote>
-            <table style="width:100%;" class="simple">
-              <colgroup>
-                <col style="width:50%;"></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td>
-                    <pre><code class="cpp">int square(int a)
+          </section>
+          <section>
+            <h2>Intermediate language</h2>
+            <pre><code>$ clang -Os -S -emit-llvm test.c -o test.ll
+$ cat test.ll</code></pre>
+            <p><pre><code class="cpp">int square(int a)
 {
   return a*a;
-}</code></pre>
-                  </td>
-                  <td>
-                    <pre><code class="scala">define i32 @square(i32 %a) #0 {
+}</code></pre></p>
+            <p><pre><code class="scala">define i32 @square(i32 %a) #0 {
 %1 = mul nsw i32 %a, %a
 ret i32 %1
-}</code></pre>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+}</code></pre></p>
           </section>
         </section>
 
         <section>
           <section>
             <h2>Optimization obstacles: pointer aliasing</h2>
-              <table style="width:100%;"  class="simple">
-                <colgroup>
-                  <col style="width:50%;"></col>
-                  <col></col>
-                </colgroup>
-                <tbody>
-                  <tr>
-                    <td>
-                      <pre><code class="cpp">
-  void twiddle1(int *xp, int *yp)
-  {
-      *xp += *yp;
-      *xp += *yp;
-  }
-                      </code></pre>
-                    </td>
-                    <td>
-                      <pre><code class="cpp">
-  void twiddle2(int *xp, int *yp)
-  {
-      *xp += 2* *yp;
-  }
-                      </code></pre>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            <h3>Are they equal?</h3>
+            <p><pre><code class="cpp">void twiddle1(int *xp, int *yp)
+{
+    *xp += *yp;
+    *xp += *yp;
+}</code></pre></p>
+            <p><pre><code class="cpp">void twiddle2(int *xp, int *yp)
+{
+    *xp += 2* *yp;
+}</code></pre></p>
+            <h3>Are they always equal?</h3>
           </section>
 
           <section>
             <h2>Optimization obstacles: pointer aliasing</h2>
-              <table style="width:100%;"  class="simple">
-                <colgroup>
-                  <col style="width:50%;"></col>
-                  <col></col>
-                </colgroup>
-                <tbody>
-                  <tr>
-                    <td>
-                      <pre><code class="cpp">
-  void twiddle1(int *xp, int *yp)
-  {
-      *xp += *yp;
-      *xp += *yp;
-  }
-                      </code></pre>
-                    </td>
-                    <td>
-                      <pre><code class="cpp">
-  void twiddle2(int *xp, int *yp)
-  {
-      *xp += 2* *yp;
-  }
-                      </code></pre>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <pre style="width:50%"><code class="cpp">
-int main(int argc, char** argv)
+            <p>What if..</p>
+            <p><pre><code class="cpp">int main(int argc, char** argv)
 {
     int i = 5, j = 5;
 
-    twiddle1(&i, &i);
-    twiddle2(&j, &j);
+    twiddle1(&amp;i, &amp;i);
+    twiddle2(&amp;j, &amp;j);
 
     printf("twiddle1 result is %d\n", i);
     printf("twiddle2 result is %d\n", j);
-}
-            </code></pre>
-          <p><code>
-twiddle1 result is 20<br/>
-twiddle2 result is 15
-
-          </code></p>
+}</code></pre></p>
+          <p>twiddle1 result is 20 while twiddle2 result is 15</p>
           </section>
 
           <section>
             <h2>Optimization obstacles: pointer aliasing</h2>
-              <table style="width:100%;" class="simple">
-                <colgroup>
-                  <col style="width:50%;"></col>
-                  <col></col>
-                </colgroup>
-                <tbody>
-                  <tr>
-                    <td>
-                      <pre><code class="cpp">
-void twiddle(int *xp, int *yp)
+            <blockquote>
+               <b>Aliasing</b>
+               refers to the situation where the same memory location can be accessed by using different names.
+            </blockquote>
+            <p><pre><code class="cpp">void twiddle1(int *xp, int *yp)
 {
     *xp += *yp;
     *xp += *yp;
-}
-                      </code></pre>
-                    </td>
-                    <td>
-                      <pre><code class="cpp">
-void twiddle(int *xp, int *yp)
+}</code></pre></p>
+            <p><pre><code class="cpp">void twiddle2(int *xp, int *yp)
 {
     *xp += 2* *yp;
-}
-                      </code></pre>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <blockquote>
-                 <b>Aliasing</b>
-                 refers to the situation where the same memory location can be accessed by using different names.
-              </blockquote>
+}</code></pre></p>
           </section>
 
           <section>
             <h2>Strict aliasing assumption</h2>
-            <p>Strict aliasing is an assumption, made by a C (or C++) compiler, that dereferencing pointers to objects
-            of different types will never refer to the same memory location.</p>
+            <blockquote>Strict aliasing is an assumption, made by a C (or C++) compiler, that dereferencing pointers to objects
+            of different types will never refer to the same memory location.</blockquote>
             <p>This assumption enables much more optimization, but a programmer should follow strict aliasing rules
             to get code working correctly.</p>
+          </section>
+          <section>
+            <h2>Strict aliasing assumption</h2>
             <pre><code class="cpp">void check(int32_t *h, int64_t *k)
 {
-  *h = 5;
-  *k = 6;
+  *h = 5; *k = 6;
   printf("%d\n", *h);
 }
 
-int main (void)
+void main()
 {
   int64_t k;
   check((int32_t *)&k, &k);
-  return 0;
-
 }</code></pre>
-          <p><code style="background-color:black;">gcc -O1 test.c -o test ; ./test</code> results in <b>6</b></p>
-          <p><code style="background-color:black;">gcc -O2 test.c -o test ; ./test</code> results in <b>5</b></p>
+          <p><code style="background-color:black;">gcc -O1 test.c -o test ; ./test</code> results in <b>6</b><br/>
+          <code style="background-color:black;">gcc -O2 test.c -o test ; ./test</code> results in <b>5</b></p>
           </section>
 
           <section>
@@ -497,36 +422,16 @@ int main (void)
         <section>
           <section>
             <h2>Optimization obstacles: functional calls</h2>
-              <table style="width:100%;" class="simple">
-                <colgroup>
-                  <col style="width:50%;"></col>
-                  <col></col>
-                </colgroup>
-                <tbody>
-                  <tr>
-                    <td>
-                      <pre><code class="cpp">
-int callee();
-
+            <pre><code class="cpp">int callee();
 int caller()
 {
   return callee() + callee();
-}
-                      </code></pre>
-                    </td>
-                    <td>
-                      <pre><code class="cpp">
-int callee();
-
+}</code></pre>
+            <p><pre><code class="cpp">int callee();
 int caller()
 {
   return 2*callee();
-}
-                      </code></pre>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+}</code></pre></p>
             <h3>Are they equal?</h3>
           </section>
 
@@ -534,69 +439,63 @@ int caller()
             <h2>Optimization obstacles: functional calls</h2>
               <table style="width:100%;" class="simple">
                 <colgroup>
-                  <col style="width:50%;"></col>
+                  <col></col>
                   <col></col>
                 </colgroup>
                 <tbody>
                   <tr>
                     <td>
-                      <pre><code class="cpp">
-int callee(int i);
-
+                      <pre><code class="cpp">int callee(int i);
 int caller()
 {
-  int sum = 0;
-  for (int i = 0; i < 1000; i++)
-  {
-    sum += callee(i);
-  }
+  int s=0, i=0;
+  for (; i&lt;N; i++)
+    s += callee(i);
 
-  return sum;
+  return s;
 }
-                      </code></pre>
+
+
+</code></pre>
                     </td>
                     <td>
-                      <pre><code class="cpp">
-int callee(int i);
-
+                      <pre><code class="cpp">int callee(int i);
 int caller()
 {
-  int sum0 = 0, sum1 = 0;
-  for (int i = 0; i < 500; i+= 2)
+  int s0=0, s1=0, i=0;
+  for (; i&lt;N/2; i+=2)
   {
-    sum0 += callee(i);
-    sum1 += callee(i+1);
+    s0 += callee(i);
+    s1 += callee(i+1);
   }
-
-  return sum0 + sum1;
-}
-                      </code></pre>
+  return s0 + s1;
+}</code></pre>
                     </td>
                   </tr>
                 </tbody>
-              </table>
+              </table><br/>
             <h3>Are they equal?</h3>
           </section>
 
 
           <section>
             <h2>Pure functions</h2>
-            <dl>
-              <dt><b>Pure function</b></dt>
-              <dd>is a function for which both of the following statements are true:
-                <ul>
-                  <li>The function always evaluates the same result value given the same argument value(s). The function
-                  result value cannot depend on any hidden information or state that may change while program execution
-                  proceeds or between different executions of the program, nor can it depend on any external input
-                  from I/O devices.</li>
-                  <li>Evaluation of the result does not cause any semantically observable side effect or output,
-                  such as mutation of mutable objects or output to I/O devices.
-                  </li>
-                </ul>
-              </dd>
-            </dl>
-            <p>Pure functions are much easy to optimize:</p>
+            <blockquote><b>Pure function</b> is a function for which both of the following statements are true:
+              <ol>
+                <li>The function always evaluates the same result value given the same argument value(s). The function
+                result value cannot depend on any hidden information or state that may change while program execution
+                proceeds or between different executions of the program, nor can it depend on any external input
+                from I/O devices.</li>
+                <li>Evaluation of the result does not cause any semantically observable side effect or output,
+                such as mutation of mutable objects or output to I/O devices.
+                </li>
+              </ol>
+            </blockquote>
+          </section>
+          <section>
+            <h2>Pure functions</h2>
             <ul>
+              <li>Pure functions are much easy to optimize</li>
               <li>Use <b>static</b> keyword to help the compiler to deduce whether the function is pure</li>
               <li>Use <b>constexpr</b> keyword for c++11 to hint a compiler that function could be evaluated in compile time</li>
               <li>Most functions from math.h are not pure.</li>
@@ -625,40 +524,31 @@ int caller()
 
         <section>
           <section>
-            <h2>Optimization obstacles: Floating point math</h2>
+            <h2>Optimization obstacles: Floating point</h2>
             <ul>
-              <li>A compiler is much more conservative on floating point rather than integer math.</li>
-              <li>Floating point arithmetics is not associative so <b>A+(B+C) != (A+B)+C</b></li>
+              <li>Floating point arithmetics is not associative<br>so <b>A+(B+C) != (A+B)+C</b></li>
+              <li>A compiler is very conservative about floating point!</li>
             </ul>
-            <pre><code class="cpp">
-void associativityCheck (void)
+            <pre><code class="cpp">void associativityCheck (void)
 {
   double x = 3.1415926535897931;
   double a = 1.0e15;
   double b = -(1.0e15 - 1.0);
-
   printf("%f %f\n", x*(a + b), x*a + x*b );
-}
-</code></pre>
-          <pre><code>
-$ gcc check.c -o check ; ./check
-3.141593 3.000000
-
-</code></pre>
+}</code></pre>
+          <p><code style="background-color:black;">$ gcc check.c -o check ; ./check<br>
+3.141593 3.000000</code></p>
           </section>
-<!--           <section>
-            <h2>Optimization obstacles: Floating point math</h2>
-          </section> -->
         </section>
 
         <section>
           <h2>More optimization obstacles</h2>
           <ul>
-            <li><h3>Branches inside a loop</h3></li>
-            <li><h3>Exceptions</h3></li>
-            <li><h3>Accesses to storage type global variables</h3></li>
-            <li><h3>Inline assembly</h3></li>
-            <li><h3><code>volatile</code> keyword</h3></li>
+            <li>Branches inside a loop</li>
+            <li>Exceptions</li>
+            <li>Accesses to storage type global variables</li>
+            <li>Inline assembly</li>
+            <li><code>volatile</code> keyword</li>
           </ul>
         </section>
 
@@ -666,26 +556,23 @@ $ gcc check.c -o check ; ./check
           <section>
             <h2>Optimization levels</h2>
             <dl>
-              <dt><b>-O0</b> (the default)</dt>
-              <dd>No optimization; generates unoptimized code but has the fastest compilation time.</dd>
-              <dt><b>-O1</b></dt>
-              <dd>Moderate optimization; optimizes reasonably well but does not degrade compilation time significantly.</dd>
-              <dt><b>-O2</b></dt>
-              <dd>Full optimization; generates highly optimized code and has the slowest compilation time.</dd>
-              <dt><b>-O3</b></dt>
-              <dd>Full optimization as in `-O2'; also uses more aggressive automatic inlining of subprograms within a unit
-                (Inlining of Subprograms) and attempts to vectorize loops.</dd>
-              <dt><b>-Os</b></dt>
-              <dd>Optimize space usage (code and data) of resulting program.</dd>
+              <dt><b>-O0</b> (the default) No optimization</dt>
+              <dd>generates unoptimized code but has the fastest compilation time.</dd>
+              <dt><b>-O1</b> Moderate optimization</dt>
+              <dd>optimizes reasonably well but does not degrade compilation time significantly.</dd>
+              <dt><b>-O2</b> Full optimization</dt>
+              <dd>generates highly optimized code and has the slowest compilation time.</dd>
+              <dt><b>-O3</b> Aggressive optimization</dt>
+              <dd>employees more aggressive automatic inlining of subprograms within a unit and attempts to vectorize.</dd>
+              <dt><b>-Os</b> Optimize space usage</dt>
             </dl>
           </section>
 
           <section>
           <h2>enabled optimizations: GCC -O3 </h2>
-          <p>GNU C (Ubuntu 4.9.2-0ubuntu1~14.04) version 4.9.2 (x86_64-linux-gnu)</p>
-          <pre style="width:70%;"><code class="bash"> touch empty.c && gcc -O3 -S -fverbose-asm empty.c</code></pre>
-            <small>
-              <blockquote>
+          <p>GNU C version 4.9.2 (x86_64-linux-gnu)<br/>
+          <code style="background-color:black;">$ touch 1.c; gcc -O3 -S -fverbose-asm 1.c</code>
+          <blockquote style="font-size: 0.5em">
 options enabled:
 -faggressive-loop-optimizations
 -fasynchronous-unwind-tables
@@ -836,88 +723,57 @@ options enabled:
 -msse2
 -mtls-direct-seg-refs
 -mvzeroupper
-              </blockquote>
+              </blockquote></p>
+          </section>
+
+          <section>
+            <h2>Example: floating point</h2>
+            <pre><code class="cpp">double power( double d, unsigned n)
+{
+  double x = 1.0;
+  for (unsigned j = 1; j<=n; j++)
+    x *= d;
+  return x;
+}
+void main ()
+{
+  double sum = 0.0;
+  for (unsigned i=1; i<=INT_MAX; i++)
+    sum += power(i, i % 8);
+  printf ("sum = %g\n", sum);
+}</code></pre>
+            <small style="float:right;">
+              <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-c">test-flags-dp.c</a>
             </small>
           </section>
 
           <section>
-            <h2>Optimization levels example: floating point</h2>
-            <table style="width:100%;" class="simple">
-              <colgroup>
-                <col style="width:50%;"></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td>
-                    <pre><code style="padding-left:2em;" class="cpp">#include &lt;stdio.h&gt;
-#include &lt;limits.h&gt;
-
-double power (double d, unsigned n)
-{
-  double x = 1.0;
-  unsigned j;
-
-  for (j = 1; j <= n; j++)
-    x *= d;
-
-  return x;
-}</code></pre>
-                  </td>
-                  <td>
-                    <pre><code class="cpp" style="padding-left:2em;">int main (void)
-{
-  double sum = 0.0;
-  unsigned i;
-
-  for (i = 1; i <= INT_MAX; i++)
-  {
-    sum += power(i, i % 8);
-  }
-
-  printf ("sum = %g\n", sum);
-  return 0;
-}</code></pre>
-                    <small style="float:right;">
-                      <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-c">test-flags-dp.c</a>
-                    </small>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <h2>Example: floating point</h2>
             <p>Compile it <b>without</b> optimization:<br/>
               <strong><code>gcc -Wall -O0 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
             </p>
             <pre style="width:30%"><code class="bash">sum = 7.06739e+72
 real  0m23.229s</code></pre>
+            <p>Compile it with <b>the first</b> optimization level: <b>~2.78 speedup</b><br/>
+              <strong><code>gcc -Wall -O1 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
+            </p>
+            <pre style="width:30%"><code class="bash">sum = 7.06739e+72
+real  0m8.342s</code></pre>
           </section>
 
           <section>
-            <h2>Optimization levels example: floating point</h2>
-            <ul>
-              <li>
-                <p>Compile it with <b>the first</b> optimization level: <b>~2.78 speedup</b><br/>
-                  <strong><code>gcc -Wall -O1 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
-                </p>
-                <pre style="width:30%"><code class="bash">sum = 7.06739e+72
-real  0m8.342s</code></pre>
-              </li>
-              <li>
+            <h2>Example: floating point</h2>
                 <p>Compile it with <b>the second</b> optimization level: <b>~1.55 speedup</b><br/>
                   <strong><code>gcc -Wall -O2 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = 7.06739e+72
 real  0m5.371s</code></pre>
-              </li>
-              <li>
                 <p>Compile it with <b>the third</b> optimization level:  <b>~1.025 speedup</b><br/>
                   <strong><code>gcc -Wall -O3 test-flags-dp.c -o test-flags-dp && time ./test-flags-dp</code></strong>
                 </p>
                 <pre style="width:30%"><code class="bash">sum = 7.06739e+72
 real  0m5.240s</code></pre>
-              </li>
-              <li><b>Total speedup is ~4.43</b></li>
-            </ul>
+              <p><b>Total speedup is ~4.43</b></p>
           </section>
 
           <section>
