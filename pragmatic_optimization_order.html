@@ -53,7 +53,7 @@
         </section>
 
         <section>
-          <h2>Themes &amp; Contents</h2>
+          <h2>Course Topics</h2>
           <ul>
             <li><strong>Pragmatics</strong>
               <ul>
@@ -62,6 +62,7 @@
                 <li>Mastering compiler optimizations</li>
               </ul>
             </li>
+            <br/>
             <li><strong>Computer Architectures</strong>
               <ul>
                 <li>Architecture of modern computers</li>
@@ -80,10 +81,10 @@
             <li>Recommended literature</li>
             <li>Pragmatic approach</li>
             <li>Knowledge which is required</li>
-            <li>Optimization life cycle</li>
-            <li>Whence get the performance?</li>
+            <li>Optimization cycle</li>
+            <li>Where to get the performance?</li>
             <li>Top-Down (High-low) approach</li>
-            <li>Optimization tread-offs</li>
+            <li>Optimization trade-offs</li>
             <li>Overview of optimization steps</li>
             <li>Summary</li>
           </ul>
@@ -91,40 +92,40 @@
 
         <section>
           <h2>What is optimization?</h2>
-          <blockquote>In computing, <b>optimization</b> is the process of modifying a system to make some aspect of it
+          <blockquote>In computing, <b>optimization</b> is a process of modifying a system to make some aspect of it
             work more efficiently or use fewer resources.
             <br/> In particular, this is a process of transforming a piece of code to make it
             <b>more efficient without changing its output</b>.
           </blockquote>
-          <p>Metrics which are commonly considered:</p>
+        </section>
+        <section>
+          <h2>Commonly considered metrics</h2>
           <dl>
-            <dt ><b>Wall(-clock) time</b></dt>
-            <dd style="margin-left: 5em;">
+            <dt><b>Wall(-clock) time</b></dt>
+            <dd>
               <strong>is a human perception of the span of time from the start to the completion of a task.</strong>
-            </dd>
-            <br/>
+            </dd><br/>
             <dt><b>Power consumption</b></dt>
-            <dd style="margin-left: 5em;">is the electrical energy over time which is supplied to complete a task.</dd>
-            <br/>
-            <dt><b>processor time</b></dt>
-            <dd style="margin-left: 5em;">is the total execution time (or runtime) during which a processor was dedicated
-            to a task (i.e. used for processing instructions of that task).</dd>
+            <dd>is the electrical energy which is consumed to complete a task.</dd><br/>
+            <dt><b>Processor time (or runtime)</b></dt>
+            <dd>is the total execution time during which a processor was dedicated
+            to a task (i.e. executes instructions of that task).</dd>
           </dl>
         </section>
 
         <section>
           <h2>How to learn optimization?</h2>
-          <p><strong>Optimization is a <b>craft</b> rather than a <b>science</b></strong>. Therefore,</p>
+          <blockquote><strong>Optimization is a <b>craft</b> rather than a <b>science</b></strong>.</blockquote>
           <dl>
             <dt><b>Practice more</b></dt>
-            <dd>do not make practical knowledge too theoretical.</dd>
+            <dd>Do not make practical knowledge too theoretical.</dd>
             <br/>
             <dt><b>Look, what other people do</b></dt>
-            <dd>do find real use cases of different optimization approaches and techniques.</dd>
+            <dd>Do find real use cases of different optimization approaches and techniques.</dd>
             <br/>
             <dt><b>Dig into an architecture</b></dt>
-            <dd>hardware evolves very fast hence today's devices are becoming obsolete very quickly. Comprehensive
-            knowledge helps to see beforehand.</dd>
+            <dd>Hardware evolves rapidly hence today's devices obsolete in a wink. <strong>Comprehensive
+            knowledge helps to see beforehand</strong>.</dd>
           </dd>
         </section>
 
@@ -174,18 +175,16 @@
           <blockquote>
           &ldquo;Programmers waste enormous amounts of time thinking about, or worrying about, the speed of non-critical
           parts of their programs, and these attempts at efficiency actually have a strong negative impact when
-          debugging and maintenance are considered. We should forget about small efficiencies, say about 97% of the time;
+          debugging and maintenance are considered. We should forget about small inefficiencies, say about 97% of the time;
           <b>premature optimization is the root of all evil</b>. Yet we should not pass up our opportunities in
           that critical 3%.&ldquo;
             <div style="text-align:right;">
-              <br/>
               <small>-Donald Knuth, Structured Programming With go to Statements</small>
             </div>
           </blockquote>
-          <br/>
           <ol>
-            <li><strong>You ought to find what to start with (3%)</strong></li>
-            <li><strong>You ought to know where to stop (97%)</strong></li>
+            <li><strong>Find what to start from (3%)</strong></li>
+            <li><strong>Know when to stop (97%)</strong></li>
           </ol>
         </section>
 
@@ -199,19 +198,17 @@
                 <li>The algorithmic complexity</li>
               </ul>
             </li>
-            <br/>
             <li><b>The compiler</b>
               <ul>
                 <li>Compilation trajectory</li>
                 <li>Compiler's capabilities and obstacles</li>
               </ul>
             </li>
-            <br/>
             <li><b>The platform</b>
               <ul>
                 <li>Architecture capabilities
                   <ul>I<small style="vertical-align: bottom">nstruction</small>
-                      S<small style="vertical-align: bottom">set</small>
+                      S<small style="vertical-align: bottom">et</small>
                       A<small style="vertical-align: bottom">rchitecture</small></ul>
                 </li>
                 <li>Micro-architecture specifics</li>
@@ -227,82 +224,70 @@
 
         <section>
           <section>
-            <h2>Whence get the performance?</h2>
-            <dl>
-              <dt><b>Algorithm</b></dt>
-              <dd>Compilers are not aware about semantics of your code,<br>taking this into account <b>focus
-              on algorithmic aspect first.</b><br>
-                <ul>
-                  <li>Decrease big-O complexity</li>
-                  <li>Use optimized libraries for sub-routines</li>
-                  <li>Restructure the code</li>
-                  <li>Split problem on sub-tasks</li>
-                  <li>Parallelize</li>
-                </ul>
-              </dd>
+            <h2>Where to get the performance?</h2>
+            <h3>Algorithm</h3>
+            <p>Compilers are not aware of semantics of code, taking this into account <b>focus
+            on an algorithmic aspect first.</b></p>
+
+            <ul>
+              <li>Decrease big-O complexity</li>
+              <li>Use optimized libraries for subroutines</li>
+              <li>Restructure the code to use fewer resources</li>
+              <li>Split problem on subtasks, organize them wisely</li>
+              <li>Parallelize</li>
+            </ul>
           </section>
           <section>
-            <h2>Whence get the performance?</h2>
-            <dl>
-              <dt><b>Memory access patterns &amp; operations</b></dt>
-              <dd>
-                Compilers are quite good in local optimization such as
-                <br/>
-                <ul>
-                  <li>transforming loop bodies,</li>
-                  <li>inlining local functions,</li>
-                  <li>simplifying arithmetic expressions</li>
-                </ul>
-                <br/>so help a compiler rather than try to outfox it.<br/><br/>
-                Work cohesively with it on<br/>
-                <ul>
-                  <li>enabling auto-vectorization,</li>
-                  <li>optimizing critical loops,</li>
-                  <li>vectorizing.</li>
-                </ul>
-              </dd>
-            </dl>
+            <h2>Where to get the performance?</h2>
+            <h3>Memory access patterns &amp; operations</h3>
+            <p>Compilers are quite good at local optimization, such as</p>
+            <ul>
+              <li>loop bodies transformations,</li>
+              <li>local functions inlining,</li>
+              <li>arithmetic expressions simplification</li>
+            </ul>
+            <p>so <b>help a compiler rather than try to outfox it.</b></p>
+            <p>Work cohesively with it on</p>
+            <ul>
+              <li>enabling auto-vectorization,</li>
+              <li>optimizing critical loops,</li>
+              <li>vectorizing.</li>
+            </ul>
           </section>
           <section>
-            <h2>Whence get the performance?</h2>
-            <dl>
-              <dt><b>HW-specific optimizations</b></dt>
-              <dd>
-                <ul>
-                  <li>Utilize unique properties of the hardware</li>
-                </ul>
-                <br>Modern hardware is quite advanced,<br>
-                <ul>
-                  <li>deep pipelines,</li>
-                  <li>out-of-order execution,</li>
-                  <li>sophisticated branch prediction,</li>
-                  <li>multi-level memory hierarchies,</li>
-                  <li>processor specialization.</li>
-                </ul><br>
-                so peephole optimizations are not as important as it used to be 10 years ago.<br>
-              </dd>
-            </dl>
+            <h2>Where to get the performance?</h2>
+            <h3>HW-specific optimizations</h3>
+            <p>Modern hardware is quite advanced,</p>
+            <ul>
+              <li>deep pipelines,</li>
+              <li>out-of-order execution,</li>
+              <li>sophisticated branch prediction,</li>
+              <li>multi-level memory hierarchies,</li>
+              <li>processor specialization.</li>
+            </ul><br>
+            <p>so <b>utilize unique properties of the hardware</b>.</p>
+            <p>Peephole optimization is not as important as used to be 10 years ago.</p>
           </section>
           <section>
             <h2>Whence get the performance?</h2>
             <br/><br/>
-            <table style="font-size:1.5em;">
+            <table style="font-size:2em;">
               <colgroup>
                 <col></col>
                 <col></col>
               </colgroup>
               <tbody>
                 <tr>
-                  <td style="margin-top:0.5em;">High-level</td>
-                  <td style="margin-top:0.5em;">Programmer</td>
+                  <td style="padding:0.1em;">High-level</td>
+                  <td style="padding:0.1em;">Programmer</td>
                 </tr>
                 <tr>
-                  <td style="margin-top:0.5em;">Middle-level</td>
-                  <td style="margin-top:0.5em;">Compiler</td>
+                  <td style="padding:0.1em;">Middle-level</td>
+                  <td style="padding:0.1em;">Compiler</td>
                 </tr>
                 <tr>
-                  <td style="margin-top:0.5em;">Low-level</td>
-                  <td style="margin-top:0.5em;">Hardware</td>
+                  <td style="padding:0.1em;">Low-level</td>
+                  <td style="padding:0.1em;">Hardware</td>
                 </tr>
               </tbody>
             </table>
@@ -310,7 +295,7 @@
         </section>
 
         <section>
-          <h2>Optimization tread-offs</h2>
+          <h2>Optimization trade-offs</h2>
           <ul>
             <li>Code portability decreases when we go deeper</li>
             <li>Performance portability decreases when we go deeper</li>
@@ -318,13 +303,13 @@
             <li>Optimizations are often not reusable</li>
             <li>Optimizations become obsolete very quickly</li>
           </ul>
-          <br/><br/>
-          <strong>...but still performance is a crucial requirement for most applications.</strong>
+          <p><strong>...but still performance is a crucial requirement for most applications.</strong></p>
         </section>
 
         <section>
           <h2>Top-Down (High-low) approach</h2>
-          <ol style="font-size:1.5em;">
+          <ol>
+            <li>Understand the code</li>
             <li>Use appropriate algorithms</li>
             <br/>
             <li>Optimize memory access patterns</li>
@@ -342,25 +327,20 @@
           <ul>
             <li>Different people think differently
               <ul>
-                <li>you'll need a time to get used to the code</li>
+                <li>you'll need some time to get used to the code</li>
               </ul>
-            </li>
-            <li>Understand dataflow
+            </li><br/>
+            <li><b>Understand dataflow</b>
               <ul>
-                <li>input parameters</li>
-                <li>output results</li>
+                <li>input/output parameters</li>
                 <li>data dependencies</li>
               </ul>
-            </li>
+            </li><br/>
             <li><b>Identify performance limiters</b>
               <ul>
                 <li>Time</li>
                 <li>Profile</li>
-                <li>Grub metrics
-                  <ul>
-                    <li>eg power consumption</li>
-                  </ul>
-                </li>
+                <li>Collect metrics (e.g. power consumption)</li>
               </ul>
             </li>
           </ul>
@@ -369,13 +349,12 @@
         <section>
           <section>
             <h2>Step #2: use appropriate algorithm</h2>
-            <p>Consider:</p>
             <ul>
-              <li><strong>Big O complexity</strong>
-              <br/><img width="80%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
-              <li><strong>Use of data structures</strong></li>
-              <li>Use of already optimized libraries</li>
-              <li>Opportunities for scalarization &amp; parallelization</li>
+              <li>Consider and lower big O complexity
+            <img width="60%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
+              <li>Choose data structures wisely</li>
+              <li>Look for optimized libraries</li>
+              <li>Find opportunities to scalarize &amp; parallelize</li>
             </ul>
           </section>
 
@@ -388,114 +367,50 @@
 
         <section>
           <section>
-            <h2>Step #3: optimize memory access patterns</h2>
-            <ul>
-              <li>You'll be surprised how many algorithms are memory bound</li>
-              <li>It is crucial to load only data that is really needed for computations</li>
-            </ul>
-            <p>Optimization for a memory usually involves:</p>
+            <h2>Step #3: optimize memory accesses</h2>
+            <blockquote>You will be surprised to see<br/>how many algorithms are memory bound</blockquote>
+            <p>Optimization for memory usually involves:</p>
             <dl>
               <dt><b>Data restructuring</b></dt>
-              <dd>
-                <ul>
-                  <li>to use only needed bytes</li>
-                  <li>to walk through data in more efficient way,</li>
-                </ul>
-              </dd><br/>
+              <ul>
+                <li>to load only data that is really needed for computations.</li>
+              </ul>
               <dt><b>Data packaging</b></dt>
-              <dd>to shrink data in size</dd><br/>
-              <dt><b>Loop transformations</b></dt>
-              <dd>
                 <ul>
-                  <li>to walk through data in more efficient way,</li>
-                  <li>to increase temporal &amp; spacial locality,</li>
-                  <li>to perform cache-aware optimizations</li>
+                  <li>to shrink the data in size</li>
                 </ul>
               </dd>
+              <dt><b>Loop transformations</b></dt>
+              <ul>
+                <li>to walk through the data in a more efficient way,</li>
+                <li>to increase temporal &amp; spacial locality,</li>
+                <li>to perform cache-aware optimization</li>
+              </ul>
             </dl>
           </section>
 
           <section>
-            <h2>Step #3: optimize memory access patterns</h2>
-            <table class="simple">
-              <colgroup>
-                <col></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td>
-                    <pre><code class="cpp">
-for (int j = 0; j &lt; height; j++)
-{
+            <h2>Step #3: optimize memory accesses</h2>
+            <p><pre><code class="cpp">for (int j = 0; j &lt; height; j++)
   for (int i = 0; i &lt; width; i++)
-  {
     if (img[j * width + i] &gt; 0)
-    {
-      count++;
-    }
-  }
-}
-                    </code></pre>
-                  </td>
-                  <td>
-                    <pre><code class="cpp">
-for (int i = 0; i &lt; width; i++)
-{
+      count++;</code></pre></p>
+            <p><pre><code class="cpp">for (int i = 0; i &lt; width; i++)
   for (int j = 0; j &lt; height; j++)
-  {
     if (img[j * width + i] &gt; 0)
-    {
-      count++;
-    }
-  }
-}
-                    </code></pre>
-                  </td>
-              </tbody>
-            </table>
-            <br/>
+      count++;</code></pre></p>
             <h3>Which is more optimal for conventional CPU processor?</h3>
           </section>
           <section>
-            <h2>Step #3: optimize memory access patterns</h2>
-            <table class="simple">
-              <colgroup>
-                <col></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td>
-                    <pre style="border: 3px double #FF8D14;"><code class="cpp">
-for (int j = 0; j &lt; height; j++)
-{
+            <h2>Step #3: optimize memory accesses</h2>
+            <p><pre style="border: 3px double #FF8D14;"><code class="cpp">for (int j = 0; j &lt; height; j++)
   for (int i = 0; i &lt; width; i++)
-  {
     if (img[j * width + i] &gt; 0)
-    {
-      count++;
-    }
-  }
-}
-                    </code></pre>
-                  </td>
-                  <td>
-                    <pre><code class="cpp">
-for (int i = 0; i &lt; width; i++)
-{
+      count++;</code></pre></p>
+             <p><pre><code class="cpp">for (int i = 0; i &lt; width; i++)
   for (int j = 0; j &lt; height; j++)
-  {
     if (img[j * width + i] &gt; 0)
-    {
-      count++;
-    }
-  }
-}
-                    </code></pre>
-                  </td>
-              </tbody>
-            </table>
+      count++;</code></pre></p>
           </section>
         </section>
 
@@ -505,8 +420,7 @@ for (int i = 0; i &lt; width; i++)
             <blockquote>Reducing a program in the number of operations
             <br/> does not necessarily decrease its running time,
             <br/>but it is a good heuristic, though.</blockquote>
-            <br/>
-            <p>A Compiler is good in local optimizations, so it usually helps a lot here:</p>
+            <p>The compiler usually helps a lot here:</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -514,10 +428,10 @@ for (int i = 0; i &lt; width; i++)
               </colgroup>
               <tbody>
                 <tr>
-                  <td  style="padding-left:1.5em;" width="50%">
+                  <td width="50%">
                     <b>Machine-independent optimizations</b>
                     <ul>
-                      <li>Eliminating common sub-expressions</li>
+                      <li>Common sub-expression elimination</li>
                       <li>Constant propagation</li>
                       <li>Redundancy elimination</li>
                       <li>..</li>
@@ -527,9 +441,9 @@ for (int i = 0; i &lt; width; i++)
                     <b>Machine-dependent optimizations</b>
                     <ul>
                       <li>Register allocation</li>
-                      <li>Instruction selecIon</li>
+                      <li>Instruction selectIon</li>
                       <li>Instruction scheduling</li>
-                      <li>Peephole opImizaIon</li>
+                      <li>Peephole optimization</li>
                       <li>..</li>
                     </ul>
                   </td>
@@ -538,56 +452,37 @@ for (int i = 0; i &lt; width; i++)
           </section>
           <section>
             <h2>Step #4: minimize number of operations</h2>
-            <img src="images/popt/g2rgba.svg" class="simple" width="60%" />
-            <pre><code class="cpp">
-uint32_t gray2rgba_v1(uint8_t c)
+            <img src="images/popt/g2rgba.svg" class="simple" width="55%" />
+            <pre><code class="cpp">uint32_t gray2rgba_v1(uint8_t c)
 {
-  return c + (c<<8) + (c<<16) + (c<<24);
-}
-            </code></pre>
-            <!-- <p>c + (c<<8) + (c<<16) + (c<<24) = c + c*(1<<8) + c*(1<<16) + c*(1<<24) = c*(1 + 1<<8 + 1<<16 + 1<<24)</p> -->
-            <pre><code class="cpp">
-uint32_t gray2rgba_v2(uint8_t c)
+  return c + (c&lt;&lt;8) + (c&lt;&lt;16) + (c&lt;&lt;24);
+}</code></pre>
+            <p><pre><code class="cpp">uint32_t gray2rgba_v2(uint8_t c)
 {
   return c * 0x01010101;
-}
-            </code></pre>
+}</code></pre></p>
             <h3>Are they same?</h3>
           </section>
           <section>
             <h2>Step #4: minimize number of operations</h2>
-            <pre><code class="asm">
-gray2rgba_v1:
-.LFB0:
-  .cfi_startproc
+            <pre><code class="asm">gray2rgba_v1:
   movzbl  %dil, %eax
   imull $16843009, %eax, %eax
-  ret
-  .cfi_endproc
-
-            </code></pre>
-            <pre><code class="asm">
-gray2rgba_v2:
-.LFB2:
-  .cfi_startproc
+  ret</code></pre>
+            <p><pre><code class="asm">gray2rgba_v2:
   movzbl  %dil, %eax
   imull $16843009, %eax, %eax
-  ret
-  .cfi_endproc
-
-            </code></pre>
+  ret</code></pre></p>
             <h3>Are they same?</h3>
-            <code>gcc -O2  -S 1.c -o 1.s ; cat 1.s</code>
+            <code>$ gcc -O2  -S 1.c -o 1.s ; cat 1.s</code>
           </section>
+            <!-- <p>c + (c<<8) + (c<<16) + (c<<24) = c + c*(1<<8) + c*(1<<16) + c*(1<<24) = c*(1 + 1<<8 + 1<<16 + 1<<24)</p> -->
+
           <section>
             <h2>Step #4: minimize number of operations</h2>
-            <p>Unfortunately, sometimes a compiler fails some optimization steps<br/>and harms the performance by
+            <p>Unfortunately, sometimes a compiler fails some optimization steps (e.g. register allocation, scalarization)
+            and harms the performance by
             introducing redundant operations.</p>
-            <p>More often failed steps are:</p>
-            <ul>
-              <li>Register allocation</li>
-              <li>Scalarization</li>
-            </ul>
             <p><blockquote><strong>Starting from this optimization step it is worth to <b>look at the assembly code</b> to check
              whether the compiler is actually automating a particular optimization.</strong></blockquote></p>
           </section>
@@ -596,45 +491,37 @@ gray2rgba_v2:
         <section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
-            <dl>
-              <dt><strong>Critical path</strong></dt>
-              <dd>is <b>the longest</b> sequence of operations in a code block which must be completed <b>in order</b>
-              which is usually caused by dependencies between steps or operations.</dd>
-            </dl>
-            <br/>
+            <blockquote><strong>Critical path</strong> is <b>the longest</b> sequence of operations in a code block
+              that must be completed <b>in order</b>, which is usually caused by dependencies between steps or operations.</dd>
+            </blockquote>
             <ul>
-              <li>This term is usually applied to an instruction sequence from concrete code block, but could be used
-              to refer to longest sequence of dependent steps in the pipeline that limit it's parallelization
-              capabilities.</li>
-              <li>Critical path of the pipeline require construction of control flow diagram.</li>
-              <li>Critical path for code block is hardly deduced from high-level code and require the inspection of
-              assembly code.</li>
-              <li>Knowledge about target architecture and it's issue capabilities is required to estimate critical
-              path more precisely.</li>
-              <li>Some profilers a able to do critical path analysis.</li>
+              <li>The critical path of a code block is hardly deducible from high-level code and requires assembly code
+              inspection.</li>
+              <li>Knowledge about architecture capabilities is required to estimate critical path more precisely.</li>
+              <li>Some profilers are able to do critical path analysis.</li>
+              <li>The term could also refer to the longest sequence of dependent steps in the pipeline that limit
+              its parallelization capabilities.</li>
+              <li>Finding the critical path of a pipeline requires a construction of a control flow diagram.</li>
             </ul>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
-            <p>Lets look at the critical path of the following code block.</p>
-            <pre><code class="cpp">
-const uint8_t* sptr0 = src.ptr&lt;uint8_t&gt;(row0);
-const uint8_t* sptr1 = src.ptr&lt;uint8_t&gt;(row1);
-
-uint8_t* dptr = dst.ptr&lt;uint8_t&gt;(row);
+            <p>Let's look at the critical path of the following code block.</p>
+            <p><pre><code class="cpp">const uint8_t* p0 = src.ptr(row0);
+const uint8_t* p1 = src.ptr(row1);
+uint8_t* dptr = dst.ptr(row);
 
 for (int col = 0; col < cols; ++col)
 {
-    dptr[col] = (sptr0[col*2] + sptr0[col*2+1] + sptr1[col*2] + sptr1[col*2+1] + 2) >> 2;
-}
-            </code></pre>
+  dptr[col] = (p0[col*2]+p0[col*2+1]
+             + p1[col*2]+p1[col*2+1]+2)&gt;&gt;2;
+}</code></pre></p>
             <h3>What is the critical path of this code line?</h3>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
-            <p>Lets create 3-positional representation of the code block</p>
-            <pre><code class="cpp">
-r0 = col*2           //  1
+            <p>Let's create 3-positional representation of the code block</p>
+            <pre><code class="cpp">r0 = col*2           //  1
 r1 = r0+1            //  2
 r2 = load(sptr0, r0) //  3
 r3 = load(sptr0, r1) //  4
@@ -644,46 +531,45 @@ r6 = r2+r3           //  7
 r7 = r6+r4           //  8
 r8 = r7+r5           //  9
 r9 = r8+2            // 10
-r10 = shl(r9, 2)     // 11
-            </code></pre>
+r10 = shl(r9, 2)     // 11</code></pre>
             <h3>11 ?</h3>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
-            <p>Dependency graph</p>
-            <img width="60%" class="simple" src="images/popt/path.svg"/>
+            <p>Let's construct the dependency graph</p>
+            <img width="70%" class="simple" src="images/popt/path.svg"/>
             <h3>8 ?</h3>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
-            <p>The compiler reorders instructions since integer math is associative</p>
-            <img width="60%" class="simple" src="images/popt/path2.svg"/>
+            <p>The compiler reorders instructions <br> since integer math is associative</p>
+            <img width="70%" class="simple" src="images/popt/path2.svg"/>
             <h3>6 ?</h3>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
-            <p>Assume that target hardware is able to schedule 1 arithmetic and 1 memory operation per clock.</p>
+            <p>Let's assume that hardware schedules 1 arithmetic and 1 memory operation per clock.</p>
             <img width="60%" class="simple" src="images/popt/path3.svg"/>
-            <h3>back to 8 again</h3>
+            <h3>and back to 8 again</h3>
           </section>
         </section>
 
         <section>
-          <h2>Step #6: perform HW specific optimizations</h2>
-          <p>Requires comprehensive understanding of the target HW,<br/> that are usually beyond the compiler abilities</p>
+          <h2>Step #6: do HW-specific optimization</h2>
+          <p>Requires comprehensive understanding of the target HW,<br/> which usually goes beyond compiler's abilities</p>
           <ul>
             <li>Using special hardware capabilities</li>
             <li>Overcoming micro-architecture weakness</li>
-            <li>Using instructions, which are specific for concrete hardware</li>
-            <li>balancing use of different instruction types</li>
+            <li>Using instructions, which are specific for concrete HW</li>
+            <li>balancing usage of different instruction types</li>
           </ul>
           <br/>
-          <p>A classical example here is <strong>recompute temporal or get from the memory</strong>.</p>
+          <p>A classical example here is a question of <strong>recomputing temporal v.s. getting it from the memory</strong>.</p>
         </section>
 
         <section>
           <h2>Step #7: dive into assembly</h2>
-          <blockquote>Assembler is very often used to check the compile and rarely used to write low-level code.</blockquote>
+          <blockquote><b>Assembler is a must-have to check the compiler</b> but it is rarely used to write low-level code.</blockquote>
           <p><strong>Raw assembly make sense to:</strong></p>
           <ul>
             <li><b>Overcome compiler bugs & optimization limitations</b>
@@ -700,23 +586,22 @@ r10 = shl(r9, 2)     // 11
           </ul>
           <p><strong>Keep in mind that:</strong></p>
           <ul>
-            <li>Hand-written assembly is the least portable optimization</li>
-            <li>In-line assembly insertions limit compiler optimizations abilities</li>
+            <li>Assembly writing is the least portable optimization</li>
+            <li>In-line assembly limits compiler optimizations</li>
           </ul>
         </section>
 
         <section>
           <h2>Summary</h2>
           <ul>
-            <li>Practice more, look what other people do and dig into an architecture</li>
-            <li>Wall(-clock) time is the most important metric to optimize</li>
-            <li>The main task of an optimizer is to find critical part of the code.</li>
+            <li>Practice, look what others do, dig into an architecture.</li>
+            <li>Wall time is the most important metric to optimize.</li>
+            <li>The main task of an optimizer is finding the critical part.</li>
             <li>Optimizer's mastership is to know where to stop.</li>
-            <li>Knowledge about the code, the compiler and the platform is must have</li>
-            <li>Optimization is a measure-analyze-optimize-check cycle</li>
-            <li>Stick to high-to-low approach</li>
-            <li>Get the performance from the algorithmic and data structure choices first</li>
-            <li>Ensure memory access patterns next, then go deeper</li>
+            <li>Knowledge about the code, the compiler and the platform is a must-have.</li>
+            <li>Optimization is a measure-analyze-optimize-check cycle.</li>
+            <li>Stick to the high-to-low approach.</li>
+            <li>Get the performance from algorithmic and data structure choices first, ensure memory access patterns next, then go deeper</li>
           </ul>
         </section>
 
@@ -764,3 +649,5 @@ r10 = shl(r9, 2)     // 11
 
   </body>
 </html>
+
+
