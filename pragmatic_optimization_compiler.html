@@ -512,7 +512,7 @@ int caller()
 int caller()
 {
   int s=0, i=0;
-  for (; i&lt;N; i++)
+  for(;i&lt;N;i++)
     s += callee(i);
 
   return s;
@@ -525,11 +525,11 @@ int caller()
                       <pre><code class="cpp">int callee(int i);
 int caller()
 {
-  int s0=0, s1=0, i=0;
-  for (; i&lt;N/2; i+=2)
+  int s0=0,s1=0,i=0;
+  for(;i&lt;N/2;i+=2)
   {
-    s0 += callee(i);
-    s1 += callee(i+1);
+    s0+=callee(i);
+    s1+=callee(i+1);
   }
   return s0 + s1;
 }</code></pre>
@@ -817,13 +817,13 @@ int main ()
 
           <section>
             <h2>Example: floating point</h2>
-            <ol>
+            <ol style="width:90%">
               <li>Compile it <b>without</b> optimization
-                <pre class="console"><span>$ gcc -std=c99 -Wall -O0 flags-dp.c -o flags-dp
+                <pre class="console"><diff>$ gcc -std=c99 -Wall -O0 flags-dp.c -o flags-dp
 $ time ./flags-dp
 sum = 7.29569e+08
 real  0m24.550s</span></pre></li><br/>
-              <li>Compile it with <b>the first</b> optimization level: <b>~3.26 speedup</b>
+              <li>Compile it with <b>O1</b>: <b>~3.26 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O1 flags-dp.c -o flags-dp
 $ time ./flags-dp</code></strong>
 sum = 7.29569e+08
@@ -833,13 +833,13 @@ real  0m7.529s</span></pre></li>
 
           <section>
             <h2>Example: floating point</h2>
-            <ol start="3">
-              <li>Compile it with <b>the second</b> optimization level: <b>~1.24 speedup</b>
+            <ol start="3" style="width:90%">
+              <li>Compile it with <b>O2</b>: <b>~1.24 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O2 flags-dp.c -o flags-dp
 $ time ./flags-dp
 sum = 7.29569e+08
 real  0m6.069s</span></pre></li><br/>
-              <li>Compile it with <b>the third</b> optimization level:  <b>~1.00 speedup</b>
+              <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp.c -o flags-dp
 $ time ./flags-dp</code></strong>
 sum = 7.29569e+08
@@ -870,13 +870,13 @@ int main ()
 
           <section>
             <h2>Example: integer</h2>
-            <ol style="width:100%">
+            <ol style="width:90%">
               <li>Compile it <b>without</b> optimization
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O0 flags.c -o flags
 $ time ./flags
 sum = 288231861405089791
 real  0m18.750s</span></pre></li><br/>
-              <li>Compile it with <b>the first</b> optimization level: <b>~2.64 speedup</b>
+              <li>Compile it with <b>O1</b>: <b>~2.64 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O1 flag.c -o flags
 $ time ./flags</code></strong>
 sum = 288231861405089791
@@ -886,13 +886,13 @@ real  0m7.092s</span></pre></li>
 
           <section>
             <h2>Example: integer</h2>
-            <ol start="3" style="width:100%">
-              <li>Compile it with <b>the second</b> optimization level:<b>~0.97 speedup</b>
+            <ol start="3" style="width:90%">
+              <li>Compile it with <b>O2</b>:<b>~0.97 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O2 flags.c -o flags
 $ time ./flags
 sum = 288231861405089791
 real  0m7.300s</span></pre></li><br/>
-              <li>Compile it with <b>the third</b> optimization level:  <b>~1.00 speedup</b>
+              <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags.c -o flags
 $ time ./flags</code></strong>
 sum = 288231861405089791
@@ -1093,7 +1093,7 @@ real  0m1.286s</span></pre>
 
           <section>
             <h2>Examples: GCC feedback options</h2>
-            <ul style="width:100%;">
+            <ul style="width:90%;">
               <li>Outputs all optimization info to stderr.
                 <pre><div class="console">gcc -O3 -fopt-info</div></pre>
               </li>
@@ -1102,7 +1102,7 @@ real  0m1.286s</span></pre>
               </li>
               <li>Outputs information about missed optimizations as well as optimized locations from all the inlining
               passes to inline.txt.
-                <pre><div class="console" style="font-size:0.85em;">gcc -O3 -fopt-info-inline-optimized-missed=inline.txt</div></pre>
+                <pre><div class="console" style="font-size:0.75em;">gcc -O3 -fopt-info-inline-optimized-missed=inline.txt</div></pre>
               </li>
             </ul>
           </section>
