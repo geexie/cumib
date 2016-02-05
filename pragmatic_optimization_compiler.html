@@ -172,8 +172,8 @@
             <h2>Frontend and backend</h2>
             <img src="images/popt/front-back.svg" class="simple">
             <ul>
-              <li>Only a <strong>backend</strong> is required for <strong>new machine</strong> support</li>
-              <li>Only a <strong>frontend</strong> is required for <strong>new language</strong> support</li>
+              <li>Only a <b>backend</b> is required for <b>new machine</b> support</li>
+              <li>Only a <b>frontend</b> is required for <b>new language</b> support</li>
               <li>Most of optimizations resemble each other for all targets and could be applied in between frontend and backend</li>
             </ul>
           </section>
@@ -183,9 +183,10 @@
           <section>
             <h2>Intermediate language</h2>
             <img src="images/popt/intermediate_code.svg" class="simple" width="60%">
-            <p>It becomes easier to apply code optimization techniques on the intermediate code. Modern compilers usually
-            use 2 levels of intermediate representation (IR).</p>
+            <p>Optimization techniques become much easier to conduct on the level of intermediate code.
+            Modern compilers usually use 2 levels of intermediate representation (IR).</p>
           </section>
+
           <section>
             <h2>Intermediate language</h2>
             <dl>
@@ -210,10 +211,10 @@
             </ul>
             <pre><code class="cpp">a = b + c * d;</code></pre>
             <p>Three-Address Code (TAC)</p>
-            <pre><code>r1 = c * d;
-r2 = b + r1;
+            <pre><code class="c">r1 =  c *  d;
+r2 =  b + r1;
 r3 = r2 + r1;
-a = r3</code></pre>
+a  = r3</code></pre>
             <p>Here <strong>r<small>th</small></strong> is an abstract register.</p>
           </section>
 
@@ -313,13 +314,14 @@ a = r3</code></pre>
               <dt><a href="https://gcc.gnu.org/onlinedocs/gccint/GENERIC.html#GENERIC">GENERIC</a>
               and <a href="https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html">GIMPLE</a></dt>
               <dd>GNU Compiler Collection<br>
-                <small style="vertical-align:middle;">
-                  <code>-fdump-tree-all -fdump-tree-ssa -fdump-tree-optimized -fdump-rtl-all</code>
-                </small>
+                <div style="vertical-align:middle;" class="console">
+                  <span>-fdump-tree-all-fdump-tree-optimized -fdump-tree-<abbr attr title="Static Single Assignment">ssa</abbr></span><br>
+                  <span> -fdump-<abbr title="Register Transfer Language">rtl</abbr>-all</span>
+                </div>
               </dd>
               <dt><a href="http://llvm.org/docs/LangRef.html">LLVM IL</a></dt>
               <dd>clang and other LLWM based compilers<br>
-                <small  style="vertical-align:middle;"><code>-emit-llvm</code></small>
+                <div  style="vertical-align:middle;" class="console">-emit-llvm</div>
               </dd>
               <dt>CIL (C Intermediate Language)</dt>
               <dd>Visual Studio cl.exe</dd>
@@ -390,10 +392,10 @@ $ cat test.ll</span></pre>
 
           <section>
             <h2>Strict aliasing assumption</h2>
-            <blockquote>Strict aliasing is an assumption, made by a C (or C++) compiler, that dereferencing pointers to objects
-            of different types will never refer to the same memory location.</blockquote>
-            <p>This assumption enables more aggressive optimization, but a programmer should follow strict aliasing rules
-            to get code working correctly.</p>
+            <blockquote><b>Strict aliasing</b> is an assumption, made by a C (or C++) compiler, that dereferencing
+            pointers to objects of different types will never refer to the same memory location.</blockquote>
+            <p>This assumption enables more aggressive optimization (gcc assumes it up from -02), but a programmer
+            should have to follow strict aliasing rules to get code working correctly.</p>
           </section>
           <section>
             <h2>Strict aliasing assumption</h2>
@@ -498,11 +500,15 @@ int caller()
           <section>
             <h2>Pure functions</h2>
             <ul>
-              <li>Pure functions are much easier to optimize. Express ideas in code as pure functions.</li>
-              <li>Most functions from math.h are not pure</li>
+              <li>Pure functions are much easier to optimize. Expressing ideas in code as pure functions simplifies
+              compiler's life.</li>
+              <li>Most functions from math.h are not pure (sets/cleans floating point flags and conditions, throws
+              floating point exceptions)</li>
               <li>Use <b>constexpr</b> keyword for c++11 to hint a compiler that function could be evaluated in compile time</li>
               <li>Use <b>static</b> keyword to help the compiler to see all the usages of the function
-              (It can perform more aggressive in-lining, and even deduce whether the function is pure or not)</li>
+              (and perform aggressive inlining, or even deduce whether the function is pure or not)</li>
+              <li><strong>Neither constexpr nor static doesn't guarantee that function is pure</strong>
+              but they give compiler some hints.</li>
             </ul>
           </section>
 
@@ -528,7 +534,7 @@ int caller()
 
         <section>
           <section>
-            <h2>Optimization challenges: Floating point</h2>
+            <h2>Floating point</h2>
             <ul>
               <li>Floating point arithmetics is not associative<br>, so <b>A+(B+C) != (A+B)+C</b></li>
               <li>A compiler is very conservative about floating point!</li>
@@ -540,9 +546,9 @@ int caller()
   double b = -(1.0e15 - 1.0);
   printf("%f %f\n", x*(a + b), x*a + x*b );
 }</code></pre>
-          <p><pre class="console"><span>$ gcc check.c -o check
-$ ./check
+          <p><pre class="console"><span>$ gcc check.c -o check ; ./check
 3.141593 3.000000</span></pre></p>
+            <p>Such situation is known as <b>catastrophic cancellation</b> </p>
           </section>
         </section>
 
@@ -736,15 +742,14 @@ options enabled:
             <pre><code class="cpp">double power( double d, unsigned n)
 {
   double x = 1.0;
-  for (unsigned j = 1; j<=n; j++)
-    x *= d;
+  for (unsigned j = 1; j<=n; j++, x *= d) ;
   return x;
 }
 int main ()
 {
-  double sum = 0.0;
-  for (unsigned i=1; i<=INT_MAX-8; i++)
-    sum += power(i, i % 8);
+  double a = 1./0x80000000U, sum = 0.0;
+  for (unsigned i=1; i<= 0x80000000U; i++)
+    sum += power( i*a, i % 8);
   printf ("sum = %g\n", sum);
 }</code></pre>
             <small style="float:right;">
@@ -758,48 +763,47 @@ int main ()
               <li>Compile it <b>without</b> optimization
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O0 flags-dp.c -o flags-dp
 $ time ./flags-dp
-sum = 7.06739e+72
-real  0m23.229s</span></pre></li><br/>
-              <li>Compile it with <b>the first</b> optimization level: <b>~2.78 speedup</b>
+sum = 7.29569e+08
+real  0m24.550s</span></pre></li><br/>
+              <li>Compile it with <b>the first</b> optimization level: <b>~3.26 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O1 flags-dp.c -o flags-dp
 $ time ./flags-dp</code></strong>
-sum = 7.06739e+72
-real  0m8.342s</span></pre></li>
+sum = 7.29569e+08
+real  0m7.529s</span></pre></li>
             </ol>
           </section>
 
           <section>
             <h2>Example: floating point</h2>
             <ol start="3">
-              <li>Compile it with <b>the second</b> optimization level: <b>~1.55 speedup</b>
+              <li>Compile it with <b>the second</b> optimization level: <b>~1.24 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O2 flags-dp.c -o flags-dp
 $ time ./flags-dp
-sum = 7.06739e+72
-real  0m5.371s</span></pre></li><br/>
-              <li>Compile it with <b>the third</b> optimization level:  <b>~1.025 speedup</b>
+sum = 7.29569e+08
+real  0m6.069s</span></pre></li><br/>
+              <li>Compile it with <b>the third</b> optimization level:  <b>~1.00 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp.c -o flags-dp
 $ time ./flags-dp</code></strong>
-sum = 7.06739e+72
-real  0m5.240s</span></pre></li>
+sum = 7.29569e+08
+real  0m6.067s</span></pre></li>
             </ol>
-            <p><b>Total speedup is ~4.43</b></p>
+            <p><b>Total speedup is ~4.05</b></p>
           </section>
 
           <section>
             <h2>Example: integer</h2>
-            <pre><code class="cpp">int power(int d, unsigned n)
+            <pre><code class="cpp">int power( int d, unsigned n)
 {
   int x = 1;
-  for (unsigned j=1; j &lt;= n; j++)
-    x *= d;
+  for (unsigned j = 1; j<=n; j++, x*=d) ;
   return x;
 }
-int main()
+int main ()
 {
-  int sum = 0.0;
-  for (unsigned i=1; i&lt;=INT_MAX-8; i++)
-    sum += power(i, i % 8);
-  printf ("sum = %d\n", sum);
+  int64_t sum = 0;
+  for (unsigned i=1; i<0x80000000U; i++)
+    sum += power( i, i % 8);
+  printf ("sum = %ld\n", sum);
 }</code></pre>
             <small style="float:right;">
               <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-c">flags.c</a>
@@ -812,31 +816,31 @@ int main()
               <li>Compile it <b>without</b> optimization
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O0 flags.c -o flags
 $ time ./flags
-sum = -805306349
-real  0m19.025s</span></pre></li><br/>
-              <li>Compile it with <b>the first</b> optimization level: <b>~2.92 speedup</b>
+sum = 288231861405089791
+real  0m18.750s</span></pre></li><br/>
+              <li>Compile it with <b>the first</b> optimization level: <b>~2.64 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O1 flag.c -o flags
 $ time ./flags</code></strong>
-sum = -805306349
-real  0m6.526s</span></pre></li>
+sum = 288231861405089791
+real  0m7.092s</span></pre></li>
             </ol>
           </section>
 
           <section>
             <h2>Example: integer</h2>
             <ol start="3" style="width:100%">
-              <li>Compile it with <b>the second</b> optimization level:<b>~0.93 speedup</b>
+              <li>Compile it with <b>the second</b> optimization level:<b>~0.97 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O2 flags.c -o flags
 $ time ./flags
-sum = -805306349
-real  0m6.950s</span></pre></li><br/>
+sum = 288231861405089791
+real  0m7.300s</span></pre></li><br/>
               <li>Compile it with <b>the third</b> optimization level:  <b>~1.00 speedup</b>
                 <pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags.c -o flags
 $ time ./flags</code></strong>
-sum = -805306349
-real  0m6.918s</span></pre></li>
+sum = 288231861405089791
+real  0m7.082s</span></pre></li>
             </ol>
-            <h3>What causes performance degradation?</h3>
+            <h3>What there is no improvement?</h3>
           </section>
 
           <section>
@@ -852,63 +856,64 @@ real  0m6.918s</span></pre></li>
                   <td style="border-right: 3px double #F0E7D5;">Optimization level: -O1
                     <pre><code class="x86asm">  movl  $1, %r8d
   movl  $0, %edx
-.L4:
+.L9:
   movl  %r8d, %edi
   movl  %r8d, %esi
   andl  $7, %esi
-  je  .L5
+  je  .L10
+  movl  $1, %ecx
   movl  $1, %eax
+.L8:                @
+  addl  $1, %eax    @
+  imull %edi, %ecx  @
+  cmpl  %eax, %esi  @
+  jae .L8
+  jmp .L7
+.L10:
   movl  $1, %ecx
-.L3:
-  imull %edi, %ecx
-  addl  $1, %eax
-  cmpl  %eax, %esi
-  jae .L3
-  jmp .L2
-.L5:
-  movl  $1, %ecx
-.L2:
-  addl  %ecx, %edx
+.L7:
+  movslq  %ecx, %rcx
+  addq  %rcx, %rdx
   addl  $1, %r8d
-  jns .L4</code></pre>
+  jns .L9
+  @ printing is here</code></pre>
                   </td>
                   <td>Optimization level: -O2
-                    <pre><code class="x86asm">  movl  $1, %esi
-  movl  $1, %r8d
-  xorl  %edx, %edx
-  .p2align 4,,10
-  .p2align 3
-.L4:
-  movl  %r8d, %edi
-  andl  $7, %edi
-  je  .L5
-  movl  $1, %eax
-  movl  $1, %ecx
-  .p2align 4,,10
-  .p2align 3
-.L3:
-  addl  $1, %eax
-  imull %esi, %ecx
-  cmpl  %eax, %edi
-  jae .L3</code></pre>
+                    <pre><code class="x86asm">  movl    $1, %esi
+    movl    $1, %r8d
+    xorl    %edx, %edx
+    .p2align 4,,10
+    .p2align 3
+.L10:
+    movl    %r8d, %edi
+    andl    $7, %edi
+    je  .L11
+    movl    $1, %ecx
+    movl    $1, %eax
+    .p2align 4,,10
+    .p2align 3
+.L9:
+    addl    $1, %eax
+    imull   %esi, %ecx
+    cmpl    %eax, %edi
+    jae .L9
+    movslq  %ecx, %rcx</code></pre>
                   </td>
                   <td><br/>
-                    <pre><code class="x86asm">addl  $1, %r8d
-  addl  %ecx, %edx
-  testl %r8d, %r8d
-  movl  %r8d, %esi
-  jns .L4
-.L10:
-@ printing is here
-.L5:
-  addl  $1, %r8d
-  movl  $1, %ecx
-  addl  %ecx, %edx
-  testl %r8d, %r8d
-  movl  %r8d, %esi
-  jns .L4
-  jmp .L10</code></pre>
-                  <h3>Compiler overdone unrolling of the other loop</h3>
+                    <pre><code class="x86asm">.L8:
+    addl    $1, %r8d
+    addq    %rcx, %rdx
+    testl   %r8d, %r8d
+    movl    %r8d, %esi
+    jns .L10
+    subq    $8, %rsp
+    @ printing is here
+    ret
+.L11:
+    movl    $1, %ecx
+    jmp .L8</code></pre>
+                  <br>
+                  <h3>Compiler overdone with branch twiddling and alignment</h3>
                   </td>
                 </tr>
               </tbody>
@@ -927,24 +932,25 @@ real  0m6.918s</span></pre></li>
             <p><pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp-tuned.c\
 -o flags-dp-tuned
 $ time ./flags-dp-tuned</code></strong>
-sum = -805306349
-real  0m1.660s</span></pre>
-            <b>Speedup is ~3.16x.</b>
+sum = 7.29569e+08
+real  0m2.448s</span></pre>
+            <b>Speedup is ~2.48x.</b>
             </p>
           </section>
           <section>
             <h2>Helping a compiler</h2>
-            <pre><code class="cpp">int main (void)
+            <pre><code class="cpp" style="font-size:0.9em;line-height: 0.9em;">/*power function is not changed*/
+int main ()
 {
-  double sum = 0.0;
-  for (unsigned i=1; i&lt;=INT_MAX-8; i+=8)
+  double a = 1./0x80000000U, s = -1.;
+  for (double i=0; i<=0x80000000U-8; i += 8)
   {
-    sum+=power(i+0,0); sum+=power(i+1,1);
-    sum+=power(i+2,2); sum+=power(i+3,3);
-    sum+=power(i+4,4); sum+=power(i+5,5);
-    sum+=power(i+6,6); sum+=power(i+7,7);
+    s+=power((i+0)*a,0);s+=power((i+1)*a,1);
+    s+=power((i+2)*a,2);s+=power((i+3)*a,3);
+    s+=power((i+4)*a,4);s+=power((i+5)*a,5);
+    s+=power((i+6)*a,6);s+=power((i+7)*a,7);
   }
-  printf ("sum = %g\n", sum);
+  printf ("sum = %g\n", s);
 }</code></pre>
           </section>
 
@@ -955,17 +961,18 @@ real  0m1.660s</span></pre>
                 <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-tuned-c">flags-tuned.c</a>
               </small>)
             </p>
-            <pre><code class="cpp">int main (void)
+            <pre><code class="cpp" style="font-size:0.9em;line-height: 0.9em;">/*power function is not changed*/
+int main ()
 {
-  int sum = -1;
-  for (unsigned i=1; i&lt;=INT_MAX-8; i+=8)
+  int64_t sum = -1;
+  for (unsigned i=0; i<=0x80000000U-8; i += 8)
   {
-    sum+=power(i+0,0); sum+=power(i+1,1);
-    sum+=power(i+2,2); sum+=power(i+3,3);
-    sum+=power(i+4,4); sum+=power(i+5,5);
-    sum+=power(i+6,6); sum+=power(i+7,7);
+    sum+=power(i+0, 0); sum+=power(i+1,1);
+    sum+=power(i+2, 2); sum+=power(i+3,3);
+    sum+=power(i+4, 4); sum+=power(i+5,5);
+    sum+=power(i+6, 6); sum+=power(i+7,7);
   }
-  printf ("sum = %g\n", sum);
+  printf ("sum = %ld\n", sum);
 }</code></pre>
           </section>
 
@@ -974,9 +981,9 @@ real  0m1.660s</span></pre>
             <p><pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags-tuned.c\
 -o flags-tuned
 $ time ./flags-tuned</code></strong>
-sum = -805306349
-real  0m1.269s</span></pre>
-            <b>Speedup is ~5.14x.</b>
+sum = 288231861405089791
+real  0m1.286s</span></pre>
+            <b>Speedup is ~5.5x.</b>
             </p>
           </section>
         </section>
@@ -1012,17 +1019,17 @@ real  0m1.269s</span></pre>
             <h2>Example: GCC feedback options</h2>
             <ul>
               <li>Enables optimization information printing
-              <strong><pre><code class="sh">-fopt-info</code></strong></pre>
-              <pre><code class="sh">-fopt-info-&lt;optimized/missed/note/all&gt;</code></pre>
-              <pre><code class="sh">-fopt-info-all-&lt;ipa/loop/inline/vec/optall&gt;</code></pre>
-              <pre><code class="sh">-fopt-info=filename</code></pre>
+              <strong><pre><div class="console">-fopt-info</div></strong></pre>
+              <pre><div class="console">-fopt-info-&lt;optimized/missed/note/all&gt;</div></pre>
+              <pre><div class="console">-fopt-info-all-&lt;ipa/loop/inline/vec/optall&gt;</div></pre>
+              <pre><div class="console">-fopt-info=filename</div></pre>
               </li>
               <li>Controls the amount of debugging output the scheduler prints on targets
               that use instruction scheduling
-              <pre><code class="sh">-fopt-info -fsched-verbose=n</code></pre>
+              <pre><div class="console">-fopt-info -fsched-verbose=n</div></pre>
               </li>
               <li>Controls the amount of output from auto-vectorizer
-              <pre><code class="sh">-ftree-vectorizer-verbose=n </code></pre></li>
+              <pre><div class="console">-ftree-vectorizer-verbose=n </div></pre></li>
             </ul>
           </section>
 
@@ -1030,28 +1037,28 @@ real  0m1.269s</span></pre>
             <h2>Examples: GCC feedback options</h2>
             <ul style="width:100%;">
               <li>Outputs all optimization info to stderr.
-                <pre><code class="sh">gcc -O3 -fopt-info</code></pre>
+                <pre><div class="console">gcc -O3 -fopt-info</div></pre>
               </li>
               <li>Outputs missed optimization report from all the passes to missed.txt
-                <pre><code class="sh">gcc -O3 -fopt-info-missed=missed.txt</code></pre>
+                <pre><div class="console">gcc -O3 -fopt-info-missed=missed.txt</div></pre>
               </li>
               <li>Outputs information about missed optimizations as well as optimized locations from all the inlining
               passes to inline.txt.
-                <pre><code class="sh" style="font-size:0.85em;">gcc -O3 -fopt-info-inline-optimized-missed=inline.txt</code></pre>
+                <pre><div class="console" style="font-size:0.85em;">gcc -O3 -fopt-info-inline-optimized-missed=inline.txt</div></pre>
               </li>
             </ul>
           </section>
 
           <section>
             <h2>GCC feedback example</h2>
-            <pre class="console" style="font-size:0.5em;"><span>./src/box.cc:193:9: note: loop vectorized
-./src/box.cc:193:9: note: loop versioned for vectorization because of possible aliasing
+            <pre class="console" style="font-size:0.5em;"><span>./src/box.cc:193:9: note: loop <b>vectorized</b>
+./src/box.cc:193:9: note: loop <b>versioned</b> for vectorization because of possible aliasing
 ./src/box.cc:193:9: note: loop peeled for vectorization to enhance alignment
 ./src/box.cc:96:9: note: loop vectorized
-./src/box.cc:96:9: note: loop peeled for vectorization to enhance alignment
+./src/box.cc:96:9: note: loop <b>peeled</b> for vectorization to enhance alignment
 ./src/box.cc:51:9: note: loop vectorized
 ./src/box.cc:51:9: note: loop peeled for vectorization to enhance alignment
-./src/box.cc:193:9: note: loop with 7 iterations completely unrolled
+./src/box.cc:193:9: note: loop with 7 iterations <b>completely unrolled</b>
 ./src/box.cc:32:13: note: loop with 7 iterations completely unrolled
 ./src/box.cc:96:9: note: loop with 15 iterations completely unrolled
 ./src/box.cc:51:9: note: loop with 15 iterations completely unrolled
@@ -1101,16 +1108,17 @@ real  0m1.269s</span></pre>
         <section>
           <h2>Summary: Toward a compiler</h2>
           <ul>
-            <li>Correctness is always emphasized over performance</li>
-            <li>For typical constructs a compiler will usually does better job than a programmer</li>
+            <li><b>Correctness takes precedence over performance</b></li>
+            <li>For typical constructs a compiler will usually do better job than a programmer</li>
             <li>A compiler is not aware of your program semantics</li>
             <li>Compiler optimization is a multi-phase iterative process</li>
-            <li>Performing one optimization enables a compiler to perform other ones </li>
-            <li>Most optimizations need to be applied to code in order</li>
+            <li>Performing one optimization allows many other</li>
+            <li>Most optimizations need certain order of application</li>
             <br/>
             <li>Learn a compiler well and stick to it</li>
             <li>Express your intentions to the compiler clearly</li>
             <li>Check for a compiler feedback</li>
+            <li><b>Write pure code!</b></li>
           </ul>
         </section>
 
