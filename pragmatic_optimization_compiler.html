@@ -341,6 +341,64 @@ $ cat test.ll</span></pre>
   ret i32 %2
 }</code></pre></p>
           </section>
+
+          <section>
+            <h2>Local variables</h2>
+            <p>Compiler don't care how many variables are used in code, register allocation is done after IR rotations.</p>
+            <pre class="cpp"><code>for( ; j <= roi.width - 4; j += 4 )
+{
+    uchar t0 = tab[src[j]];
+    uchar t1 = tab[src[j+1]];
+    dst[j] = t0;
+    dst[j+1] = t1;
+    t0 = tab[src[j+2]];
+    t1 = tab[src[j+3]];
+    dst[j+2] = t0;
+    dst[j+3] = t1;
+}</code></pre>
+          </section>
+
+          <section>
+            <h2>Local variables</h2>
+            <pre class="cpp" style="font-size:0.4em;"><code>.lr.ph4:                                          ; preds = %0, %.lr.ph4
+  %indvars.iv5 = phi i64 [ %indvars.iv.next6, %.lr.ph4 ], [ 0, %0 ]
+  %6 = getelementptr inbounds i8* %src, i64 %indvars.iv5
+  %7 = load i8* %6, align 1, !tbaa !1
+  %8 = zext i8 %7 to i64
+  %9 = getelementptr inbounds i8* %tab, i64 %8
+  %10 = load i8* %9, align 1, !tbaa !1
+  %11 = or i64 %indvars.iv5, 1
+  %12 = getelementptr inbounds i8* %src, i64 %11
+  %13 = load i8* %12, align 1, !tbaa !1
+  %14 = zext i8 %13 to i64
+  %15 = getelementptr inbounds i8* %tab, i64 %14
+  %16 = load i8* %15, align 1, !tbaa !1
+  %17 = getelementptr inbounds i8* %dst, i64 %indvars.iv5
+  store i8 %10, i8* %17, align 1, !tbaa !1
+  %18 = getelementptr inbounds i8* %dst, i64 %11
+  store i8 %16, i8* %18, align 1, !tbaa !1
+  %19 = or i64 %indvars.iv5, 2
+  %20 = getelementptr inbounds i8* %src, i64 %19
+  %21 = load i8* %20, align 1, !tbaa !1
+  %22 = zext i8 %21 to i64
+  %23 = getelementptr inbounds i8* %tab, i64 %22
+  %24 = load i8* %23, align 1, !tbaa !1
+  %25 = or i64 %indvars.iv5, 3
+  %26 = getelementptr inbounds i8* %src, i64 %25
+  %27 = load i8* %26, align 1, !tbaa !1
+  %28 = zext i8 %27 to i64
+  %29 = getelementptr inbounds i8* %tab, i64 %28
+  %30 = load i8* %29, align 1, !tbaa !1
+  %31 = getelementptr inbounds i8* %dst, i64 %19
+  store i8 %24, i8* %31, align 1, !tbaa !1
+  %32 = getelementptr inbounds i8* %dst, i64 %25
+  store i8 %30, i8* %32, align 1, !tbaa !1
+  %indvars.iv.next6 = add nuw nsw i64 %indvars.iv5, 4
+  %33 = trunc i64 %indvars.iv.next6 to i32
+  %34 = icmp sgt i32 %33, %1
+  br i1 %34, label %..preheader_crit_edge, label %.lr.ph4
+</code></pre>
+          </section>
         </section>
 
         <section>
