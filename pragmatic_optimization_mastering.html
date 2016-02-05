@@ -29,6 +29,14 @@
       document.getElementsByTagName( 'head' )[0].appendChild( link );
     </script>
 
+    <style type="text/css">
+  .reveal .console {
+    font-family:Courier;
+    color: #CCCCCC;
+    background: #000000;
+  }
+  </style>
+
     <!--[if lt IE 9]>
     <script src="plugin/reveal/lib/js/html5shiv.js"></script>
     <![endif]-->
@@ -55,15 +63,16 @@
         </section>
 
         <section>
-          <h2>Themes &amp; Contents</h2>
+          <h2>Course Topics</h2>
           <ul>
             <li><strong>Pragmatics</strong>
               <ul>
-                <li>Ordering optimization approaches</li>
+                <li>Ordering optimization approaches</b></li>
                 <li>Demystifying a compiler</li>
                 <li><b>Mastering compiler optimizations</b></li>
               </ul>
             </li>
+            <br/>
             <li><strong>Computer Architectures</strong>
               <ul>
                 <li>Architecture of modern computers</li>
@@ -79,18 +88,9 @@
           <ul>
             <li>Classic taxonomy</li>
             <li>Scope taxonomy</li>
-            <li>Code pattern taxonomy</li>
+            <li>Code-pattern taxonomy</li>
             <li>Some of machine independent transformations
-              <ul>
-                <li>Copy propagation</li>
-                <li>Constant folding</li>
-                <li>...</li>
-                <!-- <li>Strength Reduction</li> -->
-                <!-- <li>Scalarization</li> -->
-                <!-- <li>Common Subexpression Elimination (CSE)</li> -->
-              </ul>
-            </li>
-            <li>Functional body inlining</li>
+            <li>Function body inlining</li>
             <li>Examples of loop optimizations
               <ul>
                 <li>Singe-loop optimizations</li>
@@ -121,7 +121,11 @@
                   <li><i>Enable many other optimizations</i></li>
                 </ol>
               </li>
-              <br/>
+            </ul>
+          </section>
+          <section>
+            <h2>Classic taxonomy</h2>
+            <ul>
               <li>
                 <b>Machine dependent transformations</b>
                 <ul style="list-style:none;">
@@ -142,16 +146,12 @@
             <dl>
               <dt><b>Interprocedural optimizations</b></dt>
               <dd>consider the whole translation unit, involve analysis of <i>dataflow</i> and <i>dependency</i> graphs.</dd>
-              <br/>
               <dt><b>Intraprocedural optimizations</b></dt>
               <dd>consider the whole procedure, involve analysis of <i>dataflow</i> and <i>dependency</i> graphs.</dd>
-              <br/>
               <dt><b>Global optimizations</b></dt>
               <dd>consider the inter-most code block with the context. <i>Loop optimizations belong to this</i>.</dd>
-              <br/>
               <dt><b>Local optimizations</b></dt>
-              <dd>consider a single code block, the analysis is limited to it.</dd>
-              <br/>
+              <dd>consider a single block, the analysis is limited to it.</dd>
               <dt><b>Peephole optimizations</b></dt>
               <dd>map one or more consecutive operators from the IR to a machine code.</dd>
               <br/>
@@ -169,9 +169,7 @@
                   <li>and even different source files, if LTO is enabled</li>
                 </ul>
               </li>
-              <br/>
               <li><strong>Inlining</strong> &mdash; replacing a subroutine call with the replicated code of it</li>
-              <br/>
               <li><strong>Cloning</strong> &mdash; optimizing logic in the copied subroutine for a particular call</li>
             </ul>
           </section>
@@ -208,12 +206,11 @@
 
           <section>
             <h2>Machine independent transformations</h2>
-            <h3>Copy propagation</h3>
+            <blockquote><b>Copy propagation</b> eliminates all copies of the variable with its initial value</blockquote>
             <ul>
-              <li>Eliminates all copies of the variable with its initial value</li>
-              <li>Simplifies intermediate representation and as the result<br/> shrinks problem size for further IR
+              <li>It simplifies IR and as the result shrinks problem size for further IR
               transformations</li>
-              <li>Creates opportunities for death code elimination</li>
+              <li>It creates opportunities for death code elimination</li>
             </ul>
             <br/><br/>
             <table class="simple">
@@ -225,23 +222,15 @@
               <tbody>
                 <tr>
                   <td width="33%">
-                    <pre><code class="cpp">
-int x = y
-int z = 1 + x
-
-</code></pre>
+                    <pre><code class="cpp">int x = y
+int z = 1 + x</code></pre>
                   </td>
                   <td width="33%">
-                    <pre><code class="cpp">
-int x = y
-int z = 1 + y
-
-</code></pre>
+                    <pre><code class="cpp">int x = y
+int z = 1 + y</code></pre>
                   </td>
                   <td>
-                    <pre><code class="cpp">
-int z = 1 + y
-
+                    <pre><code class="cpp">int z = 1 + y
 
 </code></pre>
                   </td>
@@ -253,9 +242,8 @@ int z = 1 + y
 
           <section>
             <h2>Machine independent transformations</h2>
-            <h3>Constant folding</h3>
-            <p>Evaluates expressions from constants in compile time. Expressions could be quite complicated,
-            but absence of any kind of side effects is always a concern.</p>
+            <blockquote><b>Constant folding</b> evaluates expressions from constants in compile time</blockquote>
+            <p>Expressions could be quite complicated, but absence of any kind of side effects is always a concern.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -264,17 +252,13 @@ int z = 1 + y
               <tbody>
                 <tr>
                   <td width="50%">
-                    <pre><code class="cpp">
-int a = 37;
+                    <pre><code class="cpp">int a = 37;
 int b = (int)log(float(1<<7)*M_PI);
 int c = a + b;
-
 </code></pre>
                   </td>
                   <td width="50%">
-                    <pre><code class="cpp">
-int c = 42;
-
+                    <pre><code class="cpp">int c = 42;
 
 
 </code></pre>
@@ -287,10 +271,10 @@ int c = 42;
 
           <section>
             <h2>Machine independent transformations</h2>
-            <h3>Common Subexpression Elimination (CSE)</h3>
-            <p>Caches an expression result into a variable for future use.<br/>Sometimes you have to depict such
-            subexpressions in code by parentheses, to help the compiler to consider them which is especially important
-            for floating point codes.</p>
+            <blockquote><b>Common Subexpression Elimination (CSE)</b>
+            Caches an expression result into a variable for future use</blockquote>
+            <p>Sometimes you have to depict such subexpressions in code by parentheses, to help the compiler to consider
+            them which is especially important for floating point codes.</p>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -300,21 +284,15 @@ int c = 42;
               <tbody>
                 <tr>
                   <td width="50%">
-                    <pre><code class="cpp">
-double d = c * (a / b);
-double e = (a / b) * 2.0;
-
-
+                    <pre><code class="cpp">double d=c*(a/b);
+double e=(a/b)*2.0;
 
 </code></pre>
                   </td>
                   <td>
-                    <pre><code class="cpp">
-double adivb = a / b;
-
-double d = c * adivb;
-double e = adivb * 2.0;
-
+                    <pre><code class="cpp">double adivb=a/b;
+double d=c*adivb;
+double e=adivb*2.0;
 </code></pre>
                   </td>
                 </tr>
@@ -325,59 +303,41 @@ double e = adivb * 2.0;
 
           <section>
             <h2>Machine independent transformations</h2>
-            <h3>Scalarization</h3>
-            <p>Replaces branchy code with a branch-less analogy.<br/>
-            Usually is performed on a loop body to allow auto-vectorization.</p>
-            <p>Machine-independent, local</p>
-            <table class="simple">
-              <colgroup>
-                <col></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td width="50%">
-                    <pre><code class="cpp">int branchy(int i)
-{
-  if (i &gt; 4 && i &lt; 42)
-    return 1;
+            <blockquote><b>Scalarization</b> replaces branchy code with a branchless analogy</blockquote>
+            Usually is performed on a loop body to allow auto-vectorization. Machine-independent, local.
+              <pre><code class="cpp" style="fint-width:0.9em;">int branchy(int i) {
+  if (i &gt; 4 && i &lt; 42) return 1;
   return 0;
 }
-
-int branchless(int i)
-{
+int branchless(int i) {
   return (((unsigned)i) - 5 > 36);
 }
 </code></pre>
-                  </td>
-                  <td>
-                    <pre><code class="asm">branchy:
+            <div class="console">gcc -march=armv8-a+simd -O3 -fopt-info 1.c -S -o 1.s</div>
+          </section>
+
+          <section>
+            <h2>Scalarization</h2>
+            <p>As the result, both snippets are compiled to the same instruction sequence.</p>
+            <pre><code class="asm">branchy:
   sub w0, w0, #5
   cmp w0, 36
   cset  w0, ls
   ret
-
 branchless:
   sub w0, w0, #5
   cmp w0, 36
   cset  w0, hi
-  ret
-</code></pre>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <code>gcc -march=armv8-a+simd -O3 -fopt-info 1.c -S -o 1.s</code>
-            <p>As the result, both snippets are compiled to the same instruction sequence.</p>
+  ret</code></pre>
           </section>
         </section>
 
         <section>
           <section>
             <h2>Machine (in)dependent transformations</h2>
-            <h3>Strength Reduction</h3>
-            Replaces complex expressions with a simpler analogy. The optimization may be machine dependent
-            in case if it relies on a specific feature set implemented in the hardware (e.g. <i>built-in detection</i>)
+            <blockquote><b>Strength Reduction</b> replaces complex expressions with a simpler analogy</blockquote>
+            The optimization may be machine dependent in case if it relies on a specific feature set
+            implemented in the hardware (e.g. <i>built-in detection</i>)
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -386,49 +346,28 @@ branchless:
               <tbody>
                 <tr>
                   <td width="50%" style="border-bottom: 0;">
-                    <pre><code class="cpp">double usePow(double x)
+                    <pre><code class="cpp">double usePow(
+  double x)
 {
-  return pow(x, 2.0);
-}
-
-</code></pre>
+  return pow(x,2.);
+}</code></pre>
                   </td>
                   <td style="border-bottom: 0;">
-                    <pre><code class="armasm">usePow:
-  fmdrr d16, r0, r1
-  fmuld d16, d16, d16
-  fmrrd r0, r1, d16
-  bx  lr
-</code></pre>
-                  </td>
-                </tr>
-                <tr style="background-color:rgba(0,0,0,0);">
-                  <td width="50%">
-                    <pre><code class="cpp">float usePowf(float x)
+                    <pre><code class="cpp">float usePowf(
+  float x)
 {
-  return powf(x, 2.f);
-}
-
-</code></pre>
-                  </td>
-                  <td>
-                    <pre><code class="armasm">usePowf:
-  fmsr  s15, r0
-  fmuls s15, s15, s15
-  fmrs  r0, s15
-  bx  lr</code></pre>
+  return powf(x,2.f);
+}</code></pre>
                   </td>
                 </tr>
               </tbody>
             </table>
-            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
-            <p>Usually it is performed in a local scope for a dependency chain.</p>
           </section>
 
           <section>
-            <h2>Machine (in)dependent transformations</h2>
-            <h3>Strength Reduction (advanced)</h3>
-            Let's look at more complex expression.
+            <h2>Strength Reduction</h2>
+            <p class="console">gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</p>
+            <div>
             <table class="simple">
               <colgroup>
                 <col></col>
@@ -436,23 +375,52 @@ branchless:
               </colgroup>
               <tbody>
                 <tr>
-                  <td width="33%">
-                    <pre><code class="cpp">float useManyPowf(
-    float a, float b,
-    float c, float d,
-    float e, float f,
-    float x)
+                  <td width="50%" style="border-bottom: 0;padding:0;">
+                    <pre><code class="armasm">usePow:
+ fmdrr d16, r0, r1
+ fmuld d16, d16, d16
+ fmrrd r0, r1, d16
+ bx  lr
+</code></pre>
+                  </td>
+                  <td style="border-bottom: 0;padding:0;">
+                    <pre><code class="armasm">usePowf:
+ fmsr  s15, r0
+ fmuls s15, s15, s15
+ fmrs  r0, s15
+ bx  lr</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table></div>
+            <p>Usually it is performed in a local scope for a dependency chain.</p>
+          </section>
+
+          <section>
+            <h2>Strength Reduction (advanced)</h2>
+            Let's look at more complex expression.
+                    <pre><code class="cpp">float useManyPowf(float a,float b,float c,
+  float d, float e, float f, float x)
 {
   return
       a * powf(x, 5.f) +
       b * powf(x, 4.f) +
       c * powf(x, 3.f) +
       d * powf(x, 2.f) +
-      e * x            +
-      f;
+      e * x            + f;
 }</code></pre>
-                  </td>
-                  <td width="33%">
+            <div class="console">gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</div>
+          </section>
+          <section>
+            <h2>Strength Reduction (advanced)</h2>
+            <table class="simple" style="font-size:0.7em;">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
                     <pre><code class="armasm">useManyPowf:
   push  {r3, lr}
   flds  s17, [sp, #56]
@@ -493,20 +461,22 @@ branchless:
                 </tr>
               </tbody>
             </table>
-            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
-            <p>Compiler was able just partly reduce the complexity and generate <code>vfma</code> there it is possible</p>
+
+            <p>Compiler was able just partly reduce the complexity and generate <strong><code>vfma</code></strong> there it is possible</p>
           </section>
 
           <section>
-            <h2>Machine (in)dependent transformations</h2>
-            <h3>Strength Reduction (manual)</h3>
+            <h2>Strength Reduction (manual)</h2>
             Let's further reduce latency by applying Horner rule.
             <pre><code class="cpp">float applyHornerf(float a, float b, float c, float d, float e, float f, float x)
 {
   return ((((a * x + b) * x + c) * x + d) * x + e) * x + f;
 }</code></pre>
-            <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</code>
-            <pre><code class="armasm">applyHornerf:
+            <div class="console">gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</div>
+          </section>
+          <section>
+            <h2>Strength Reduction (manual)</h2>
+            <pre  style="font-size:0.9em;"><code class="armasm">applyHornerf:
   flds  s15, [sp, #8]
   fmsr  s11, r0
   fmsr  s12, r1
@@ -521,86 +491,43 @@ branchless:
   vfma.f32  s14, s11, s15
   vfma.f32  s13, s14, s15
   fmrs  r0, s13
-  bx  lr
-</code></pre>
+  bx  lr</code></pre>
           </section>
         </section>
-
-        <!-- <li>Pipeline scheduling – reorder instructions to improve pipeline performance</li> -->
 
         <section>
           <section>
             <h2>Function body inlining</h2>
-            <p>Replaces functional call to function body itself. <strong>Enables all further optimizations.</strong></p>
-            Machine-independent &amp; interprocedural.
-            <table class="simple">
-              <colgroup>
-                <col></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td width="50%">
-                    <pre><code class="cpp">int square(int x)
-{
-  return x*x;
-}
+            <p>Replaces functional call to function body itself. <strong>Enables all further optimizations.</strong>
+            Machine-independent &amp; interprocedural.</p>
+            <pre><code class="cpp">int square(int x) { return x*x; }
 
 for (int i = 0; i < len; i++)
   arr[i] = square(i);</code></pre>
-                    Becomes
-                    <pre><code class="cpp">for (int i = 0; i < len; i++)
+            Becomes
+            <pre><code class="cpp">for (int i = 0; i < len; i++)
     arr[i] = i*i;</code></pre>
-                  </td>
-                  <td>
-    <!-- movk - Move 16-bit immediate into register, keeping other bits unchanged. -->
-                    <pre><code class="armasm">
-  .L2:
-    add x2, x4, :lo12:.LANCHOR0
-    mov x1, 34464
-    mul w3, w0, w0
-    movk  x1, 0x1, lsl 16
-    str w3, [x2,x0,lsl 2]
-    add x0, x0, 1
-    cmp x0, x1
-    bne .L2
-
-
-
-</code></pre>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <code>gcc -march=armv8-a+nosimd -fstrict-aliasing  -O3 -fopt-info 1.c -S -o 1.s</code>
           </section>
 
           <section>
             <h2>Function body inlining</h2>
-            <p>Let's compile the code with vector extension enabled <strong><code>-march=armv8-a+simd</code></strong></p>
-            <table class="simple">
-              <colgroup>
-                <col></col>
-                <col></col>
-                <col></col>
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td width="50%">
-                    <pre><code class="cpp">int square(int x)
-  {
-    return x*x;
-  }
+            <div class="console">gcc -march=armv8-a+nosimd -fstrict-aliasing  -O3 -fopt-info 1.c -S -o 1.s</div>
+  <!-- movk - Move 16-bit immediate into register, keeping other bits unchanged. -->
+            <pre><code class="armasm">.L2:
+  add x2, x4, :lo12:.LANCHOR0
+  mov x1, 34464
+  mul w3, w0, w0
+  movk  x1, 0x1, lsl 16
+  str w3, [x2,x0,lsl 2]
+  add x0, x0, 1
+  cmp x0, x1
+  bne .L2</code></pre>
+            <p>Let's compile the code with vector extension enabled <strong><div class="console">-march=armv8-a+simd</div></strong></p>
+          </section>
 
-  for (int i = 0; i < len; i++)
-    arr[i] = square(i);</code></pre>
-                    Becomes
-                    <pre><code class="cpp">for (int i = 0; i < len; i++)
-    arr[i] = i*i;</code></pre>
-                  </td>
-                  <td>
-                    <pre><code class="armasm">
-  add x0, x0, :lo12:.LANCHOR0
+          <section>
+            <h2>Function body inlining</h2>
+            <pre><code class="armasm">  add x0, x0, :lo12:.LANCHOR0
   movi  v2.4s, 0x4
   ldr q0, [x1]
   add x1, x0, 397312
@@ -610,13 +537,7 @@ for (int i = 0; i < len; i++)
   add v0.4s, v0.4s, v2.4s
   str q1, [x0],16
   cmp x0, x1
-  bne .L2
-
-</code></pre>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+  bne .L2</code></pre>
             <p>Auto-vectorization is enabled because of possibility to inline function call inside a loop.</p>
           </section>
         </section>
@@ -659,8 +580,21 @@ for (int i = 0; i < len; i++)
         </section>
 
         <section>
+          <section>
           <h2>#1: Loop-induction variable elimination</h2>
           In most cases compiler is able to replace address arithmetics with pointer arithmetics.
+                  <pre><code class="cpp">void function(int* arr, int len) {
+  for (int i = 0; i < len; i++)
+    arr[i] = 1;
+}</code></pre>
+                  <pre><code class="cpp">void function(int* arr, int len) {
+  for (int* p = arr; p < arr + len; p++)
+      *p = 1;
+}</code></pre>
+          <div class="console">gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O1 1.c -S -o 1.s</div>
+          </section>
+          <section>
+          <h2>#1: Loop-induction variable elimination</h2>
           <table class="simple">
             <colgroup>
               <col></col>
@@ -668,27 +602,11 @@ for (int i = 0; i < len; i++)
             </colgroup>
             <tbody>
               <tr>
-                <td width="50%" width="50%" style="border-bottom: 0;">
-                  <pre><code class="cpp">void function(int* arr, int len)
-{
-  for (int i = 0; i < len; i++)
-    arr[i] = 1;
-}</code></pre>
-                </td>
-                <td width="50%" style="border-bottom: 0;">
-                  <pre><code class="cpp">void function(int* arr, int len)
-{
-  for (int* p = arr; p < arr + len; p++)
-      *p = 1;
-}</code></pre>
-                </td>
-              </tr>
-              <tr style="background-color:rgba(0,0,0,0);">
-                <td>
+                <td  width="50%" style="padding:0;">
                   <pre><code class="armacm">  cmp r1, #0
   ble .L1
-  mov r3, r0
-  add r0, r0, r1, lsl #2
+  mov r3,r0
+  add r0,r0,r1,lsl #2
   movs  r2, #1
 .L3:
   str r2, [r3], #4
@@ -697,9 +615,9 @@ for (int i = 0; i < len; i++)
 .L1:
   bx  lr</code></pre>
                 </td>
-                <td>
+                <td  style="padding:0;" >
                   <pre><code class="armasm">
-  add r1, r0, r1, lsl #2
+  add r1,r0,r1,lsl #2
   cmp r0, r1
   bcs .L5
   movs  r3, #1
@@ -713,18 +631,16 @@ for (int i = 0; i < len; i++)
               </tr>
             </tbody>
           </table>
-          <code>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O1 1.c -S -o 1.s</code>
-          <p>
-            <b>Most hand-written pointer optimizations do not make sense with usage optimization levels
-            higher than O0.</b>
-          </p>
+          <p>Most hand-written <b>pointer optimizations</b> do not make sense with usage optimization levels
+            higher than O0.</p>
+        </section>
         </section>
 
         <section>
           <h2>#2: Hoisting Loop Invariant Code</h2>
-          <p>The goal of <b>hoisting</b> &mdash; also called <b>loop-invariant code motion</b> &mdash; is to avoid recomputing
-          loop-invariant code each time through the body of a loop.</p>
-         <table class="simple">
+          <blockquote>The goal of <b>hoisting</b> &mdash; also called <b>loop-invariant code motion</b> &mdash; is to avoid recomputing
+          loop-invariant code each time through the body of a loop.</blockquote>
+         <table class="simple" style="font-size:0.4em;">
             <colgroup>
               <col></col>
               <col></col>
@@ -794,7 +710,7 @@ for (int i = 0; i < len; i++)
             <h2>#3: Loop unswitching</h2>
             Moves loop-invariant conditionals or switches which are independent of the loop index<br/> out of
             the loop. Increases instruction level parallelism, enables further optimizations.
-            <table class="simple">
+            <table class="simple"  style="font-size:0.4em;">
               <colgroup>
                 <col></col>
                 <col></col>
@@ -857,7 +773,7 @@ else
             <p>Takes out of the loop and executes separately a small number of iterations from the beginning or/and
             the end of a loop, which eliminates if-statements and makes the loop more suitable for vectorization.<br/>
             In some cases can be performed by a compiler under high optimization levels.</p>
-            <table class="simple">
+            <table class="simple"  style="font-size:0.4em;">
               <colgroup>
                 <col></col>
                 <col></col>
@@ -910,7 +826,7 @@ b[len-1] = a[len-1];
             one &mdash; at the left <strong><code>a[-1]</code></strong>,
              and one &mdash; at the right <strong><code>a[N]</code></strong>. With such assumptions the code can be
              rewritten as follows.</p>
-            <table class="simple">
+            <table class="simple"  style="font-size:0.4em;">
               <colgroup>
                 <col></col>
                 <col></col>
@@ -987,7 +903,7 @@ for (int i = 0; i &lt; len; i++)
           that is more important, enables more efficient instruction pipelining because of grouping instructions from
           the different iterations together. May also reduce number of memory references.</p>
           <p>Best candidates are innermost loops with limited control flow.</p>
-          <table class="simple">
+          <table class="simple"  style="font-size:0.4em;">
             <colgroup>
               <col></col>
               <col></col>
@@ -1071,7 +987,7 @@ for (int i = 0; i < N; i += block_size)
         <section>
           <h2>#4: Loop Interchange</h2>
             <p>Minimize/eliminate/replace striding memory access patterns in the innermost loop to improve cache locality.</p>
-            <table class="simple">
+            <table class="simple"  style="font-size:0.4em;">
               <colgroup>
                 <col></col>
                 <col></col>
